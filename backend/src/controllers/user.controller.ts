@@ -6,7 +6,7 @@ import { NotFoundError } from "../utils/errors.util";
 import { transformAndValidate } from "class-transformer-validator";
 
 
-@Route("users")
+@Route("api/users")
 @Tags("Users")
 export class UserController extends BaseController {
   private userService: UserService;

@@ -1,10 +1,10 @@
-import { Body, Post, Route, Tags, Response, Example } from "tsoa";
+import { Body, Post, Route, Tags, Response, Example, Controller } from "tsoa";
 import { AuthService } from "../services/auth.service";
 import { BaseController } from "./base.controller";
 import { LoginResponseDTO, AuthResponseDTO, LoginRequestDTO } from "../dtos/auth.dto";
 import { transformAndValidate } from "class-transformer-validator";
 
-@Route("auth")
+@Route("api/auth")
 @Tags("Authentication")
 export class AuthController extends BaseController {
   private authService: AuthService;

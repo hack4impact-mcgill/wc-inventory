@@ -123,7 +123,7 @@
 		"contact": {}
 	},
 	"paths": {
-		"/users": {
+		"/api/users": {
 			"get": {
 				"operationId": "GetUsers",
 				"responses": {
@@ -206,7 +206,7 @@
 				}
 			}
 		},
-		"/users/{id}": {
+		"/api/users/{id}": {
 			"get": {
 				"operationId": "GetUserById",
 				"responses": {
@@ -246,7 +246,7 @@
 				]
 			}
 		},
-		"/auth/login": {
+		"/api/auth/login": {
 			"post": {
 				"operationId": "Login",
 				"responses": {
@@ -314,7 +314,7 @@
 	},
 	"servers": [
 		{
-			"url": "/"
+			"url": "/api"
 		}
 	]
 }

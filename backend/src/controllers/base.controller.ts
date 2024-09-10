@@ -1,10 +1,13 @@
 import { Response } from 'express';
 import { Logger } from '../utils/logger.util';
+import { Controller, Route } from 'tsoa';
 
-export class BaseController {
+@Route('/api')
+export class BaseController extends Controller {
   protected logger: Logger;
 
   constructor() {
+    super();
     this.logger = new Logger();
   }
 
