@@ -6,6 +6,8 @@
 npm install -g nodemon
 npm install
 
+npm run seed
+
 npm run start:dev
 ```
 
