@@ -1,0 +1,48 @@
+import { UserResponseDTO, CreateUserDTO } from "../dtos/user.dto";
+import { AppDataSource } from "../database/database";
+import { User } from "../entities/user.entity";
+import { plainToInstance } from "class-transformer";
+import { Repository } from "typeorm";
+import { DuplicateError } from "../utils/errors.util";
+import { validate as isValidUUID } from "uuid";
+
+export class UserService {
+    private userRepository: Repository<User>;
+
+    constructor() {
+        this.userRepository = AppDataSource.getRepository(User);
+    }
+
+    private mapToUserResponseDTO(user: User): UserResponseDTO {
+        return plainToInstance(UserResponseDTO, user, { excludeExtraneousValues: true });
+    }
+
+    async getUsers(): Promise<UserResponseDTO[]> {
+        const users = await this.userRepository.find();
+        return users.map(this.mapToUserResponseDTO);
+    }
+
+    async getUserById(id: string): Promise<UserResponseDTO | null> {
+        if (!isValidUUID(id)) {
+            return null;
+        }
+        const user = await this.userRepository.findOneBy({ id });
+        return user ? this.mapToUserResponseDTO(user) : null;
+    }
+
+    async getUserByUsername(username: string): Promise<User | null> {
+        return this.userRepository.findOneBy({ username });
+    }
+
+    async createUser(createUserDto: CreateUserDTO): Promise<UserResponseDTO> {
+        const userExists = await this.getUserByUsername(createUserDto.username);
+        if (userExists) {
+            throw new DuplicateError("User already exists");
+        }
+        const user = this.userRepository.create(createUserDto);
+        await this.userRepository.save(user);
+        return this.mapToUserResponseDTO(user);
+    }
+
+    //TODO -  Delete User
+}
