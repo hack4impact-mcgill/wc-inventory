@@ -1,35 +1,77 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { LoginForm, useAuth } from "./features/auth";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-function App() {
-  const [count, setCount] = useState(0)
+const queryClient = new QueryClient();
+
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const isAuthenticated = localStorage.getItem('token') !== null;
+  const location = useLocation();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return <>{children}</>;
+};
+
+const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const isAuthenticated = localStorage.getItem('token') !== null;
+
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+const Dashboard: React.FC = () => {
+  const { logout } = useAuth();
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div>
+      <h2>Dashboard</h2>
+      <p>Welcome to the protected dashboard!</p>
+      <button onClick={logout}>Logout</button>
+    </div>
+  );
+};
+
+const AppContent: React.FC = () => {
+  return (
+    <div className="App">
+      <h1>Welcome to the App</h1>
+      <Routes>
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <LoginForm />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </div>
+  );
+};
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
 }
 
-export default App
+export default App;
