@@ -2,7 +2,7 @@
 
 ## Overview
 This is the backend API for the Welcome Collective Inventory Management Solution.
-It's built using Express.js with Typescript, TypeORM for DB management, and tsoa for API docuemntation and route generation.
+It's built using Express.js with Typescript, TypeORM for DB management, and tsoa for API documentation and route generation.
 
 
 ## Technologies
@@ -125,27 +125,21 @@ Directory Structure:
 ```
 src/
   dtos/
-    user/
-      create-user.dto.ts
-      update-user.dto.ts
-      user-response.dto.ts
-    item/
-      create-item.dto.ts
-      update-item.dto.ts
-      item-response.dto.ts
+    user.dto.ts
+    item.dto.ts
 ```
 
-- File naming: `<feature>-<action>.dto.ts`
-- Class naming: `<Feature><Action>DTO`
+- File naming: `<feature>.dto.ts`
+- Class naming: `<Action><Feature>DTO`
 
 Examples:
-- `user-create.dto.ts`
-- `user-update.dto.ts`
-- `item-create.dto.ts`
+- `user.dto.ts`
+- `item.dto.ts`
 
 ```typescript
-// In user-create.dto.ts
-export class UserCreateDTO { ... }
+// In user.dto.ts
+export class CreateUserDTO { ... }
+export class UpdateUserDTO { ... }
 ```
 
 ### Entities
@@ -217,7 +211,7 @@ Our application uses a combination of tsoa, class-validator, and DTOs to handle 
 
 1. **API Request**: When a request comes in, tsoa automatically validates it against the defined DTO.
 2. **Controller**: The controller receives pre-validated data matching the DTO, and we use class-validator to validate other constraints.
-3. **Service**: Services work with validated DTOs, focusing on business logic rather than validation.
+3. **Service**: Services work with validated DTOs, focusing on business logic and DB queries rather than validation.
 
 ## Example
 
@@ -264,7 +258,7 @@ public async login(loginDto: LoginRequestDTO): Promise<LoginResponseDTO> {
 
 ## Best Practices
 
-1. Define all DTOs in a `dtos` directory, organized by feature.
+1. Define all DTOs in a `dtos` directory.
 2. Use class-validator decorators in DTOs for all validation rules.
 3. Keep controllers thin, delegating business logic to services.
 4. Services should assume incoming DTOs are valid and focus on business logic.
