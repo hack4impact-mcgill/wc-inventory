@@ -65,6 +65,9 @@
 				"properties": {
 					"token": {
 						"type": "string"
+					},
+					"user": {
+						"$ref": "#/components/schemas/UserResponseDTO"
 					}
 				},
 				"required": [
@@ -100,6 +103,29 @@
 				"required": [
 					"username",
 					"password"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ProfileResponseDTO": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"username": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					},
+					"role": {
+						"$ref": "#/components/schemas/UserRole"
+					}
+				},
+				"required": [
+					"id",
+					"username",
+					"role"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -309,6 +335,45 @@
 						}
 					}
 				}
+			}
+		},
+		"/api/auth/profile": {
+			"get": {
+				"operationId": "GetProfile",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProfileResponseDTO"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AuthResponseDTO"
+								},
+								"examples": {
+									"Example 1": {}
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Authentication"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": []
 			}
 		}
 	},

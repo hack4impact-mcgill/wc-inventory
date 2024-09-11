@@ -1,8 +1,13 @@
-import { Body, Post, Route, Tags, Response, Example, Controller } from "tsoa";
+import { Body, Post, Route, Tags, Response, Example, Request, Get, Security } from "tsoa";
 import { AuthService } from "../services/auth.service";
 import { BaseController } from "./base.controller";
-import { LoginResponseDTO, AuthResponseDTO, LoginRequestDTO } from "../dtos/auth.dto";
+import { LoginResponseDTO, AuthResponseDTO, LoginRequestDTO, ProfileResponseDTO } from "../dtos/auth.dto";
 import { transformAndValidate } from "class-transformer-validator";
+import { Request as ExpressRequest } from 'express';
+import { UserPayload } from "../middlewares/auth.middleware";
+interface AuthenticatedRequest extends ExpressRequest {
+  user: UserPayload;
+}
 
 @Route("api/auth")
 @Tags("Authentication")
@@ -24,5 +29,14 @@ export class AuthController extends BaseController {
   public async login(@Body() request: LoginRequestDTO): Promise<LoginResponseDTO> {
     const loginRequestDTO = await transformAndValidate<LoginRequestDTO>(LoginRequestDTO, request);
     return this.authService.login(loginRequestDTO);
+  }
+
+  @Get("/profile")
+  @Security("jwt")
+  @Response<ProfileResponseDTO>(200, "OK")
+  @Response<AuthResponseDTO>(401, "Unauthorized")
+  public async getProfile(@Request() request: AuthenticatedRequest): Promise<ProfileResponseDTO> {
+    console.log("User payload in controller:", request.user);
+    return this.authService.getProfile(request.user!.userId);
   }
 }

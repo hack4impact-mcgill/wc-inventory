@@ -1,5 +1,6 @@
 import { Request } from "express";
 import jwt from "jsonwebtoken";
+import { AuthenticationError } from "../utils/errors.util";
 
 export interface UserPayload {
   userId: string;
@@ -17,7 +18,8 @@ export function expressAuthentication(
 
     return new Promise((resolve, reject) => {
       if (!token) {
-        reject(new Error("No token provided"));
+        reject(new AuthenticationError("Invalid token"));
+        return;
       }
       jwt.verify(
         token!,
@@ -26,17 +28,23 @@ export function expressAuthentication(
           if (err) {
             reject(err);
           } else {
-            // Checking role
+            // Role Check
             if (scopes && scopes.length > 0) {
               if (scopes.indexOf(decoded.role) === -1) {
-                reject(new Error("Invalid role"));
+              reject(new AuthenticationError("Invalid role"));
+              return;
               }
             }
-            resolve(decoded);
+            const userPayload: UserPayload = {
+              userId: decoded.userId,
+              username: decoded.username,
+              role: decoded.role
+            };
+            resolve(userPayload);
           }
         },
       );
     });
   }
-  return Promise.reject(new Error("Invalid security name"));
+  return Promise.reject(new AuthenticationError("Invalid security name"));
 }

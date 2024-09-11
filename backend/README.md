@@ -2,12 +2,20 @@
 
 ### Get Started
 
+Installing PostgreSQL
+```
+brew install postgresql
+brew services start postgresql
+// Connect
+psql postgres
+```
+
+Installing dependencies and seeding the DB with an admin user.
 ```
 npm install -g nodemon
 npm install
 
 npm run seed
-
 npm run start:dev
 ```
 
@@ -200,7 +208,7 @@ public async login(@Body() request: LoginRequestDTO): Promise<LoginResponseDTO> 
 // Service
 public async login(loginDto: LoginRequestDTO): Promise<LoginResponseDTO> {
     // Implement login logic here
-    // No need to re-validate loginDto
+    // Don't need to revalidate the DTO.
 }
 ```
 
