@@ -36,7 +36,6 @@ export class AuthController extends BaseController {
   @Response<ProfileResponseDTO>(200, "OK")
   @Response<AuthResponseDTO>(401, "Unauthorized")
   public async getProfile(@Request() request: AuthenticatedRequest): Promise<ProfileResponseDTO> {
-    console.log("User payload in controller:", request.user);
     return this.authService.getProfile(request.user!.userId);
   }
 }

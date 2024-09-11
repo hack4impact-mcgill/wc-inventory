@@ -1,14 +1,14 @@
-// src/components/layout/Layout.tsx
 import React from 'react';
 import { Routes, Route } from "react-router-dom";
 import { Login } from "../../features/Login/Login";
 import Dashboard from '../../features/dashboard/Dashboard';
 import { ProtectedRoute } from './ProtectedRoute';
 import PublicRoute from './PublicRoute';
+import { Box } from '@mui/material';
 
 const Layout: React.FC = () => {
     return (
-        <div >
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <Routes>
                 <Route
                     path="/login"
@@ -26,8 +26,9 @@ const Layout: React.FC = () => {
                         </ProtectedRoute>
                     }
                 />
+                {/* Add more protected routes here */}
             </Routes>
-        </div>
+        </Box>
     );
 };
 
