@@ -1,29 +1,77 @@
 # Backend
 
-### Get Started
+## Overview
+This is the backend API for the Welcome Collective Inventory Management Solution.
+It's built using Express.js with Typescript, TypeORM for DB management, and tsoa for API docuemntation and route generation.
 
-Installing PostgreSQL
+
+## Technologies
+
+- Express.js
+- TypeScript
+- TypeORM
+- tsoa
+- Swagger
+- Nodemon
+- Morgan
+
+## Getting Started
+
+### Prerequisites
+
+- Nodejs (v14 or later)
+- npm
+- PostgreSQL
+
+**Installing PostgreSQL**
 ```
 brew install postgresql
 brew services start postgresql
-// Connect
+# Connect to PostgreSQL
 psql postgres
 ```
 
-Installing dependencies and seeding the DB with an admin user.
-```
-npm install -g nodemon
-npm install
+### Installation
+1. Clone the repository
+2. Cd into the backend dir
+3. Install global dependencies
+  ```bash
+  npm install -g nodemon
+  ```
+4. Install project dependencies
+  ```bash
+  npm install
+  ```
+*Note: if you receive an error with code: EACCES when running "npm install -g nodemon" or "npm install", run the following commands on your console:*
+  ```bash
+  sudo chown -R `whoami` ~/.npm
 
+  sudo chown -R `whoami` /usr/local/lib/node_modules
+  ```
+
+### DB Setup
+Seed the DB with an Admin User
+
+```bash
 npm run seed
+```
+
+### Running the Development Server
+Start the development server
+```bash
 npm run start:dev
 ```
-*Note: if you receive an error with code: EACCES when running "npm install -g nodemon" or "npm install", run the following commands on your console:*
 
+## Project Structure
 ```
-sudo chown -R `whoami` ~/.npm
-
-sudo chown -R `whoami` /usr/local/lib/node_modules
+src/
+  controllers/
+  services/
+  dtos/
+  entities/
+  middlewares/
+  utils/
+  tests/
 ```
 
 # Conventions
@@ -152,19 +200,6 @@ export function hashPassword() { ... }
 Examples:
 - `user.controller.spec.ts`
 - `auth.service.spec.ts`
-
-## Directory Structure
-
-```
-src/
-  controllers/
-  services/
-  dtos/
-  entities/
-  middlewares/
-  utils/
-  tests/
-```
 
 By following the conventions mentioned above, we ensure a consistent and easily navigable codebase. This structure allows for scalability and clear separation of concerns.
 
