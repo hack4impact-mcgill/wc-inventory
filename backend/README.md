@@ -18,6 +18,13 @@ npm install
 npm run seed
 npm run start:dev
 ```
+*Note: if you receive an error with code: EACCES when running "npm install -g nodemon" or "npm install", run the following commands on your console:*
+
+```
+sudo chown -R `whoami` ~/.npm
+
+sudo chown -R `whoami` /usr/local/lib/node_modules
+```
 
 # Conventions
 
