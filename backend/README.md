@@ -23,12 +23,12 @@ It's built using Express.js with Typescript, TypeORM for DB management, and tsoa
 - npm
 - PostgreSQL
 
-**Installing PostgreSQL**
+**Installing / Configuring PostgreSQL**
 ```
 brew install postgresql
 brew services start postgresql
-# Connect to PostgreSQL
-psql postgres
+# Create welcome collective DB
+createdb welcome-collective
 ```
 
 ### Installation
@@ -48,19 +48,26 @@ psql postgres
 
   sudo chown -R `whoami` /usr/local/lib/node_modules
   ```
-
 ### DB Setup
 Seed the DB with an Admin User
+Username: Admin, Pw: Admin123
 
 ```bash
 npm run seed
 ```
+
+### Copy and Modify Env File
+Copy the .env-example file and rename it to .env
+
+Configure your DB_USERNAME and DB_PASSWORD.
+MAC -> Your default username is your logged in account (left of the @ in the terminal)
 
 ### Running the Development Server
 Start the development server
 ```bash
 npm run start:dev
 ```
+If no errors popup, navigate to localhost:3001/docs!
 
 ## Project Structure
 ```

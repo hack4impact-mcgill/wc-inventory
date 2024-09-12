@@ -1,16 +1,17 @@
 import { DataSource } from "typeorm";
 import { User } from "../entities/user.entity";
+import { configDotenv } from "dotenv";
+configDotenv();
 
 export const AppDataSource = new DataSource({
   type: "postgres",
-  host: process.env.DB_HOST || "localhost",
-  port: parseInt(process.env.DB_PORT || "5432"),
-  username: "nicklasastorian",
-  password: "your_password",
-  database: "welcome-collective",
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT!),
+  username: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   entities: [User],
   synchronize: true,
-  // logging: true
 });
 
 export const initializeDatabase = async (): Promise<void> => {

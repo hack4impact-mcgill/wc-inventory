@@ -11,6 +11,9 @@ import swaggerJson from "./swagger.json";
 import { initializeDatabase } from "./database/database";
 import { errorHandler } from "./middlewares/error-handling.middleware";
 import cors from "cors";
+import { configDotenv } from "dotenv";
+configDotenv();
+
 const app = express();
 const logger = new Logger();
 
