@@ -19,6 +19,7 @@ export class UserController extends BaseController {
   @Get()
   @Security("jwt", ["Admin"])
   @Response<UserResponseDTO[]>(200, "Success")
+  @Response(401, "Unauthorized")
   public async getUsers(): Promise<UserResponseDTO[]> {
     return this.userService.getUsers();
   }

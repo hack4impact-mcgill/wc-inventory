@@ -8,7 +8,6 @@
     "start": "node dist/app.js",
     "dev": "concurrently \"nodemon\" \"nodemon -x tsoa spec-and-routes\"",
     "dev:debug": "nodemon --exec node --inspect -r ts-node/register -r tsconfig-paths/register src/app.ts",
-    "swagger": "tsoa spec",
     "seed": "ts-node src/database/runSeeders.ts",
     "seed:drop": "ts-node src/database/runSeeders.ts --drop",
     "format": "prettier --write \"src/**/*.ts\"",

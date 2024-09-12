@@ -1,7 +1,7 @@
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
-import Layout from './components/layout/Layout';
+import { Router } from "./routes/Router";
 
 const queryClient = new QueryClient();
 
@@ -10,7 +10,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter>
-          <Layout />
+          <Router />
         </BrowserRouter>
       </AuthProvider>
     </QueryClientProvider>

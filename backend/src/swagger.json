@@ -165,6 +165,9 @@
 								}
 							}
 						}
+					},
+					"401": {
+						"description": "Unauthorized"
 					}
 				},
 				"tags": [
@@ -379,7 +382,7 @@
 	},
 	"servers": [
 		{
-			"url": "/api"
+			"url": "/"
 		}
 	]
 }

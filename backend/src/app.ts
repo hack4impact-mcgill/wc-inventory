@@ -21,7 +21,6 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerJson));
 
 initializeDatabase()
   .then(() => {
-    // Tsoa routes
     RegisterRoutes(app);
 
     app.use(errorHandler);

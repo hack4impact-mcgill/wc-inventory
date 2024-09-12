@@ -5,7 +5,7 @@
         "src/**/*.controller.ts"
     ],
     "spec": {
-        "basePath": "/api",
+        "basePath": "",
         "outputDirectory": "src",
         "specVersion": 3,
         "securityDefinitions": {

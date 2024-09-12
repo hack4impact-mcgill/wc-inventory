@@ -14,7 +14,7 @@ export function expressAuthentication(
   scopes?: string[],
 ): Promise<UserPayload> {
   if (securityName === "jwt") {
-    const token = request.headers["authorization"]?.split(" ")[1];
+    const token = request.headers["authorization"];
 
     return new Promise((resolve, reject) => {
       if (!token) {
@@ -26,13 +26,29 @@ export function expressAuthentication(
         process.env.JWT_SECRET || "your-secret-key",
         (err: any, decoded: any) => {
           if (err) {
-            reject(err);
-          } else {
+            if (err) {
+              if (err.name === 'TokenExpiredError') {
+                reject(new AuthenticationError("Token has expired"));
+              } else if (err.name === 'JsonWebTokenError') {
+                reject(new AuthenticationError("Invalid token"));
+              } else {
+                reject(new AuthenticationError("Token verification failed"));
+              }
+              return;
+            }
+          }
+          else {
+
+            if (!decoded || typeof decoded !== 'object') {
+              reject(new AuthenticationError("Invalid token payload"));
+              return;
+            }
+
             // Role Check
             if (scopes && scopes.length > 0) {
-              if (scopes.indexOf(decoded.role) === -1) {
-              reject(new AuthenticationError("Invalid role"));
-              return;
+              if (!decoded.role || scopes.indexOf(decoded.role) === -1) {
+                reject(new AuthenticationError("Insufficient permissions"));
+                return;
               }
             }
             const userPayload: UserPayload = {
