@@ -1,8 +1,5 @@
 
-import express, {
-  Response as ExResponse,
-  Request as ExRequest,
-} from "express";
+import express, { Response as ExResponse, } from "express";
 import swaggerUi from "swagger-ui-express";
 import morgan from "morgan";
 import { Logger } from "./utils/logger.util";
@@ -12,6 +9,11 @@ import { initializeDatabase } from "./database/database";
 import { errorHandler } from "./middlewares/error-handling.middleware";
 import cors from "cors";
 import { configDotenv } from "dotenv";
+import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+
+
+
 configDotenv();
 
 const app = express();
@@ -20,6 +22,12 @@ const logger = new Logger();
 app.use(express.json());
 app.use(morgan("tiny"));
 app.use(cors())
+app.use(helmet());
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15 * 60 * 1000,
+}));
+
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerJson));
 
 initializeDatabase()
