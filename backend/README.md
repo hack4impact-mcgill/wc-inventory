@@ -48,6 +48,14 @@ createdb welcome-collective
 
   sudo chown -R `whoami` /usr/local/lib/node_modules
   ```
+
+
+### Copy and Modify Env File
+Copy the .env-example file and rename it to .env
+
+Configure your DB_USERNAME and DB_PASSWORD.
+MAC -> Your default username is your logged in account (left of the @ in the terminal)
+
 ### DB Setup
 Seed the DB with an Admin User
 Username: Admin, Pw: Admin123
@@ -56,13 +64,7 @@ Username: Admin, Pw: Admin123
 npm run seed
 ```
 
-### Copy and Modify Env File
-Copy the .env-example file and rename it to .env
-
-Configure your DB_USERNAME and DB_PASSWORD.
-MAC -> Your default username is your logged in account (left of the @ in the terminal)
-
-### Running the Development Server
+### Run the Development Server!
 Start the development server
 ```bash
 npm run start:dev
