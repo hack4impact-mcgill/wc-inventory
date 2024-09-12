@@ -11,6 +11,7 @@ import cors from "cors";
 import { configDotenv } from "dotenv";
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
+import { applyRateLimiter } from "./middlewares/rate-limit.middleware";
 
 
 
@@ -23,10 +24,7 @@ app.use(express.json());
 app.use(morgan("tiny"));
 app.use(cors())
 app.use(helmet());
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 15 * 60 * 1000,
-}));
+app.use(applyRateLimiter);
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerJson));
 

@@ -5,6 +5,7 @@ import { LoginResponseDTO, AuthResponseDTO, LoginRequestDTO, ProfileResponseDTO 
 import { transformAndValidate } from "class-transformer-validator";
 import { Request as ExpressRequest } from 'express';
 import { UserPayload } from "../middlewares/auth.middleware";
+
 interface AuthenticatedRequest extends ExpressRequest {
   user: UserPayload;
 }
@@ -39,3 +40,5 @@ export class AuthController extends BaseController {
     return this.authService.getProfile(request.user!.userId);
   }
 }
+
+
