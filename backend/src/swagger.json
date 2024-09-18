@@ -38,6 +38,22 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"ErrorResponse": {
+				"properties": {
+					"details": {
+						"type": "string",
+						"nullable": true
+					},
+					"message": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"details",
+					"message"
+				],
+				"type": "object"
+			},
 			"CreateUserDTO": {
 				"properties": {
 					"username": {
@@ -149,12 +165,12 @@
 		"contact": {}
 	},
 	"paths": {
-		"/api/users": {
+		"/users": {
 			"get": {
-				"operationId": "GetUsers",
+				"operationId": "getUsers",
 				"responses": {
 					"200": {
-						"description": "Ok",
+						"description": "Success",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -167,7 +183,17 @@
 						}
 					},
 					"401": {
-						"description": "Unauthorized"
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								},
+								"examples": {
+									"Example 1": {}
+								}
+							}
+						}
 					}
 				},
 				"tags": [
@@ -185,8 +211,8 @@
 			"post": {
 				"operationId": "CreateUser",
 				"responses": {
-					"200": {
-						"description": "Ok",
+					"201": {
+						"description": "Created",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -195,12 +221,12 @@
 							}
 						}
 					},
-					"201": {
-						"description": "Created",
+					"400": {
+						"description": "Bad Request",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/UserResponseDTO"
+									"$ref": "#/components/schemas/ErrorResponse"
 								},
 								"examples": {
 									"Example 1": {}
@@ -208,8 +234,18 @@
 							}
 						}
 					},
-					"400": {
-						"description": "Bad Request"
+					"409": {
+						"description": "Conflict - User already exists",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								},
+								"examples": {
+									"Example 1": {}
+								}
+							}
+						}
 					}
 				},
 				"tags": [
@@ -235,12 +271,12 @@
 				}
 			}
 		},
-		"/api/users/{id}": {
+		"/users/{id}": {
 			"get": {
-				"operationId": "GetUserById",
+				"operationId": "getUserById",
 				"responses": {
 					"200": {
-						"description": "Ok",
+						"description": "Success",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -275,7 +311,7 @@
 				]
 			}
 		},
-		"/api/auth/login": {
+		"/auth/login": {
 			"post": {
 				"operationId": "Login",
 				"responses": {
@@ -314,7 +350,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/AuthResponseDTO"
+									"$ref": "#/components/schemas/ErrorResponse"
 								},
 								"examples": {
 									"Example 1": {}
@@ -340,14 +376,21 @@
 				}
 			}
 		},
-		"/api/auth/profile": {
+		"/auth/profile": {
 			"get": {
 				"operationId": "GetProfile",
 				"responses": {
 					"200": {
-						"description": "Ok",
+						"description": "OK",
 						"content": {
 							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProfileResponseDTO"
+								}
+							}
+						},
+						"headers": {
+							"ProfileResponseDTO": {
 								"schema": {
 									"$ref": "#/components/schemas/ProfileResponseDTO"
 								}
@@ -359,7 +402,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/AuthResponseDTO"
+									"$ref": "#/components/schemas/ErrorResponse"
 								},
 								"examples": {
 									"Example 1": {}
@@ -382,7 +425,7 @@
 	},
 	"servers": [
 		{
-			"url": "/"
+			"url": "/api"
 		}
 	]
 }

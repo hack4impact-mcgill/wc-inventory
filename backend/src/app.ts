@@ -9,7 +9,6 @@ import { initializeDatabase } from "./database/database";
 import { errorHandler } from "./middlewares/error-handling.middleware";
 import cors from "cors";
 import { configDotenv } from "dotenv";
-import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { applyRateLimiter } from "./middlewares/rate-limit.middleware";
 
@@ -19,17 +18,17 @@ configDotenv();
 
 const app = express();
 const logger = new Logger();
-
 app.use(express.json());
 app.use(morgan("tiny"));
 app.use(cors())
 app.use(helmet());
 app.use(applyRateLimiter);
 
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerJson));
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerJson));
 
 initializeDatabase()
   .then(() => {
+
     RegisterRoutes(app);
 
     app.use(errorHandler);

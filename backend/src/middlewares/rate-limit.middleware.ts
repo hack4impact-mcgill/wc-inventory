@@ -1,4 +1,3 @@
-// src/middlewares/rate-limit.middleware.ts
 import rateLimit from 'express-rate-limit';
 import { Request, Response, NextFunction } from 'express';
 
@@ -16,6 +15,7 @@ const generalLimiter = rateLimit({
 
 export function applyRateLimiter(req: Request, res: Response, next: NextFunction) {
     if (req.path === '/api/auth/login') {
+        console.log("/api/auth/login -- test")
         return authLimiter(req, res, next);
     }
     if (req.path.startsWith('/api/')) {

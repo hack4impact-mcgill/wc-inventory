@@ -4,8 +4,13 @@
     "controllerPathGlobs": [
         "src/**/*.controller.ts"
     ],
+    "routes": {
+        "basePath": "/api",
+        "routesDir": "src",
+        "authenticationModule": "src/middlewares/auth.middleware.ts"
+    },
     "spec": {
-        "basePath": "",
+        "basePath": "/api",
         "outputDirectory": "src",
         "specVersion": 3,
         "securityDefinitions": {
@@ -15,9 +20,5 @@
                 "in": "header"
             }
         }
-    },
-    "routes": {
-        "routesDir": "src",
-        "authenticationModule": "src/middlewares/auth.middleware.ts"
     }
 }

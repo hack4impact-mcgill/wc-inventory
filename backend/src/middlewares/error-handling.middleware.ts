@@ -5,19 +5,24 @@ import { AuthenticationError, AuthorizationError, DuplicateError, NotFoundError 
 import { TokenExpiredError } from 'jsonwebtoken';
 import { ValidationError } from 'class-validator';
 
+export type ErrorResponse = {
+    message: string;
+    details: string | null;
+}
+
 export function errorHandler(
     err: unknown,
     req: Request,
     res: Response,
     next: NextFunction
-) {
+): Response<ErrorResponse> {
     const logger = new Logger();
 
-    if (err instanceof ValidateError) { //TSOA
+    if (err instanceof ValidateError) { // TSOA
         logger.warn(`Validation Error for ${req.path}:`, err.fields);
         return res.status(422).json({
             message: "Validation Failed",
-            details: err?.fields,
+            details: JSON.stringify(err?.fields),
         });
     }
 
@@ -40,6 +45,7 @@ export function errorHandler(
         logger.warn(`Authentication Error: ${err.message}`);
         return res.status(401).json({
             message: err.message,
+            details: null,
         });
     }
 
@@ -47,6 +53,7 @@ export function errorHandler(
         logger.warn(`Authorization Error: ${err.message}`);
         return res.status(403).json({
             message: err.message,
+            details: null,
         });
     }
 
@@ -54,13 +61,15 @@ export function errorHandler(
         logger.warn(`Not Found Error: ${err.message}`);
         return res.status(404).json({
             message: err.message,
+            details: null,
         });
     }
 
     if (err instanceof DuplicateError) {
         logger.warn(`Duplicate Error: ${err.message}`);
         return res.status(409).json({
-            message: err.message
+            message: err.message,
+            details: null,
         });
     }
 
@@ -68,11 +77,13 @@ export function errorHandler(
         logger.error(`Internal Server Error: ${err.message}`);
         return res.status(500).json({
             message: "Internal Server Error",
+            details: null,
         });
     }
 
     logger.error(`Unknown Error: ${JSON.stringify(err)}`);
     return res.status(500).json({
         message: "An unknown error occurred",
+        details: null,
     });
 }
