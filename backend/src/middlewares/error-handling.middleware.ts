@@ -20,9 +20,14 @@ export function errorHandler(
 
     if (err instanceof ValidateError) { // TSOA
         logger.warn(`Validation Error for ${req.path}:`, err.fields);
-        return res.status(422).json({
-            message: "Validation Failed",
-            details: JSON.stringify(err?.fields),
+        const formattedErrors = Object.keys(err.fields).map((field) => ({
+            field,
+            message: err.fields[field].message || 'Invalid value',
+            value: err.fields[field].value,
+        }));
+        return res.status(400).json({
+            message: "Bad Request",
+            details: formattedErrors,
         });
     }
 
@@ -35,7 +40,7 @@ export function errorHandler(
         }, [] as string[]);
 
         logger.warn(`Validation Error for ${req.path}:`, details);
-        return res.status(400).json({
+        return res.status(422).json({
             message: "Validation Failed",
             details: details,
         });
@@ -80,7 +85,6 @@ export function errorHandler(
             details: null,
         });
     }
-
     logger.error(`Unknown Error: ${JSON.stringify(err)}`);
     return res.status(500).json({
         message: "An unknown error occurred",

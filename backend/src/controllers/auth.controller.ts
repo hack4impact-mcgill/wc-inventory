@@ -1,4 +1,4 @@
-import { Body, Post, Route, Tags, Response, Example, Request, Get, Security, Controller, SuccessResponse } from "tsoa";
+import { Body, Post, Route, Tags, Response, Example, Request, Get, Security, Controller } from "tsoa";
 import { AuthService } from "../services/auth.service";
 import { LoginResponseDTO, AuthResponseDTO, LoginRequestDTO, ProfileResponseDTO } from "../dtos/auth.dto";
 import { transformAndValidate } from "class-transformer-validator";
@@ -20,6 +20,11 @@ export class AuthController extends Controller {
     this.authService = new AuthService();
   }
 
+  /**
+ * Login to the application using username and password
+ *
+ * @summary Login
+ */
   @Post("/login")
   @Response<LoginResponseDTO>(200, "OK")
   @Response<AuthResponseDTO>(400, "Bad Request")
@@ -35,7 +40,7 @@ export class AuthController extends Controller {
 
   @Get("/profile")
   @Security("jwt")
-  @SuccessResponse<ProfileResponseDTO>(200, "OK")
+  @Response<ProfileResponseDTO>(200, "OK")
   @Response<ErrorResponse>(401, "Unauthorized")
   public async getProfile(@Request() request: AuthenticatedRequest): Promise<ProfileResponseDTO> {
     this.setStatus(200);

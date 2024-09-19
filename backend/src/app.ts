@@ -17,7 +17,6 @@ import { applyRateLimiter } from "./middlewares/rate-limit.middleware";
 configDotenv();
 
 const app = express();
-const logger = new Logger();
 app.use(express.json());
 app.use(morgan("tiny"));
 app.use(cors())

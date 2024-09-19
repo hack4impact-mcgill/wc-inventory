@@ -19,6 +19,14 @@
                 "name": "Authorization",
                 "in": "header"
             }
-        }
+        },
+        "tags": [
+            {
+                "name": "Authentication"
+            },
+            {
+                "name": "Users"
+            }
+        ]
     }
 }

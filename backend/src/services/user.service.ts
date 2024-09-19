@@ -3,8 +3,9 @@ import { AppDataSource } from "../database/database";
 import { User } from "../entities/user.entity";
 import { plainToInstance } from "class-transformer";
 import { Repository } from "typeorm";
-import { DuplicateError } from "../utils/errors.util";
+import { DuplicateError, NotFoundError } from "../utils/errors.util";
 import { validate as isValidUUID } from "uuid";
+import { ValidateError } from "tsoa";
 
 export class UserService {
     private userRepository: Repository<User>;
@@ -22,12 +23,20 @@ export class UserService {
         return users.map(this.mapToUserResponseDTO);
     }
 
-    async getUserById(id: string): Promise<UserResponseDTO | null> {
+    async getUserById(id: string): Promise<UserResponseDTO> {
         if (!isValidUUID(id)) {
-            return null;
+            throw new ValidateError(
+                {
+                    id: { message: "Invalid UUID", value: id }
+                },
+                "Invalid UUID format"
+            );
         }
         const user = await this.userRepository.findOneBy({ id });
-        return user ? this.mapToUserResponseDTO(user) : null;
+        if (!user) {
+            throw new NotFoundError("User not found");
+        }
+        return this.mapToUserResponseDTO(user);
     }
 
     async getUserByUsername(username: string): Promise<User | null> {

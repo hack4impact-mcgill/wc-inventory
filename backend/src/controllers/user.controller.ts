@@ -1,7 +1,6 @@
-import { Body, Get, Path, Post, Route, Tags, Security, Response, Controller, OperationId, SuccessResponse } from "tsoa";
+import { Body, Get, Path, Post, Route, Tags, Security, Response, Controller, OperationId } from "tsoa";
 import { UserService } from "../services/user.service";
 import { CreateUserDTO, UserResponseDTO } from '../dtos/user.dto';
-import { NotFoundError } from "../utils/errors.util";
 import { transformAndValidate } from "class-transformer-validator";
 import { ErrorResponse } from "../middlewares/error-handling.middleware";
 
@@ -16,38 +15,58 @@ export class UserController extends Controller {
     this.userService = new UserService();
   }
 
+  /**
+  * Get users
+  *
+  * @summary Get Users
+  */
   @Get()
   @OperationId("getUsers")
   @Security("jwt", ["Admin"])
-  @SuccessResponse(200, "Success")
+  @Response(200, "Success")
   @Response<ErrorResponse>(401, "Unauthorized")
   public async getUsers(): Promise<UserResponseDTO[]> {
     this.setStatus(200);
     return this.userService.getUsers();
   }
 
+
+  /**
+ * Get user by Id
+ *
+ * @summary Get User
+ * 
+ * @param {uuid} id UUID of the user
+ */
   @Get("{id}")
   @OperationId('getUserById')
   @Security("jwt", ["Admin"])
-  @SuccessResponse(200, "Success")
-  @Response(404, "User not found")
+  @Response(200, "Success")
+  @Response<ErrorResponse>(400, "Bad Request")
+  @Response<ErrorResponse>(404, "User not found")
   public async getUserById(@Path() id: string): Promise<UserResponseDTO> {
     this.setStatus(200);
     const user = await this.userService.getUserById(id);
-    if (!user) {
-      throw new NotFoundError("User not found");
-    }
     return user;
   }
 
+  /**
+ * Update user by Id
+ *
+ * @summary Update User
+ * 
+ * @param {uuid} id UUID of the user
+ */
   @Post()
   @Security("jwt", ["Admin"])
-  @SuccessResponse(201, "Created")
+  @OperationId('createUser')
+  @Response(201, "Created User")
   @Response<ErrorResponse>(400, "Bad Request")
   @Response<ErrorResponse>(409, "Conflict - User already exists")
   public async createUser(@Body() requestBody: CreateUserDTO): Promise<UserResponseDTO> {
     this.setStatus(201);
     const userDto = await transformAndValidate(CreateUserDTO, requestBody, { validator: { whitelist: true, forbidNonWhitelisted: true } });
-    return this.userService.createUser(userDto);
+    const user = await this.userService.createUser(userDto);
+    return user;
   }
 }
