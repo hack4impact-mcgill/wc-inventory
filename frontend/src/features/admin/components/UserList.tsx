@@ -3,7 +3,7 @@ import LoadingSpinner from "../../../components/common/LoadingSpinner";
 import { useUsers } from "../../../hooks/useUsers";
 
 
-export const UserList: React.FC = () => {
+const UserList: React.FC = () => {
     const { data: users, isLoading, isError, error } = useUsers();
 
     if (isLoading) {
@@ -29,3 +29,5 @@ export const UserList: React.FC = () => {
         </>
     );
 };
+
+export default UserList;

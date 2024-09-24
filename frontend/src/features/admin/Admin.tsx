@@ -1,5 +1,5 @@
 import { Typography } from "@mui/material";
-import { UserList } from "./components/UserList";
+import UserList from "./components/UserList";
 
 
 export const Admin: React.FC = () => {

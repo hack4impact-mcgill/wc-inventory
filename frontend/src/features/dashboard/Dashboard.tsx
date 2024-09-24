@@ -1,8 +1,8 @@
 import React from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuthContext } from '../../contexts/AuthContext';
 
 export const Dashboard: React.FC = () => {
-    const { user } = useAuth();
+    const { user } = useAuthContext();
 
     return (
         <div>

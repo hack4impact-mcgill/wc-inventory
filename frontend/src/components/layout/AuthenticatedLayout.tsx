@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuthContext } from '../../contexts/AuthContext';
 import { AppBar, Toolbar, Typography, Box, Container, styled } from '@mui/material';
 import { Link } from 'react-router-dom';
 
@@ -17,12 +17,12 @@ const StyledLink = styled(Link)`
 `;
 
 const AuthenticatedLayout: React.FC<AuthenticatedLayoutProps> = ({ children }) => {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuthContext();
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <AppBar position="static">
-        <Toolbar sx={{ display: "flex", justifyContent: "space-between"}}>
+        <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
           <Typography component={StyledLink} to={'/'} variant="h6">
             Welcome Collective
           </Typography>

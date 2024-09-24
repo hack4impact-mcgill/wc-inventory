@@ -1,14 +1,14 @@
 import React, { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { Login } from '../features/Login/Login';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import Admin from '../features/admin/Admin';
-import Dashboard from '../features/dashboard/Dashboard';
+import Admin from '../features/Admin/Admin';
+import Dashboard from '../features/Dashboard/Dashboard';
+import { useAuthContext } from '../contexts/AuthContext';
 
 export const Router: React.FC = () => {
-    const { isLoading, isAuthenticated } = useAuth();
+    const { isAuthenticated, isLoading } = useAuthContext();
 
     if (isLoading) {
         return <LoadingSpinner />;

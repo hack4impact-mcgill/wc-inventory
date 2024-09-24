@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuthContext } from '../../contexts/AuthContext';
 import { Box, Button, Container, Paper, styled, TextField, Typography } from '@mui/material';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -15,15 +15,15 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 export const Login: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const { login } = useAuth();
+    const { login } = useAuthContext();
     const navigate = useNavigate();
     const location = useLocation();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await login({ username, password });
-            const from = (location.state as any)?.from?.pathname || '/';
+            await login(username, password);
+            const from = location.state?.from?.pathname || '/';
             navigate(from, { replace: true });
         } catch (error) {
             console.error('Login failed:', error);

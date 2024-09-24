@@ -1,6 +1,5 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL;
+import api, { setAccessToken } from '../utils/axiosConfig';
+import { jwtDecode } from 'jwt-decode';
 
 export type UserRole = 'Volunteer' | 'Coordinator' | 'Admin';
 
@@ -18,29 +17,54 @@ export interface LoginCredentials {
 
 export interface LoginResponse {
   token: string;
-  user: User;
 }
 
-const axiosInstance = axios.create({
-  baseURL: API_URL,
-});
+export interface RefreshResponse {
+  message: string;
+  token: string
+}
 
-axiosInstance.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers!.Authorization = `${token}`;
-  }
-  return config;
-});
+export interface DecodedToken {
+  userId: string;
+  username: string;
+  email: string;
+  role: UserRole;
+  exp: number;
+}
 
-export const loginUser = async (credentials: LoginCredentials): Promise<LoginResponse> => {
-  const response = await axiosInstance.post<LoginResponse>('/api/auth/login', credentials);
-  return response.data;
+const getUserFromToken = (token: string): User => {
+  const decoded = jwtDecode<DecodedToken>(token);
+  const user: User = {
+    id: decoded.userId,
+    username: decoded.username,
+    email: decoded.email,
+    role: decoded.role,
+  };
+  return user;
+};
+
+
+export const loginUser = async (username: string, password: string): Promise<User> => {
+  const credentials: LoginCredentials = { username, password };
+  const response = await api.post<LoginResponse>('auth/login', credentials);
+  const user = getUserFromToken(response.data.token);
+  setAccessToken(response.data.token);
+  return user;
+};
+
+export const logout = async (): Promise<void> => {
+  await api.post('auth/logout');
+  setAccessToken(null);
 };
 
 export const fetchUserProfile = async (): Promise<User> => {
-  const response = await axiosInstance.get<User>('/api/auth/profile');
+  const response = await api.get<User>('auth/profile');
   return response.data;
 };
 
-export { axiosInstance };
+export const refreshToken = async (): Promise<User> => {
+  const response = await api.post<RefreshResponse>('auth/refresh');
+  const user = getUserFromToken(response.data.token);
+  setAccessToken(response.data.token);
+  return user;
+};

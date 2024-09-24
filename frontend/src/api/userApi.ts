@@ -1,6 +1,7 @@
-import { axiosInstance, User } from './authApi';
+import { User } from './authApi';
+import api from '../utils/axiosConfig';
 
 export const fetchUsers = async (): Promise<User[]> => {
-    const response = await axiosInstance.get<User[]>('/api/users');
+    const response = await api.get<User[]>('/users');
     return response.data;
 };

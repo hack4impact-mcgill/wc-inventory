@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from "react-router-dom";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import AuthenticatedLayout from "../../components/layout/AuthenticatedLayout";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuthContext } from "../../contexts/AuthContext";
 
 
 interface ProtectedRouteProps {
@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element, allowedRoles }) => {
-    const { user, isLoading, isAuthenticated } = useAuth();
+    const { user, isLoading, isAuthenticated } = useAuthContext();
     const location = useLocation();
 
     if (isLoading) {
@@ -22,7 +22,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element, allowed
     }
 
     if (allowedRoles && (!user || !allowedRoles.includes(user.role))) {
-        return <Navigate to="/forbidden" replace />;
+        return <>
+            <span>Permissions Denied</span>
+        </>
     }
 
     const Layout = AuthenticatedLayout;
