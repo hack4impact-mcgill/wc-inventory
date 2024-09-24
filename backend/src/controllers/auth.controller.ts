@@ -51,6 +51,10 @@ export class AuthController extends Controller {
     return { token };
   }
 
+  /**
+   * Get user profile
+   * @summary Get user profile
+   */
   @Get("/profile")
   @Security("jwt")
   @Response<ProfileResponseDTO>(200, "OK")
@@ -60,6 +64,11 @@ export class AuthController extends Controller {
     return this.authService.getProfile(request.user!.userId);
   }
 
+  /**
+   *  
+   * Attempts to refresh JWT Access Token using refresh token in cookies 
+   * @summary Refresh JWT Access Token
+   */
   @Post("/refresh")
   @Response<AuthResponseDTO>(200, "OK")
   @Response<ErrorResponse>(401, "Unauthorized")
@@ -80,6 +89,11 @@ export class AuthController extends Controller {
     }
   }
 
+  /**
+   *  
+   * Logs out user by clearing refresh token cookie
+   * @summary Logout
+   */
   @Post('/logout')
   @Security("jwt")
   @Response<AuthResponseDTO>(200, "OK")

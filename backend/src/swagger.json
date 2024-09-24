@@ -341,6 +341,25 @@
 				]
 			}
 		},
+		"/": {
+			"get": {
+				"operationId": "RedirectToDocs",
+				"responses": {
+					"302": {
+						"description": "Redirect",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": []
+			}
+		},
 		"/auth/login": {
 			"post": {
 				"operationId": "Login",
@@ -436,6 +455,8 @@
 						}
 					}
 				},
+				"description": "Get user profile",
+				"summary": "Get user profile",
 				"tags": [
 					"Authentication"
 				],
@@ -475,6 +496,8 @@
 						}
 					}
 				},
+				"description": "\nAttempts to refresh JWT Access Token using refresh token in cookies",
+				"summary": "Refresh JWT Access Token",
 				"tags": [
 					"Authentication"
 				],
@@ -497,6 +520,8 @@
 						}
 					}
 				},
+				"description": "\nLogs out user by clearing refresh token cookie",
+				"summary": "Logout",
 				"tags": [
 					"Authentication"
 				],
