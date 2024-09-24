@@ -21,7 +21,8 @@
   "lint-staged": {
     "src/**/*.{js,jsx,ts,tsx}": [
       "npm run lint",
-      "npm run format"
+      "prettier --write --ignore-unknown",
+      "npm run test:staged"
     ]
   },
   "dependencies": {
