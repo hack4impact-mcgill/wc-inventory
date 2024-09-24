@@ -341,25 +341,6 @@
 				]
 			}
 		},
-		"/": {
-			"get": {
-				"operationId": "RedirectToDocs",
-				"responses": {
-					"302": {
-						"description": "Redirect",
-						"content": {
-							"application/json": {
-								"schema": {
-									"type": "string"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": []
-			}
-		},
 		"/auth/login": {
 			"post": {
 				"operationId": "Login",

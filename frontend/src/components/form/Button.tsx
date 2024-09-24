@@ -17,7 +17,6 @@ export default function Button({ type, onClick, variant = 'primary', children, d
 
     const variantClasses = variant === 'primary' ? primaryClasses : secondaryClasses;
 
-    console.log(variantClasses);
     return (
         <button
             className={`${baseClasses} ${variantClasses} ${disabled ? disabledClasses : ''} ${className}`}
