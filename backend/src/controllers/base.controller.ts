@@ -7,6 +7,9 @@ export class BaseController extends Controller {
         super();
     }
 
+    /**
+     * Redirect to the API documentation
+     */
     @Get()
     @SuccessResponse(302, "Redirect")
     async redirectToDocs(@Request() request: express.Request) {
