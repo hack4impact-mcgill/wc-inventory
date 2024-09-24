@@ -38,18 +38,18 @@ export class Logger {
     }
 
     info(message: string, meta?: any): void {
-        this.logger.info(message, this.addRequestId(meta));
+        this.logger.info(message);
     }
 
     error(message: string, meta?: any): void {
-        this.logger.error(message, this.addRequestId(meta));
+        this.logger.error(message);
     }
 
     warn(message: string, meta?: any): void {
-        this.logger.warn(message, this.addRequestId(meta));
+        this.logger.warn(message);
     }
 
     debug(message: string, meta?: any): void {
-        this.logger.debug(message, this.addRequestId(meta));
+        this.logger.debug(message);
     }
 }

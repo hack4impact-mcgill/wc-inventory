@@ -56,3 +56,9 @@ export class UserResponseDTO {
   @IsEnum(UserRole)
   role!: UserRole;
 }
+
+export class UserDTO extends UserResponseDTO {
+  @Expose()
+  @IsString()
+  password!: string;
+}

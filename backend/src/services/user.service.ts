@@ -1,4 +1,4 @@
-import { UserResponseDTO, CreateUserDTO } from "../dtos/user.dto";
+import { UserResponseDTO, CreateUserDTO, UserDTO } from "../dtos/user.dto";
 import { AppDataSource } from "../database/database";
 import { User } from "../entities/user.entity";
 import { plainToInstance } from "class-transformer";
@@ -23,7 +23,21 @@ export class UserService {
         return users.map(this.mapToUserResponseDTO);
     }
 
-    async getUserById(id: string): Promise<UserResponseDTO> {
+    async getUserById(id: string): Promise<UserDTO | null> {
+        if (!isValidUUID(id)) {
+            throw new ValidateError(
+                {
+                    id: { message: "Invalid UUID", value: id }
+                },
+                "Invalid UUID format"
+            );
+        }
+        const user = await this.userRepository.findOneBy({ id });
+        return user ? plainToInstance(UserDTO, user, { excludeExtraneousValues: true }) : null;
+    }
+
+
+    async getUserByIdPublic(id: string): Promise<UserResponseDTO> {
         if (!isValidUUID(id)) {
             throw new ValidateError(
                 {
@@ -39,8 +53,9 @@ export class UserService {
         return this.mapToUserResponseDTO(user);
     }
 
-    async getUserByUsername(username: string): Promise<User | null> {
-        return this.userRepository.findOneBy({ username });
+    async getUserByUsername(username: string): Promise<UserDTO | null> {
+        const user = await this.userRepository.findOneBy({ username });
+        return user ? plainToInstance(UserDTO, user, { excludeExtraneousValues: true }) : null;
     }
 
     async createUser(createUserDto: CreateUserDTO): Promise<UserResponseDTO> {

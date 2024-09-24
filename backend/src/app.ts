@@ -11,6 +11,7 @@ import cors from "cors";
 import { configDotenv } from "dotenv";
 import helmet from 'helmet';
 import { applyRateLimiter } from "./middlewares/rate-limit.middleware";
+import cookieParser from 'cookie-parser';
 
 
 
@@ -22,6 +23,8 @@ app.use(morgan("tiny"));
 app.use(cors())
 app.use(helmet());
 app.use(applyRateLimiter);
+app.use(cookieParser());
+
 
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerJson));
 

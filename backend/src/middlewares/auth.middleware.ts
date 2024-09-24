@@ -14,8 +14,11 @@ export function expressAuthentication(
   scopes?: string[],
 ): Promise<UserPayload> {
   if (securityName === "jwt") {
-    const token = request.headers["authorization"];
-
+    const authHeader = request.headers["authorization"];
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return Promise.reject(new AuthenticationError("Authorization header is missing or malformed"));
+    }
+    const token = authHeader.split(" ")[1];
     return new Promise((resolve, reject) => {
       if (!token) {
         reject(new AuthenticationError("Invalid token"));
@@ -23,7 +26,7 @@ export function expressAuthentication(
       }
       jwt.verify(
         token!,
-        process.env.JWT_SECRET || "your-secret-key",
+        process.env.JWT_SECRET!,
         (err: any, decoded: any) => {
           if (err) {
             if (err) {

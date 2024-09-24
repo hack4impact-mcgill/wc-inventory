@@ -18,8 +18,13 @@ export class AuthResponseDTO {
 
 export class LoginResponseDTO {
     token!: string;
-    user?: UserResponseDTO;
 }
 
 export class ProfileResponseDTO extends UserResponseDTO { }
 
+
+export class RefreshTokenDTO {
+    @IsNotEmpty()
+    @IsString()
+    refreshToken!: string;
+}

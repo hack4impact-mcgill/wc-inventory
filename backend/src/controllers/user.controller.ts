@@ -46,7 +46,7 @@ export class UserController extends Controller {
   @Response<ErrorResponse>(404, "User not found")
   public async getUserById(@Path() id: string): Promise<UserResponseDTO> {
     this.setStatus(200);
-    const user = await this.userService.getUserById(id);
+    const user = await this.userService.getUserByIdPublic(id);
     return user;
   }
 
