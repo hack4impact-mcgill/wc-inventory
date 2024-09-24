@@ -22,7 +22,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    // Abs URL
+    // Absolute URL
     "baseUrl": "./src",
     "paths": {
       "@/*": [
@@ -33,7 +33,6 @@
   "include": [
     "src",
     "./jest.setup.ts",
-    "/*"
   ],
   "files": [],
   "references": [

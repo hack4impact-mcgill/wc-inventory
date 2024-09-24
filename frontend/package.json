@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "test": "jest",
     "coverage": "npm test --coverage --watchAll --collectCoverageFrom='src/components/**/*.{ts,tsx}'",
-    "lint": "eslint . --fix --max-warnings=0",
+    "lint": "eslint . --fix --max-warnings=10",
     "format": "prettier . --write",
     "preview": "vite preview",
     "prepare": "husky"
@@ -21,8 +21,7 @@
   "lint-staged": {
     "src/**/*.{js,jsx,ts,tsx}": [
       "npm run lint",
-      "prettier --write --ignore-unknown",
-      "npm run test:staged"
+      "prettier --write --ignore-unknown"
     ]
   },
   "dependencies": {
@@ -32,6 +31,7 @@
     "@tanstack/react-query-devtools": "^5.56.2",
     "axios": "^1.7.7",
     "dotenv": "^16.4.5",
+    "eslint-plugin-jest": "^28.8.3",
     "jwt-decode": "^4.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

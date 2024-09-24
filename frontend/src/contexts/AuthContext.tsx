@@ -2,7 +2,7 @@ import React, { createContext, useContext } from 'react';
 import { User } from '../api/authApi';
 import { useAuth } from '../hooks/useAuth';
 
-interface AuthContextType {
+export interface AuthContextType {
     user: User | null;
     login: (username: string, password: string) => Promise<User>;
     logout: () => void;
