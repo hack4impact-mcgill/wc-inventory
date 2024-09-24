@@ -1,11 +1,10 @@
-import { Typography } from "@mui/material";
 import UserList from "./components/UserList";
 
 
 export const Admin: React.FC = () => {
     return (
         <>
-            <Typography variant="h4">Admin</Typography>
+            <h1 className="text-2xl font-semibold text-primary">Admin</h1>
             <UserList />
         </>
     );

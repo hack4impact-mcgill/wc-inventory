@@ -1,6 +1,5 @@
-import { List, ListItem, Typography } from "@mui/material";
-import LoadingSpinner from "../../../components/common/LoadingSpinner";
-import { useUsers } from "../../../hooks/useUsers";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
+import { useUsers } from "@/hooks/useUsers";
 
 
 const UserList: React.FC = () => {
@@ -19,14 +18,17 @@ const UserList: React.FC = () => {
     }
 
     return (
-        <>
-            <Typography variant="h6">User List</Typography>
-            <List>
-                {users!.map((user) => (
-                    <ListItem key={user.id}>{user.username}</ListItem>
+        <div className="paper">
+            <h2 className="text-xl font-semibold mb-6 text-primary">User List</h2>
+            <ul className="space-y-2">
+                {users.map((user) => (
+                    <li key={user.id}>
+                        <span className="font-medium">{user.username}</span>
+                        <span className="ml-2 text-sm text-gray-600">({user.role})</span>
+                    </li>
                 ))}
-            </List>
-        </>
+            </ul>
+        </div>
     );
 };
 

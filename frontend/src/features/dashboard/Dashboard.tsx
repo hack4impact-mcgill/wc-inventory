@@ -5,12 +5,14 @@ export const Dashboard: React.FC = () => {
     const { user } = useAuthContext();
 
     return (
-        <div>
-            <h1>Welcome, {user?.username}!</h1>
-            <p>Email: {user?.email}</p>
-            <p>Role: {user?.role}</p>
-        </div>
-
+        <>
+            <h1 className="text-2xl font-semibold text-primary">Dashboard</h1>
+            <div className="paper">
+                <p className="text-lg text-primary">Welcome, {user?.username}!</p>
+                <p className="text-sm text-primary">Email: {user?.email}</p>
+                <p className="text-sm text-primary">Role: {user?.role}</p>
+            </div>
+        </>
     );
 };
 

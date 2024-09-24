@@ -3,6 +3,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Router } from "./routes/Router";
+// import { ThemeProvider } from "@mui/material";
+import theme from "./styles/theme";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,6 +18,7 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
+    // <ThemeProvider theme={theme}>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter>
@@ -24,6 +27,7 @@ function App() {
       </AuthProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
+    // </ThemeProvider>
   );
 }
 

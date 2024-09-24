@@ -1,4 +1,3 @@
-import PublicLayout from "../../components/layout/PublicLayout";
 
 
 interface PublicRouteProps {
@@ -7,5 +6,7 @@ interface PublicRouteProps {
 
 export const PublicRoute: React.FC<PublicRouteProps> = ({ element }) => {
 
-    return <PublicLayout>{element}</PublicLayout>;
+    return <>
+        {element}
+    </>;
 };

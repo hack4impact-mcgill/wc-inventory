@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
-import AuthenticatedLayout from "../../components/layout/AuthenticatedLayout";
+import AuthenticatedLayout from "../../layouts/AuthenticatedLayout/AuthenticatedLayout";
 import { useAuthContext } from "../../contexts/AuthContext";
 
 

@@ -1,0 +1,10 @@
+/* To be used for custom Tailwind Components */
+@layer components {
+    .paper {
+        @apply bg-white rounded-lg shadow-md p-4;
+    }
+
+    .paper-hover {
+        @apply paper transition duration-300 ease-in-out hover:shadow-lg;
+    }
+}
