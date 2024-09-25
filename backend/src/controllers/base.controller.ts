@@ -16,7 +16,7 @@ export class BaseController extends Controller {
     async redirectToDocs(@Request() request: express.Request) {
         this.setStatus(302);
         const response = (<any>request).res as express.Response;
-        response.redirect("api/docs");
+        response.redirect("/api/docs");
         return "OK";
     }
 }
