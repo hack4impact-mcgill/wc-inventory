@@ -4,7 +4,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  BeforeInsert,
+  BeforeInsert, ManyToOne, JoinColumn,
 } from "typeorm";
 import { hashPassword } from "../utils/password.util";
 
@@ -34,6 +34,11 @@ export class User {
     default: UserRole.Volunteer,
   })
   role!: UserRole;
+
+  // Optional field to track the admin who created this user
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: "createdBy" })
+  createdBy!: User | null;  // This references the User who is the admin
 
   @CreateDateColumn()
   createdAt!: Date;
