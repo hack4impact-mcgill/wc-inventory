@@ -77,6 +77,31 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"CategoryResponseDTO": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"parentCategoryId": {
+						"type": "string"
+					},
+					"subcategories": {
+						"items": {
+							"$ref": "#/components/schemas/CategoryResponseDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"id",
+					"name"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"LoginResponseDTO": {
 				"properties": {
 					"token": {
@@ -339,6 +364,34 @@
 						}
 					}
 				]
+			}
+		},
+		"/categories": {
+			"get": {
+				"operationId": "GetCategories",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/CategoryResponseDTO"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get categories",
+				"summary": "Get categories",
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": []
 			}
 		},
 		"/auth/login": {
