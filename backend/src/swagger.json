@@ -368,7 +368,7 @@
 		},
 		"/categories": {
 			"get": {
-				"operationId": "GetCategories",
+				"operationId": "getCategories",
 				"responses": {
 					"200": {
 						"description": "Ok",
@@ -382,10 +382,39 @@
 								}
 							}
 						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								},
+								"examples": {
+									"Example 1": {}
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								},
+								"examples": {
+									"Example 1": {}
+								}
+							}
+						}
 					}
 				},
 				"description": "Get categories",
 				"summary": "Get categories",
+				"tags": [
+					"Users"
+				],
 				"security": [
 					{
 						"jwt": []
