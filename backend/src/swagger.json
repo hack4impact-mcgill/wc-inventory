@@ -77,31 +77,6 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"CategoryResponseDTO": {
-				"properties": {
-					"id": {
-						"type": "string"
-					},
-					"name": {
-						"type": "string"
-					},
-					"parentCategoryId": {
-						"type": "string"
-					},
-					"subcategories": {
-						"items": {
-							"$ref": "#/components/schemas/CategoryResponseDTO"
-						},
-						"type": "array"
-					}
-				},
-				"required": [
-					"id",
-					"name"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
 			"LoginResponseDTO": {
 				"properties": {
 					"token": {
@@ -364,63 +339,6 @@
 						}
 					}
 				]
-			}
-		},
-		"/categories": {
-			"get": {
-				"operationId": "getCategories",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/CategoryResponseDTO"
-									},
-									"type": "array"
-								}
-							}
-						}
-					},
-					"400": {
-						"description": "Bad Request",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ErrorResponse"
-								},
-								"examples": {
-									"Example 1": {}
-								}
-							}
-						}
-					},
-					"401": {
-						"description": "Unauthorized",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ErrorResponse"
-								},
-								"examples": {
-									"Example 1": {}
-								}
-							}
-						}
-					}
-				},
-				"description": "Get categories",
-				"summary": "Get categories",
-				"tags": [
-					"Users"
-				],
-				"security": [
-					{
-						"jwt": []
-					}
-				],
-				"parameters": []
 			}
 		},
 		"/auth/login": {
