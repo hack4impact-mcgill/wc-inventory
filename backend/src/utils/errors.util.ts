@@ -19,8 +19,8 @@ export class NotFoundError extends Error {
     }
 }
 
-export class ValidationError extends Error {
-    constructor(message: string, public details: Record<string, unknown>) {
+export class CustomValidationError extends Error {
+    constructor(message: string) {
         super(message);
         this.name = 'ValidationError';
     }

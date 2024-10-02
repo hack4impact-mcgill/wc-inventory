@@ -18,8 +18,17 @@ export function errorHandler(
 ): Response<ErrorResponse> {
     const logger = new Logger();
 
+    if (err instanceof SyntaxError && 'body' in err) {
+        const logger = new Logger();
+        logger.warn(`JSON Parsing Error: ${err.message}`);
+        return res.status(400).json({
+            message: 'Invalid JSON',
+            details: err.message
+        });
+    }
+
     if (err instanceof ValidateError) { // TSOA
-        logger.warn(`Validation Error for ${req.path}:`, err.fields);
+        logger.warn(`TSOA Validation Error for ${req.path}:`, err.fields);
         const formattedErrors = Object.keys(err.fields).map((field) => ({
             field,
             message: err.fields[field].message || 'Invalid value',
@@ -39,7 +48,7 @@ export function errorHandler(
             return acc;
         }, [] as string[]);
 
-        logger.warn(`Validation Error for ${req.path}:`, details);
+        logger.warn(`Class Validator Error for ${req.path}:`, details);
         return res.status(422).json({
             message: "Validation Failed",
             details: details,

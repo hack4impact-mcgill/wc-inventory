@@ -67,7 +67,7 @@ npm run seed
 ### Run the Development Server!
 Start the development server
 ```bash
-npm run start:dev
+npm run dev
 ```
 If no errors popup, navigate to localhost:3001/docs!
 
