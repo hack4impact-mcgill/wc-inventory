@@ -1,8 +1,8 @@
-import {Category} from "../entities/category.entity";
-import {Repository} from "typeorm";
-import {AppDataSource} from "../database/database";
-import {CategoryResponseDTO} from "../dtos/category.dto";
-import {plainToInstance} from "class-transformer";
+import { Category } from "../entities/category.entity";
+import { Repository } from "typeorm";
+import { AppDataSource } from "../database/database";
+import { CategoryResponseDTO } from "../dtos/category.dto";
+import { plainToInstance } from "class-transformer";
 
 
 export class CategoryService {
@@ -17,7 +17,9 @@ export class CategoryService {
     }
 
     async getCategories(): Promise<CategoryResponseDTO[]> {
-        const categories = await this.categoryRepository.find();
+        const categories = await this.categoryRepository.find({
+            relations: ['parentCategory']
+        });
         return categories.map(this.mapToCategoryResponseDTO);
     }
 }
