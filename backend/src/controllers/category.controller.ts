@@ -25,7 +25,7 @@ export class CategoryController extends Controller {
     @Response<ErrorResponse>(400, "Bad Request")
     @Response<ErrorResponse>(401, "Unauthorized")
     public async getCategories(): Promise<CategoryResponseDTO[]> {
-        this.setStatus(200);
+        this.setStatus(200)
         return this.categoryService.getCategories();
     }
     
