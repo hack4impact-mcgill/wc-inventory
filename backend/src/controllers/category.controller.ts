@@ -4,7 +4,7 @@ import {CategoryService} from "../services/category.service";
 import {ErrorResponse} from "../middlewares/error-handling.middleware";
 
 @Route("categories")
-@Tags("Users")
+@Tags("Categories")
 export class CategoryController extends Controller {
     private categoryService: CategoryService;
 
