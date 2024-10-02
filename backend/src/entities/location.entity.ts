@@ -8,8 +8,8 @@ import {
 
 @Entity()
 export class Location {
-  @PrimaryGeneratedColumn("uuid")
-  id!: string;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
   @Column()
   name!: string;

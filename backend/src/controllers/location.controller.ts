@@ -37,7 +37,7 @@ export class LocationController extends Controller {
   @Response<ErrorResponse>(401, "Unauthorized")
   @Response<ErrorResponse>(404, "Location not found")
   public async getLocationById(
-    @Path() id: string
+    @Path() id: number
   ): Promise<LocationResponseDTO> {
     const location = await this.locationService.getLocationById(id);
     return location;

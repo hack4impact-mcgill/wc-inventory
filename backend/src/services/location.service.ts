@@ -14,15 +14,8 @@ export class LocationService {
     this.locationRepository = AppDataSource.getRepository(Location);
   }
 
-  async getLocationById(id: string): Promise<LocationResponseDTO> {
-    if (!isValidUUID(id)) {
-      throw new ValidateError(
-        {
-          id: { message: "Invalid UUID", value: id }
-        },
-        "Invalid UUID format"
-      );
-    }
+  async getLocationById(id: number): Promise<LocationResponseDTO> {
+
     const location = await this.locationRepository.findOneBy({ id });
     if (!location) {
       throw new NotFoundError("Location not found");
