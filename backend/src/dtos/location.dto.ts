@@ -1,10 +1,10 @@
 import { Expose } from 'class-transformer';
-import { IsString } from 'class-validator';
+import { IsString, IsNumber } from 'class-validator';
 
 export class LocationResponseDTO {
   @Expose()
-  @IsString()
-  id!: string;
+  @IsNumber()
+  id!: number;
 
   @Expose()
   @IsString()
