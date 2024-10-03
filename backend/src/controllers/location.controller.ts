@@ -31,7 +31,7 @@ export class LocationController extends Controller {
 
   @Get("{id}")
   @OperationId("getLocationById")
-  @Security("jwt", ["Admin"])
+  @Security("jwt")
   @Response(200, "Success")
   @Response<ErrorResponse>(400, "Bad Request")
   @Response<ErrorResponse>(401, "Unauthorized")
@@ -39,6 +39,7 @@ export class LocationController extends Controller {
   public async getLocationById(
     @Path() id: number
   ): Promise<LocationResponseDTO> {
+    this.setStatus(200);
     const location = await this.locationService.getLocationById(id);
     return location;
   }
