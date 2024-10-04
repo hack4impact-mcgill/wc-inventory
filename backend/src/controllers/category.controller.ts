@@ -21,7 +21,7 @@ export class CategoryController extends Controller {
   @Get()
   @OperationId("getCategories")
   @Security("jwt")
-  @Response(200, "Success")
+  @SuccessResponse(200, "Ok")
   @Response<ErrorResponse>(400, "Bad Request")
   @Response<ErrorResponse>(401, "Unauthorized")
   public async getCategories(): Promise<CategoryResponseDTO[]> {
@@ -37,7 +37,7 @@ export class CategoryController extends Controller {
   @Get("{id}")
   @OperationId("getCategoryById")
   @Security("jwt")
-  @Response(200, "Success")
+  @SuccessResponse(200, "Ok")
   @Response<ErrorResponse>(400, "Bad Request")
   @Response<ErrorResponse>(401, "Unauthorized")
   @Response<ErrorResponse>(404, "Category not found")
