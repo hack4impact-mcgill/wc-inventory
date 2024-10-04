@@ -1,35 +1,12 @@
-import {
-    IsNotEmpty,
-    IsOptional,
-    IsString,
-    MaxLength,
-    ValidateNested,
-} from "class-validator";
-import { Expose, Type } from "class-transformer";
-
+import { Expose } from 'class-transformer';
+import { IsString, IsNumber } from 'class-validator';
 
 export class LocationResponseDTO {
-    @Expose()
-    @IsString()
-    id!: string;
+  @Expose()
+  @IsNumber()
+  id!: number;
 
-    @Expose()
-    @IsString()
-    name!: string;
-
-    @Expose()
-    @IsOptional()
-    @IsString()
-    parentLocationId?: string;
-
-    @Expose()
-    @ValidateNested({ each: true })
-    @IsOptional()
-    sublocations?: LocationResponseDTO[];
-}
-
-export class LocationDTO extends LocationResponseDTO {
-    @Expose()
-    @IsString()
-    parentLocationId?: string;
+  @Expose()
+  @IsString()
+  name!: string;
 }

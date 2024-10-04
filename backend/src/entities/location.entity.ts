@@ -1,17 +1,22 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn
+} from "typeorm";
 
 @Entity()
 export class Location {
-    @PrimaryGeneratedColumn()
-    id!: number;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
-    @Column()
-    name!: string;
+  @Column()
+  name!: string;
 
-    @ManyToOne(() => Location, location => location.subcategories)
-    parentCategory?: Location;
+  @ManyToOne(() => Location, (location) => location.subcategories)
+  parentCategory?: Location;
 
-    @OneToMany(() => Location, location => location.parentCategory)
-    subcategories!: Location[];
-    
+  @OneToMany(() => Location, (location) => location.parentCategory)
+  subcategories!: Location[];
 }
