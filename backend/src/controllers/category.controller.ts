@@ -1,6 +1,6 @@
-import { Controller, Get, Route, Path, Security, Response, OperationId, Tags } from "tsoa";
+import {Controller, Get, Route, Path, Security, Response, OperationId, Tags, SuccessResponse} from "tsoa";
 import { CategoryService } from "../services/category.service";
-import { CategoryDTO, CategoryResponseDTO } from "../dtos/category.dto";
+import { CategoryResponseDTO } from "../dtos/category.dto";
 import { ErrorResponse } from "../middlewares/error-handling.middleware";
 
 @Route("categories")
