@@ -1,12 +1,11 @@
-import { Expose } from 'class-transformer';
-import { IsString, IsNumber } from 'class-validator';
+export class LocationDTO {
+  locationId: string;
+  name: string;
+  description?: string;
+  level: number;
+  parentId?: string;
+}
 
-export class LocationResponseDTO {
-  @Expose()
-  @IsNumber()
-  id!: number;
-
-  @Expose()
-  @IsString()
-  name!: string;
+export class LocationResponseDTO extends LocationDTO {
+  parentLocation?: LocationDTO;
 }
