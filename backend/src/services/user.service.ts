@@ -47,7 +47,7 @@ export class UserService {
             );
         }
         const user = await this.userRepository.findOneBy({ id });
-        if (!user) {
+        if (! user) {
             throw new NotFoundError("User not found");
         }
         return this.mapToUserResponseDTO(user);
