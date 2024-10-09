@@ -9,11 +9,7 @@ export class Category {
     @Column()
     name!: string;
 
-<<<<<<< HEAD
-    @ManyToOne(() => Category, category => category.subcategories, { nullable: true })
-=======
-    @ManyToOne(() => Category, category => category.children)
->>>>>>> 3792101e8c45f172a63b67aeed1f4c39ae19be13
+    @ManyToOne(() => Category, category => category.children, { nullable: true })
     parentCategory?: Category;
 
     @OneToMany(() => Category, category => category.parentCategory)
