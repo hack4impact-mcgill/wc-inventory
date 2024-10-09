@@ -2,6 +2,7 @@
 
 # Both
 **/node_modules/
+**/package-lock.json
 **/dist
 **/logs
 **/*.log
