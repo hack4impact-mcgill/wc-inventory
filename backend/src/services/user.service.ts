@@ -19,39 +19,21 @@ export class UserService {
         return users;
     }
 
-    async getUserById(id: string): Promise<UserDTO | null> {
-        if (!isValidUUID(id)) {
-            throw new ValidateError(
-                {
-                    id: { message: "Invalid UUID", value: id }
-                },
-                "Invalid UUID format"
-            );
-        }
+    async getUserById(id: number): Promise<User> {
         const user = await this.userRepository.findOneBy({ id });
-        return user ? plainToInstance(UserDTO, user, { excludeExtraneousValues: true }) : null;
-    }
+        if (!user) { throw new NotFoundError("User not found"); }
 
-
-    async getUserByIdPublic(id: string): Promise<User> {
-        if (!isValidUUID(id)) {
-            throw new ValidateError(
-                {
-                    id: { message: "Invalid UUID", value: id }
-                },
-                "Invalid UUID format"
-            );
-        }
-        const user = await this.userRepository.findOneBy({ id });
-        if (! user) {
-            throw new NotFoundError("User not found");
-        }
         return user;
     }
 
-    async getUserByUsername(username: string): Promise<UserDTO | null> {
+    async getUserByUsername(username: string): Promise<User> {
         const user = await this.userRepository.findOneBy({ username });
-        return user ? plainToInstance(UserDTO, user, { excludeExtraneousValues: true }) : null;
+
+        if (!user) {
+            throw new NotFoundError("User not found");
+        }
+
+        return user;
     }
 
     async createUser(createUserDto: CreateUserDTO): Promise<User> {

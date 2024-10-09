@@ -46,9 +46,9 @@ export class UserController extends Controller {
   @SuccessResponse(200, "Ok")
   @Response<ErrorResponse>(400, "Bad Request")
   @Response<ErrorResponse>(404, "User not found")
-  public async getUserById(@Path() id: string): Promise<UserResponseDTO> {
+  public async getUserById(@Path() id: number): Promise<UserResponseDTO> {
     this.setStatus(200);
-    const user = await this.userService.getUserByIdPublic(id);
+    const user = await this.userService.getUserById(id);
     return mapToDTO(UserResponseDTO, user);
   }
 
