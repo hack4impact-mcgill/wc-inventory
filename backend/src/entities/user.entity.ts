@@ -26,7 +26,7 @@ export class User {
   password!: string;
 
   @Column({ type: "varchar", nullable: true })
-  email!: string | null;
+  email?: string;
 
   @Column({
     type: "enum",

@@ -62,7 +62,7 @@ export class UserController extends Controller {
   @Post()
   @Security("jwt", ["Admin"])
   @OperationId('createUser')
-  @SuccessResponse<UserResponseDTO>(201, "Created User")
+  @SuccessResponse(201, "Created User")
   @Response<ErrorResponse>(400, "Bad Request")
   @Response<ErrorResponse>(409, "Conflict - User already exists")
   public async createUser(@Body() requestBody: CreateUserDTO): Promise<UserResponseDTO> {

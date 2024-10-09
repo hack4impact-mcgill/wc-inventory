@@ -40,8 +40,7 @@ export class CreateUserDTO {
 
 export class UserResponseDTO {
   @Expose()
-  @IsString()
-  id!: string;
+  id!: number;
 
   @Expose()
   @IsString()

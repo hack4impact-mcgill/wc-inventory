@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { AuthenticationError } from "../utils/errors.util";
 
 export interface UserPayload {
-  userId: string;
+  userId: number;
   username: string;
   role: string;
 }
