@@ -1,33 +1,32 @@
-import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, BeforeInsert, BeforeUpdate } from 'typeorm';
 
 @Entity()
 export class Location {
-  @PrimaryGeneratedColumn("uuid") // Change to UUID
-  location_id!: string; // Updated to match UUID type
+    @PrimaryGeneratedColumn() // Changed from "uuid" to int
+    location_id!: number; // Changed to int
 
-  @Column({ length: 100 })
-  name!: string;
-  
-  @Column({ type: "text", nullable: true }) // Optional description
-  description?: string;
+    @Column({ length: 100 })
+    name!: string;
 
-  @ManyToOne(() => Location, location => location.children)
-  parentLocation?: Location;
+    @Column({ type: "text", nullable: true }) // Optional description
+    description?: string;
 
-  @OneToMany(() => Location, location => location.parentLocation)
-  children!: Location[];
+    @ManyToOne(() => Location, location => location.children)
+    parentLocation?: Location;
 
-  @Column({ type: "int", default: 0 })
-  level!: number;
+    @OneToMany(() => Location, location => location.parentLocation)
+    children!: Location[];
 
-  @BeforeInsert()
-  @BeforeUpdate()
-  async calculateLevel() {
-    if (this.parentLocation) {
-      this.level = this.parentLocation.level + 1;
-    } else {
-      this.level = 0;
+    @Column({ type: "int", default: 0 })
+    level!: number;
+
+    @BeforeInsert()
+    @BeforeUpdate()
+    async calculateLevel() {
+        if (this.parentLocation) {
+            this.level = this.parentLocation.level + 1;
+        } else {
+            this.level = 0;
+        }
     }
-  }
-
 }

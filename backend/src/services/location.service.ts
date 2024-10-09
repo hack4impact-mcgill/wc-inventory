@@ -3,7 +3,6 @@ import { AppDataSource } from "../database/database";
 import { Location } from "../entities/location.entity";
 import { LocationResponseDTO } from "../dtos/location.dto";
 import { plainToInstance } from "class-transformer";
-import { validate as isValidUUID } from "uuid";
 import { CustomValidationError, NotFoundError } from "../utils/errors.util";
 
 export class LocationService {
@@ -13,13 +12,13 @@ export class LocationService {
     this.locationRepository = AppDataSource.getRepository(Location);
   }
 
-  async getLocationById(id: string): Promise<LocationResponseDTO> { // Updated to string for UUID
-    if (!isValidUUID(id)) {
-      throw new CustomValidationError("Invalid UUID format");
+  async getLocationById(id: number): Promise<LocationResponseDTO> { // Changed to int
+    if (isNaN(id)) {
+      throw new CustomValidationError("Invalid ID format");
     }
 
     const location = await this.locationRepository.findOne({
-      where: { location_id: id }, // Use location_id as the identifier
+      where: { location_id: id }, // Use location_id as the identifier (int)
       relations: ["parentLocation"],
     });
 

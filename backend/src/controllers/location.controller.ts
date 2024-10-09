@@ -26,21 +26,22 @@ export class LocationController extends Controller {
   /**
    * Get location by id
    * @summary Get location by id
-   * @param id UUID of the location
+   * @param id Location ID
    * @returns LocationResponseDTO
    */
   @Get("{id}")
   @OperationId("getLocationById")
   @Security("jwt")
-  @SuccessResponse(200, "Ok") // Replaced with SuccessResponse
+  @SuccessResponse(200, "Ok")
   @Response<ErrorResponse>(400, "Bad Request")
   @Response<ErrorResponse>(401, "Unauthorized")
   @Response<ErrorResponse>(404, "Location not found")
   public async getLocationById(
-    @Path() id: string // Updated to string to reflect UUID type
+      @Path() id: number // Changed to int
   ): Promise<LocationResponseDTO> {
-    this.setStatus(200); // This is optional since SuccessResponse sets status automatically
+    this.setStatus(200);
     const location = await this.locationService.getLocationById(id);
     return location;
   }
 }
+
