@@ -1,5 +1,5 @@
 import { AppDataSource } from "./database";
-import { createAdminUser } from "./seeders/createAdminUser";
+import { createUsers } from "./seeders/createUsers";
 import { dropDatabase } from "./seeders/dropDatabase";
 
 async function runSeeders() {
@@ -8,7 +8,7 @@ async function runSeeders() {
   if (process.argv.includes("--drop")) {
     await dropDatabase();
   } else {
-    await createAdminUser();
+    await createUsers();
   }
   
   await AppDataSource.destroy();
