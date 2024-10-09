@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { ValidateError } from 'tsoa';
 import { Logger } from '../utils/logger.util';
-import { AuthenticationError, AuthorizationError, DuplicateError, NotFoundError } from '../utils/errors.util';
+import { AuthenticationError, AuthorizationError, CustomValidationError, DuplicateError, NotFoundError } from '../utils/errors.util';
 import { TokenExpiredError } from 'jsonwebtoken';
 import { ValidationError } from 'class-validator';
 
@@ -52,6 +52,14 @@ export function errorHandler(
         return res.status(422).json({
             message: "Validation Failed",
             details: details,
+        });
+    }
+
+    if (err instanceof CustomValidationError) {
+        logger.warn(`Custom Validation Error: ${err.message}`);
+        return res.status(400).json({
+            message: "Validation Failed",
+            details: err.message,
         });
     }
 

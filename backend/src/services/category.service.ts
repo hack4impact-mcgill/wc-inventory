@@ -1,5 +1,5 @@
 import { Category } from "../entities/category.entity";
-import { CategoryDTO, CategoryResponseDTO } from "../dtos/category.dto";
+import { CategoryResponseDTO } from "../dtos/category.dto";
 import { Repository } from "typeorm";
 import { AppDataSource } from "../database/database";
 import { NotFoundError } from "../utils/errors.util";
@@ -22,8 +22,8 @@ export class CategoryService {
    * @param id Category ID
    * @returns CategoryResponseDTO
    */
-  async getCategoryById(id: number): Promise<CategoryResponseDTO> {
-    const category = await this.categoryRepository.findOneBy({ id });
+  async getCategoryById(category_id: number): Promise<CategoryResponseDTO> {
+    const category = await this.categoryRepository.findOneBy({ category_id });
     if (!category) {
       throw new NotFoundError("Category not found");
     }

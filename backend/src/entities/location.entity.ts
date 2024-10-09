@@ -11,11 +11,11 @@ export class Location {
   @Column({ type: "text", nullable: true }) // Optional description
   description?: string;
 
-  @ManyToOne(() => Location, location => location.subcategories)
-  parentCategory?: Location;
+  @ManyToOne(() => Location, location => location.children)
+  parentLocation?: Location;
 
-  @OneToMany(() => Location, location => location.parentCategory)
-  subcategories!: Location[];
+  @OneToMany(() => Location, location => location.parentLocation)
+  children!: Location[];
 
   @Column({ type: "int", default: 0 })
   level!: number;
@@ -23,8 +23,8 @@ export class Location {
   @BeforeInsert()
   @BeforeUpdate()
   async calculateLevel() {
-    if (this.parentCategory) {
-      this.level = this.parentCategory.level + 1;
+    if (this.parentLocation) {
+      this.level = this.parentLocation.level + 1;
     } else {
       this.level = 0;
     }

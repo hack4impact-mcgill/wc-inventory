@@ -14,13 +14,9 @@ export class UserService {
         this.userRepository = AppDataSource.getRepository(User);
     }
 
-    private mapToUserResponseDTO(user: User): UserResponseDTO {
-        return plainToInstance(UserResponseDTO, user, { excludeExtraneousValues: true });
-    }
-
-    async getUsers(): Promise<UserResponseDTO[]> {
+    async getUsers(): Promise<User[]> {
         const users = await this.userRepository.find();
-        return users.map(this.mapToUserResponseDTO);
+        return users;
     }
 
     async getUserById(id: string): Promise<UserDTO | null> {
@@ -37,7 +33,7 @@ export class UserService {
     }
 
 
-    async getUserByIdPublic(id: string): Promise<UserResponseDTO> {
+    async getUserByIdPublic(id: string): Promise<User> {
         if (!isValidUUID(id)) {
             throw new ValidateError(
                 {
@@ -50,7 +46,7 @@ export class UserService {
         if (! user) {
             throw new NotFoundError("User not found");
         }
-        return this.mapToUserResponseDTO(user);
+        return user;
     }
 
     async getUserByUsername(username: string): Promise<UserDTO | null> {
@@ -58,14 +54,14 @@ export class UserService {
         return user ? plainToInstance(UserDTO, user, { excludeExtraneousValues: true }) : null;
     }
 
-    async createUser(createUserDto: CreateUserDTO): Promise<UserResponseDTO> {
+    async createUser(createUserDto: CreateUserDTO): Promise<User> {
         const userExists = await this.getUserByUsername(createUserDto.username);
         if (userExists) {
             throw new DuplicateError("User already exists");
         }
         const user = this.userRepository.create(createUserDto);
         await this.userRepository.save(user);
-        return this.mapToUserResponseDTO(user);
+        return user;
     }
 
     //TODO -  Delete User

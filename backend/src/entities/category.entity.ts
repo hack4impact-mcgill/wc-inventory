@@ -4,16 +4,16 @@ import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToMany, Prima
 export class Category {
 
     @PrimaryGeneratedColumn()
-    id!: number;
+    category_id!: number;
 
     @Column()
     name!: string;
 
-    @ManyToOne(() => Category, category => category.subcategories)
+    @ManyToOne(() => Category, category => category.children)
     parentCategory?: Category;
 
     @OneToMany(() => Category, category => category.parentCategory)
-    subcategories!: Category[];
+    children!: Category[];
 
     @Column()
     level!: number;
