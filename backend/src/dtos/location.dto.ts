@@ -1,10 +1,9 @@
-import { Expose, Transform, Type } from "class-transformer";
-import { Location } from "../entities/location.entity";
+import { Expose, Transform, Type } from 'class-transformer';
 
 export class ParentLocationDTO {
   @Expose()
   @Transform(({ obj }) => obj.location_id)
-  parentLocationId!: string;
+  parentLocationId!: number; // Changed to int
 
   @Expose()
   name!: string;
@@ -16,7 +15,7 @@ export class ParentLocationDTO {
 export class LocationResponseDTO {
   @Expose()
   @Transform(({ obj }) => obj.location_id)
-  locationId!: string;
+  locationId!: number; // Changed to int
 
   @Expose()
   name!: string;
@@ -28,6 +27,6 @@ export class LocationResponseDTO {
   level!: number;
 
   @Expose()
-  @Type(() => ParentLocationDTO)
+  @Type(() => ParentLocationDTO as any) // Fixed type issue
   parentLocation?: ParentLocationDTO;
 }
