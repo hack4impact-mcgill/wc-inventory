@@ -10,9 +10,7 @@ async function runSeeders() {
   } else {
     await createAdminUser();
   }
-
-
-
+  
   await AppDataSource.destroy();
 }
 
