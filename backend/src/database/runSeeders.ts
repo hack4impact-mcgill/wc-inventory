@@ -1,6 +1,7 @@
 import { AppDataSource } from "./database";
 import { createAdminUser } from "./seeders/createAdminUser";
 import { dropDatabase } from "./seeders/dropDatabase";
+import { seedLocations } from "./seeders/seedLocation";
 
 async function runSeeders() {
   await AppDataSource.initialize();
@@ -9,6 +10,7 @@ async function runSeeders() {
     await dropDatabase();
   } else {
     await createAdminUser();
+    await seedLocations();
   }
 
   await AppDataSource.destroy();

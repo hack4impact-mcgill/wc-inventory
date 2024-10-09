@@ -5,31 +5,34 @@ import {
     MaxLength,
     ValidateNested,
 } from "class-validator";
-import { Expose, Type } from "class-transformer";
+import { Expose, Transform, Type } from "class-transformer";
 
-
-export class LocationResponseDTO {
+export class ParentLocationDTO {
     @Expose()
-    @IsString()
-    id!: string;
+    @Transform(({ obj }) => obj.location_id)
+    parentLocationId!: number; // Changed to int
 
     @Expose()
-    @IsString()
     name!: string;
 
     @Expose()
-    @IsOptional()
-    @IsString()
-    parentLocationId?: string;
-
-    @Expose()
-    @ValidateNested({ each: true })
-    @IsOptional()
-    sublocations?: LocationResponseDTO[];
+    level!: number;
 }
-
-export class LocationDTO extends LocationResponseDTO {
+export class LocationResponseDTO {
     @Expose()
-    @IsString()
-    parentLocationId?: string;
+    @Transform(({ obj }) => obj.location_id)
+    locationId!: number; // Changed to int
+
+    @Expose()
+    name!: string;
+
+    @Expose()
+    description?: string;
+
+    @Expose()
+    level!: number;
+
+    @Expose()
+    @Type(() => ParentLocationDTO as any) // Fixed type issue
+    parentLocation?: ParentLocationDTO;
 }

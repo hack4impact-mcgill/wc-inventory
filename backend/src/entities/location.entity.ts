@@ -1,17 +1,32 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Location {
-    @PrimaryGeneratedColumn()
-    id!: number;
+    @PrimaryGeneratedColumn() // Changed from "uuid" to int
+    location_id!: number; // Changed to int
 
-    @Column()
+    @Column({ length: 100 })
     name!: string;
 
-    @ManyToOne(() => Location, location => location.subcategories)
-    parentCategory?: Location;
+    @Column({ type: "text", nullable: true }) // Optional description
+    description?: string;
 
-    @OneToMany(() => Location, location => location.parentCategory)
-    subcategories!: Location[];
-    
+    @ManyToOne(() => Location, location => location.children)
+    parentLocation?: Location;
+
+    @OneToMany(() => Location, location => location.parentLocation)
+    children!: Location[];
+
+    @Column({ type: "int", default: 0 })
+    level!: number;
+
+    @BeforeInsert()
+    @BeforeUpdate()
+    async calculateLevel() {
+        if (this.parentLocation) {
+            this.level = this.parentLocation.level + 1;
+        } else {
+            this.level = 0;
+        }
+    }
 }

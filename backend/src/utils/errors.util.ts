@@ -26,6 +26,13 @@ export class ValidationError extends Error {
     }
 }
 
+export class CustomValidationError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'ValidationError';
+    }
+}
+
 export class DuplicateError extends Error {
     constructor(message: string) {
         super(message);
