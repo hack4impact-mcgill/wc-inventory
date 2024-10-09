@@ -4,7 +4,7 @@ import { Location } from "../entities/location.entity";
 export class ParentLocationDTO {
   @Expose()
   @Transform(({ obj }) => obj.location_id)
-  parentLocationIdadsf!: string;
+  parentLocationId!: string;
 
   @Expose()
   name!: string;
