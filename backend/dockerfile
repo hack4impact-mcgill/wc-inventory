@@ -1,15 +1,27 @@
+#This file creates a Docker image that sets up a Node.js application, installs dependencies, builds it, and runs it.
+
+#Specifies the base image (environment) to use in the Docker container.
+#This image includes Node.js and npm preinstalled.
 FROM node:14
 
+#This command sets the working directory in the docker file to /usr/src/app.
+#Docker will create this directory if it doesnt exist.
 WORKDIR /usr/src/app
 
+#Copies the package.json files from local into the Docker container. Needed so that you can install dependencies.
 COPY package*.json ./
 
+#Installs the dependencies that are in the package.json files
 RUN npm install
 
+#Copies all files from local repo into the docker container.
 COPY . .
 
+#Compiles the source code
 RUN npm run build
 
+#Tells docker to listen on port 3000
 EXPOSE 3000
 
+#Excecutes when Docker container starts. It runs npm start, which runs the application.
 CMD ["npm", "start"]

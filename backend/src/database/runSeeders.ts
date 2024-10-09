@@ -2,17 +2,23 @@ import { AppDataSource } from "./database";
 import { createAdminUser } from "./seeders/createAdminUser";
 import { dropDatabase } from "./seeders/dropDatabase";
 import { seedLocations } from "./seeders/seedLocation";
+import { seedCategories } from "./seeders/seedCategories";
 
 async function runSeeders() {
   await AppDataSource.initialize();
+  try {
+    if (process.argv.includes("--drop")) {
+      await dropDatabase();
+    } else {
+      await createAdminUser();
+      await seedCategories();
+      await seedLocations();
+    }
+    console.log("All seeders ran successfully!");
 
-  if (process.argv.includes("--drop")) {
-    await dropDatabase();
-  } else {
-    await createAdminUser();
-    await seedLocations();
+  } catch (error) {
+    console.error("Error running seeders:", error);
   }
-
   await AppDataSource.destroy();
 }
 

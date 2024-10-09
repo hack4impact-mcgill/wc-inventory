@@ -1,8 +1,9 @@
-import { Body, Get, Path, Post, Route, Tags, Security, Response, Controller, OperationId } from "tsoa";
+import { Body, Get, Path, Post, Route, Tags, Security, Response, Controller, OperationId, SuccessResponse } from "tsoa";
 import { UserService } from "../services/user.service";
 import { CreateUserDTO, UserResponseDTO } from '../dtos/user.dto';
 import { transformAndValidate } from "class-transformer-validator";
 import { ErrorResponse } from "../middlewares/error-handling.middleware";
+import { mapToDTO, mapToDTOArray } from "../utils/dto-mapper.util";
 
 
 @Route("users")
@@ -23,11 +24,12 @@ export class UserController extends Controller {
   @Get()
   @OperationId("getUsers")
   @Security("jwt", ["Admin"])
-  @Response(200, "Success")
+  @SuccessResponse(200, "Ok")
   @Response<ErrorResponse>(401, "Unauthorized")
   public async getUsers(): Promise<UserResponseDTO[]> {
     this.setStatus(200);
-    return this.userService.getUsers();
+    const users = await this.userService.getUsers()
+    return mapToDTOArray(UserResponseDTO, users);
   }
 
 
@@ -41,32 +43,32 @@ export class UserController extends Controller {
   @Get("{id}")
   @OperationId('getUserById')
   @Security("jwt", ["Admin"])
-  @Response(200, "Success")
+  @SuccessResponse(200, "Ok")
   @Response<ErrorResponse>(400, "Bad Request")
   @Response<ErrorResponse>(404, "User not found")
   public async getUserById(@Path() id: string): Promise<UserResponseDTO> {
     this.setStatus(200);
     const user = await this.userService.getUserByIdPublic(id);
-    return user;
+    return mapToDTO(UserResponseDTO, user);
   }
 
   /**
- * Update user by Id
+ * Create user
  *
- * @summary Update User
+ * @summary Create User
  * 
- * @param {uuid} id UUID of the user
+ * @param requestBody User to create
  */
   @Post()
   @Security("jwt", ["Admin"])
   @OperationId('createUser')
-  @Response(201, "Created User")
+  @SuccessResponse<UserResponseDTO>(201, "Created User")
   @Response<ErrorResponse>(400, "Bad Request")
   @Response<ErrorResponse>(409, "Conflict - User already exists")
   public async createUser(@Body() requestBody: CreateUserDTO): Promise<UserResponseDTO> {
     this.setStatus(201);
     const userDto = await transformAndValidate(CreateUserDTO, requestBody, { validator: { whitelist: true, forbidNonWhitelisted: true } });
     const user = await this.userService.createUser(userDto);
-    return user;
+    return mapToDTO(UserResponseDTO, user);
   }
 }
