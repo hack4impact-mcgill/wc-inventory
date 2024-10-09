@@ -9,7 +9,7 @@ export class Category {
     @Column()
     name!: string;
 
-    @ManyToOne(() => Category, category => category.subcategories)
+    @ManyToOne(() => Category, category => category.subcategories, { nullable: true })
     parentCategory?: Category;
 
     @OneToMany(() => Category, category => category.parentCategory)
