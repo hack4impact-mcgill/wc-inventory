@@ -2,29 +2,32 @@ import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToMany, Prima
 
 @Entity()
 export class Location {
-    @PrimaryGeneratedColumn()
-    id!: number;
+  @PrimaryGeneratedColumn("uuid") // Change to UUID
+  location_id!: string; // Updated to match UUID type
 
-    @Column()
-    name!: string;
+  @Column({ length: 100 })
+  name!: string;
+  
+  @Column({ type: "text", nullable: true }) // Optional description
+  description?: string;
 
-    @ManyToOne(() => Location, location => location.subcategories)
-    parentCategory?: Location;
+  @ManyToOne(() => Location, location => location.subcategories)
+  parentCategory?: Location;
 
-    @OneToMany(() => Location, location => location.parentCategory)
-    subcategories!: Location[];
+  @OneToMany(() => Location, location => location.parentCategory)
+  subcategories!: Location[];
 
-    @Column()
-    level!: number;
+  @Column({ type: "int", default: 0 })
+  level!: number;
 
-    @BeforeInsert()
-    @BeforeUpdate()
-    async calculateLevel() {
-        if (this.parentCategory) {
-            this.level = this.parentCategory.level + 1;
-        } else {
-            this.level = 0;
-        }
+  @BeforeInsert()
+  @BeforeUpdate()
+  async calculateLevel() {
+    if (this.parentCategory) {
+      this.level = this.parentCategory.level + 1;
+    } else {
+      this.level = 0;
     }
+  }
 
 }

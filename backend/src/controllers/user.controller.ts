@@ -23,7 +23,7 @@ export class UserController extends Controller {
   @Get()
   @OperationId("getUsers")
   @Security("jwt", ["Admin"])
-  @Response(200, "Success")
+  @SuccessResponse(200, "Ok")
   @Response<ErrorResponse>(401, "Unauthorized")
   public async getUsers(): Promise<UserResponseDTO[]> {
     this.setStatus(200);
@@ -41,7 +41,7 @@ export class UserController extends Controller {
   @Get("{id}")
   @OperationId('getUserById')
   @Security("jwt", ["Admin"])
-  @Response(200, "Success")
+  @SuccessResponse(200, "Ok")
   @Response<ErrorResponse>(400, "Bad Request")
   @Response<ErrorResponse>(404, "User not found")
   public async getUserById(@Path() id: string): Promise<UserResponseDTO> {
