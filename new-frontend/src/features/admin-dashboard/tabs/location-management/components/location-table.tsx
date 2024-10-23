@@ -43,11 +43,11 @@ export const LocationTable = ({
 }: LocationTableProps) => {
     const [expanded, setExpanded] = useState<Set<number>>(new Set());
 
-    // Organize locations into a hierarchical structure
+    // Organizes into hierarchical data
     const hierarchicalData = useMemo(() => {
         const locationMap = new Map<number | null, Location[]>();
 
-        // Group locations by parent_id
+        // Groups
         locations.forEach(location => {
             const parentId = location.parent_id;
             if (!locationMap.has(parentId)) {
@@ -56,7 +56,7 @@ export const LocationTable = ({
             locationMap.get(parentId)?.push(location);
         });
 
-        // Sort locations at each level by name
+        // Sorts in level by name
         locationMap.forEach(locations => {
             locations.sort((a, b) => a.name.localeCompare(b.name));
         });
@@ -77,7 +77,6 @@ export const LocationTable = ({
     const toggleExpanded = (id: number) => {
         const newExpanded = new Set(expanded);
         if (newExpanded.has(id)) {
-            // Collapse this node and all its children
             const collapseChildren = (locationId: number) => {
                 newExpanded.delete(locationId);
                 locations

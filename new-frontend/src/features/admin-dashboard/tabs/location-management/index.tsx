@@ -109,20 +109,22 @@ const LocationManagement = () => {
     if (isLoading) return <div>Loading...</div>;
 
     return (
-        <Card>
-            <CardContent className="pt-6">
-                <LocationTable
-                    locations={locations}
-                    onEdit={(location) => {
-                        setSelectedLocation(location);
-                        setIsDialogOpen(true);
-                    }}
-                    onDelete={handleDelete}
-                    globalFilter={globalFilter}
-                    setGlobalFilter={setGlobalFilter}
-                    onAdd={() => setIsDialogOpen(true)}
-                />
-            </CardContent>
+        <>
+            <Card>
+                <CardContent className="pt-6">
+                    <LocationTable
+                        locations={locations}
+                        onEdit={(location) => {
+                            setSelectedLocation(location);
+                            setIsDialogOpen(true);
+                        }}
+                        onDelete={handleDelete}
+                        globalFilter={globalFilter}
+                        setGlobalFilter={setGlobalFilter}
+                        onAdd={() => setIsDialogOpen(true)}
+                    />
+                </CardContent>
+            </Card>
 
             <Dialog open={isDialogOpen} onOpenChange={handleClose}>
                 <DialogContent>
@@ -144,7 +146,7 @@ const LocationManagement = () => {
                     />
                 </DialogContent>
             </Dialog>
-        </Card>
+        </>
     );
 };
 

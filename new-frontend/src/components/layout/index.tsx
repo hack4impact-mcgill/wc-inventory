@@ -42,9 +42,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                             <Button variant="ghost" className="text-sm font-medium" onClick={() => navigate('/')}>
                                 Home
                             </Button>
-                            <Button variant="ghost" className="text-sm font-medium" onClick={() => navigate('/locations')}>
-                                Location
-                            </Button>
                         </nav>
                     </div>
 

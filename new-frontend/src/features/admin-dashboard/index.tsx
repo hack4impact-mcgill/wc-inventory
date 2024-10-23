@@ -18,12 +18,12 @@ const navItems: NavItem[] = [
         icon: LayoutDashboard,
         description: 'Overview component',
     },
-    {
-        title: 'User Management',
-        href: '/admin/users',
-        icon: Users,
-        description: 'Manage users and permissions',
-    },
+    // {
+    //     title: 'User Management',
+    //     href: '/admin/users',
+    //     icon: Users,
+    //     description: 'Manage users and permissions',
+    // },
     {
         title: 'Location Management',
         href: '/admin/locations',

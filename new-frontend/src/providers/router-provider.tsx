@@ -105,10 +105,10 @@ const router = createBrowserRouter([
                 index: true,
                 element: <div>Welcome to the Admin Overview</div>,
             },
-            {
-                path: "users",
-                element: <UserManagement />,
-            },
+            // {
+            //     path: "users",
+            //     element: <UserManagement />,
+            // },
             {
                 path: "locations",
                 element: <LocationManagement />,
