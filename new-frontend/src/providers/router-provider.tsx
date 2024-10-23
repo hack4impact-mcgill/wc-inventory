@@ -1,25 +1,55 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import Layout from "@/components/layout";
-import Login from "@/features/auth/login";
 import { useAuthContext } from "@/contexts/auth-context";
 import LoadingScreen from "@/components/loading";
+import LoginPage from "@/features/auth/login";
+import AdminDashboard from "@/features/dashboards/admin-dashboard";
+import VolunteerDashboard from "@/features/dashboards/volunteer-dashboard";
+import CategoryManagement from "@/features/dashboards/admin-dashboard/tabs/category-management";
+import LocationManagement from "@/features/dashboards/admin-dashboard/tabs/location-management";
+import UserManagement from "@/features/dashboards/admin-dashboard/tabs/user-management";
 
+interface ProtectedRouteProps {
+    children?: React.ReactNode;
+    roles?: string[];
+}
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+const AuthWrapper = ({ children, roles }: ProtectedRouteProps) => {
     const { user, isLoading } = useAuthContext();
-    if (!user && !isLoading) {
+
+    if (isLoading) {
+        return <LoadingScreen />;
+    }
+
+    if (!user) {
         return <Navigate to="/login" replace />;
     }
-    if (isLoading) {
-        return <LoadingScreen />
-    }
+
+    // RBAC check -- uncomment when fixed
+    // if (roles && !roles.includes(user.role!)) {
+    //     return <Navigate to="/" replace />;
+    // }
+
+    return <>{children}</>;
+};
+
+const VolunteerWrapper = ({ children }: ProtectedRouteProps) => {
     return (
-        <Layout>
-            {children}
-        </Layout>
+        <AuthWrapper>
+            <Layout>
+                {children}
+            </Layout>
+        </AuthWrapper>
     );
 };
 
+const AdminWrapper = ({ children }: ProtectedRouteProps) => {
+    return (
+        <AuthWrapper roles={['Admin']}>
+            {children}
+        </AuthWrapper>
+    );
+};
 
 // interface Route {
 //     name: string;
@@ -54,23 +84,49 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 //         icon: Icons.user,
 //     },
 // ]
-
 const router = createBrowserRouter([
     {
         path: "/",
         element: (
-            <ProtectedRoute>
-                <div className="container mx-auto px-4 py-8">
-                    <h1 className="text-3xl font-bold mb-4">Welcome to Your App</h1>
-                    <p className="text-lg">This is the home page of your application.</p>
-                </div>
-            </ProtectedRoute>
+            <VolunteerWrapper>
+                <VolunteerDashboard />
+            </VolunteerWrapper>
         ),
     },
     {
-        path: "/login",
-        element: <Login />,
+        path: "/admin",
+        element: (
+            <AdminWrapper>
+                <AdminDashboard />
+            </AdminWrapper>
+        ),
+        children: [
+            {
+                index: true,
+                element: <div>Welcome to the Admin Overview</div>,
+            },
+            {
+                path: "users",
+                element: <UserManagement />,
+            },
+            {
+                path: "locations",
+                element: <LocationManagement />,
+            },
+            {
+                path: "categories",
+                element: <CategoryManagement />,
+            }
+        ],
     },
+    {
+        path: "/login",
+        element: <LoginPage />,
+    },
+    {
+        path: "*",
+        element: <Navigate to="/" replace />,
+    }
 ]);
 
 export default router;
