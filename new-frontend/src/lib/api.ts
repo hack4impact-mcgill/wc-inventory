@@ -92,10 +92,6 @@ export const deleteBox = async (boxId: number): Promise<void> => {
   }
 };
 
-// -----------------------------------
-// 4.2. Categories
-// -----------------------------------
-
 /**
  * Fetch all categories.
  */
@@ -266,13 +262,6 @@ export const deleteLocation = async (locationId: number): Promise<void> => {
   }
 };
 
-// -----------------------------------
-// 4.4. Users
-// -----------------------------------
-
-/**
- * Fetch all users.
- */
 export const fetchUsers = async (): Promise<User[]> => {
   const { data, error } = await supabase
     .from('users')
@@ -286,9 +275,6 @@ export const fetchUsers = async (): Promise<User[]> => {
   return data as User[];
 };
 
-/**
- * Fetch a single user by ID.
- */
 export const fetchUserById = async (userId: string): Promise<User | null> => {
   const { data, error } = await supabase
     .from('users')
@@ -306,11 +292,7 @@ export const fetchUserById = async (userId: string): Promise<User | null> => {
   return data as User;
 };
 
-/**
- * Create a new user.
- * 
- * **Important**: User creation is typically handled via Supabase Auth. Ensure that you manage authentication appropriately.
- */
+
 export const createUser = async (user: UserInsert): Promise<User> => {
   const { data, error } = await supabase
     .from('users')
@@ -325,9 +307,6 @@ export const createUser = async (user: UserInsert): Promise<User> => {
   return data as User;
 };
 
-/**
- * Update an existing user.
- */
 export const updateUser = async (userId: string, updates: UserUpdate): Promise<User> => {
   const { data, error } = await supabase
     .from('users')
@@ -342,24 +321,6 @@ export const updateUser = async (userId: string, updates: UserUpdate): Promise<U
 
   return data as User;
 };
-
-/**
- * Delete a user.
- */
-export const deleteUser = async (userId: string): Promise<void> => {
-  const { error } = await supabase
-    .from('users')
-    .delete()
-    .eq('id', userId);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-};
-
-// -----------------------------------
-// 4.5. Box Contents
-// -----------------------------------
 
 /**
  * Fetch all box contents.
@@ -442,10 +403,6 @@ export const deleteBoxContent = async (boxContentId: number): Promise<void> => {
     throw new Error(error.message);
   }
 };
-
-// -----------------------------------
-// 4.6. Box Movements
-// -----------------------------------
 
 /**
  * Fetch all box movements.
