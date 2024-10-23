@@ -51,7 +51,6 @@ const AdminDashboard: React.FC = () => {
         <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
             <aside className="fixed inset-y-0 z-50 flex w-72 flex-col">
                 <div className="flex flex-col flex-1 min-h-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
-                    {/* Sidebar Header */}
                     <div className="flex items-center h-16 px-4 border-b border-gray-200 dark:border-gray-700">
                         <Button
                             variant="ghost"
@@ -109,7 +108,6 @@ const AdminDashboard: React.FC = () => {
             <main className="pl-72 w-full">
                 <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6 dark:border-gray-700 dark:bg-gray-800">
                     <div className="flex items-center gap-x-4">
-                        <div className="h-4 w-px bg-gray-200 dark:bg-gray-700" />
                         <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
                             {getCurrentPageTitle()}
                         </h1>
