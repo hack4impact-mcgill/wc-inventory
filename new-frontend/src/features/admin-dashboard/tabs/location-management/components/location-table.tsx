@@ -3,10 +3,11 @@ import {
     useReactTable,
     getCoreRowModel,
     getFilteredRowModel,
+    getExpandedRowModel,
     flexRender,
     createColumnHelper,
     ColumnDef,
-    Row,
+    ExpandedState,
 } from '@tanstack/react-table';
 import { Location } from '@/types/location';
 import { Button } from '@/components/ui/button';
@@ -41,13 +42,13 @@ export const LocationTable = ({
     setGlobalFilter,
     onAdd,
 }: LocationTableProps) => {
-    const [expanded, setExpanded] = useState<Set<number>>(new Set());
+    const [expanded, setExpanded] = React.useState<ExpandedState>({});
 
-    // Organizes into hierarchical data
-    const hierarchicalData = useMemo(() => {
+    // Transform flat data into hierarchical structure
+    const processedData = useMemo(() => {
         const locationMap = new Map<number | null, Location[]>();
 
-        // Groups
+        // Group by parent_id
         locations.forEach(location => {
             const parentId = location.parent_id;
             if (!locationMap.has(parentId)) {
@@ -56,72 +57,48 @@ export const LocationTable = ({
             locationMap.get(parentId)?.push(location);
         });
 
-        // Sorts in level by name
-        locationMap.forEach(locations => {
-            locations.sort((a, b) => a.name.localeCompare(b.name));
-        });
-
-        // Function to build nested structure
-        const buildHierarchy = (parentId: number | null, level: number = 0): Location[] => {
+        // Function to recursively build tree
+        const buildTree = (parentId: number | null): Location[] => {
             const children = locationMap.get(parentId) || [];
-            return children.map(child => ({
-                ...child,
-                _level: level,
-                _hasChildren: (locationMap.get(child.location_id) || []).length > 0,
+            return children.map(item => ({
+                ...item,
+                subRows: buildTree(item.location_id)
             }));
         };
 
-        return buildHierarchy(null);
+        return buildTree(null);
     }, [locations]);
-
-    const toggleExpanded = (id: number) => {
-        const newExpanded = new Set(expanded);
-        if (newExpanded.has(id)) {
-            const collapseChildren = (locationId: number) => {
-                newExpanded.delete(locationId);
-                locations
-                    .filter(loc => loc.parent_id === locationId)
-                    .forEach(child => collapseChildren(child.location_id));
-            };
-            collapseChildren(id);
-        } else {
-            newExpanded.add(id);
-        }
-        setExpanded(newExpanded);
-    };
 
     const columns = useMemo<ColumnDef<Location>[]>(() => [
         columnHelper.display({
-            id: 'expander',
-            cell: ({ row }) => {
-                const location = row.original;
-                const hasChildren = locations.some(loc => loc.parent_id === location.location_id);
-                const level = location._level || 0;
-                const paddingLeft = `${level * 2}rem`;
-
-                return (
-                    <div className="flex items-center" style={{ paddingLeft }}>
-                        {hasChildren ? (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 w-6 p-0 hover:bg-transparent"
-                                onClick={() => toggleExpanded(location.location_id)}
-                            >
-                                {expanded.has(location.location_id) ? (
-                                    <ChevronDown className="h-4 w-4" />
-                                ) : (
-                                    <ChevronRight className="h-4 w-4" />
-                                )}
-                            </Button>
-                        ) : (
-                            <div className="w-6" />
-                        )}
-                        <span>{location.name}</span>
-                    </div>
-                );
-            },
+            id: 'name',
             header: 'Name',
+            cell: ({ row }) => (
+                <div
+                    style={{
+                        paddingLeft: `${row.depth * 2}rem`,
+                    }}
+                    className="flex items-center gap-2"
+                >
+                    {row.getCanExpand() ? (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 hover:bg-transparent"
+                            onClick={row.getToggleExpandedHandler()}
+                        >
+                            {row.getIsExpanded() ? (
+                                <ChevronDown className="h-4 w-4" />
+                            ) : (
+                                <ChevronRight className="h-4 w-4" />
+                            )}
+                        </Button>
+                    ) : (
+                        <div className="w-6" />
+                    )}
+                    <span>{row.original.name}</span>
+                </div>
+            ),
         }),
         columnHelper.accessor('description', {
             header: 'Description',
@@ -164,32 +141,21 @@ export const LocationTable = ({
                 </div>
             ),
         }),
-    ], [locations, expanded, onEdit, onDelete]);
-
-    const getVisibleData = useMemo(() => {
-        const result: Location[] = [];
-
-        const addLocation = (location: Location) => {
-            result.push(location);
-            if (expanded.has(location.location_id)) {
-                locations
-                    .filter(loc => loc.parent_id === location.location_id)
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .forEach(addLocation);
-            }
-        };
-
-        hierarchicalData.forEach(addLocation);
-        return result;
-    }, [locations, hierarchicalData, expanded]);
+    ], [locations, onEdit, onDelete]);
 
     const table = useReactTable({
-        data: getVisibleData,
+        data: processedData,
         columns,
-        state: { globalFilter },
+        state: {
+            expanded,
+            globalFilter,
+        },
+        onExpandedChange: setExpanded,
         onGlobalFilterChange: setGlobalFilter,
+        getSubRows: row => row.subRows,
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
+        getExpandedRowModel: getExpandedRowModel(),
     });
 
     return (
@@ -199,7 +165,7 @@ export const LocationTable = ({
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder="Search locations..."
-                        value={globalFilter}
+                        value={globalFilter ?? ''}
                         onChange={e => setGlobalFilter(e.target.value)}
                         className="pl-8"
                     />
@@ -242,7 +208,7 @@ export const LocationTable = ({
                                     key={row.id}
                                     className={cn(
                                         "transition-colors hover:bg-muted/50",
-                                        row.original._level && "bg-muted/30"
+                                        row.depth > 0 && "bg-muted/30"
                                     )}
                                 >
                                     {row.getVisibleCells().map(cell => (

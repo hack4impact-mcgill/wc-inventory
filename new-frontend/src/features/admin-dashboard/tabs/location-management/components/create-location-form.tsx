@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { useForm, useFormState } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
 import {
@@ -13,7 +13,6 @@ import {
 import { Location } from '@/types/location';
 import TreeSelect from '@/components/tree-select';
 import { Button } from '@/components/ui/button';
-import { useCallback, useEffect } from 'react';
 
 export const locationFormSchema = z.object({
     name: z.string()
@@ -57,25 +56,6 @@ export const CreateLocationForm = ({
     });
 
     const { control, handleSubmit, setValue, formState } = form;
-
-    // Memoize the parent selection handler
-    const handleParentSelect = useCallback((parentId: number | null): void => {
-        const parentLocation = parentId
-            ? locations.find(location => location.location_id === parentId)
-            : null;
-
-        // Prevent selecting self as parent
-        if (parentId === initialData?.location_id) {
-            return;
-        }
-
-        // Calculate new level based on parent
-        const newLevel = parentLocation ? parentLocation.level + 1 : 1;
-
-        // Use batch updates to prevent unnecessary re-renders
-        setValue('parent_id', parentId, { shouldValidate: true });
-        setValue('level', newLevel, { shouldValidate: true });
-    }, [locations, setValue, initialData]);
 
     // Form submission handler with proper error handling
     const onFormSubmit = async (data: LocationFormValues): Promise<void> => {
