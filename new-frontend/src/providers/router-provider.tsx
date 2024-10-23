@@ -3,11 +3,11 @@ import Layout from "@/components/layout";
 import { useAuthContext } from "@/contexts/auth-context";
 import LoadingScreen from "@/components/loading";
 import LoginPage from "@/features/auth/login";
-import AdminDashboard from "@/features/dashboards/admin-dashboard";
-import VolunteerDashboard from "@/features/dashboards/volunteer-dashboard";
-import CategoryManagement from "@/features/dashboards/admin-dashboard/tabs/category-management";
-import LocationManagement from "@/features/dashboards/admin-dashboard/tabs/location-management";
-import UserManagement from "@/features/dashboards/admin-dashboard/tabs/user-management";
+import AdminDashboard from "@/features/admin-dashboard";
+import VolunteerDashboard from "@/features/volunteer-dashboard";
+import CategoryManagement from "@/features/admin-dashboard/tabs/category-management";
+import LocationManagement from "@/features/admin-dashboard/tabs/location-management";
+import UserManagement from "@/features/admin-dashboard/tabs/user-management";
 
 interface ProtectedRouteProps {
     children?: React.ReactNode;
