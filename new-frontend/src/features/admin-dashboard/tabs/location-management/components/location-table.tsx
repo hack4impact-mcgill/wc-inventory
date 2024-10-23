@@ -145,7 +145,7 @@ export const LocationTable = ({
             header: '',
             cell: ({ row }) => (
                 <div className="flex gap-2 justify-end">
-                    <Button
+                    {/* <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => onEdit(row.original)}
@@ -160,7 +160,7 @@ export const LocationTable = ({
                         className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
                     >
                         <Trash2 className="h-4 w-4" />
-                    </Button>
+                    </Button> */}
                 </div>
             ),
         }),

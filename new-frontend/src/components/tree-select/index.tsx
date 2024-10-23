@@ -1,5 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Location } from '@/types/location';
@@ -19,165 +21,121 @@ const TreeSelect = ({
     disabled = false,
     className,
 }: TreeSelectProps): JSX.Element => {
-    const [expanded, setExpanded] = React.useState<Set<number>>(new Set());
-    const [searchTerm, setSearchTerm] = React.useState<string>('');
+    const [expanded, setExpanded] = React.useState<number[]>([]);
+    const [searchTerm, setSearchTerm] = React.useState('');
 
-    // Memoize the filtered items
     const filteredItems = React.useMemo(() => {
         if (!searchTerm) return items;
-
+        const search = searchTerm.toLowerCase();
         return items.filter(item =>
-            item.name.toLowerCase().includes(searchTerm.toLowerCase())
+            item.name.toLowerCase().includes(search) ||
+            item.description?.toLowerCase().includes(search)
         );
     }, [items, searchTerm]);
 
-    // Get all parent IDs for a given item
-    const getParentChain = React.useCallback((itemId: number | null): number[] => {
-        const chain: number[] = [];
-        let currentId = itemId;
-
-        while (currentId) {
-            const parent = items.find(item => item.location_id === currentId);
-            if (!parent?.parent_id) break;
-            chain.push(parent.parent_id);
-            currentId = parent.parent_id;
-        }
-
-        return chain;
-    }, [items]);
-
-    // Expand all parents of the selected item
-    React.useEffect(() => {
-        if (selectedId) {
-            const parentChain = getParentChain(selectedId);
-            setExpanded(new Set([...expanded, ...parentChain]));
-        }
-    }, [selectedId, getParentChain]);
-
-    const toggleExpanded = (id: number) => {
-        const newExpanded = new Set(expanded);
-        if (newExpanded.has(id)) {
-            newExpanded.delete(id);
-        } else {
-            newExpanded.add(id);
-        }
-        setExpanded(newExpanded);
+    const handleToggle = (id: number) => {
+        setExpanded(prev => {
+            const isExpanded = prev.includes(id);
+            return isExpanded
+                ? prev.filter(x => x !== id)
+                : [...prev, id];
+        });
     };
+    const renderItem = (item: Location, level: number = 0) => {
+        const children = items.filter(child => child.parent_id === item.location_id);
+        const hasChildren = children.length > 0;
+        const isExpanded = expanded.includes(item.location_id);
+        const isSelected = selectedId === item.location_id;
 
-    const buildTree = (parentId: number | null = null, level: number = 0): JSX.Element[] => {
-        return filteredItems
-            .filter(item => item.parent_id === parentId)
-            .map(item => {
-                const children = buildTree(item.location_id, level + 1);
-                const isExpanded = expanded.has(item.location_id);
-                const isSelected = selectedId === item.location_id;
-                const hasChildren = children.length > 0;
-
-                // Prevent selecting an item as its own parent
-                const isDisabledItem = disabled || (
-                    selectedId !== null &&
-                    getParentChain(item.location_id).includes(selectedId)
-                );
-
-                return (
-                    <div
-                        key={item.location_id}
-                        style={{ marginLeft: `${level * 1.5}rem` }}
-                        role="treeitem"
-                        aria-expanded={hasChildren ? isExpanded : undefined}
-                        aria-selected={isSelected}
-                    >
-                        <div className="flex items-center py-1">
-                            {hasChildren ? (
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-4 w-4 p-0 hover:bg-transparent"
-                                    onClick={() => toggleExpanded(item.location_id)}
-                                    disabled={disabled}
-                                    aria-label={isExpanded ? 'Collapse' : 'Expand'}
-                                >
-                                    {isExpanded ? (
-                                        <ChevronDown className="h-4 w-4" />
-                                    ) : (
-                                        <ChevronRight className="h-4 w-4" />
-                                    )}
-                                </Button>
-                            ) : (
-                                <span className="w-4" />
-                            )}
+        return (
+            <div key={item.location_id}>
+                <div
+                    className={cn(
+                        "flex items-center py-1 px-2 rounded-sm transition-colors",
+                        !isSelected && "hover:bg-neutral-50",
+                        isSelected && "bg-neutral-200",
+                    )}
+                    style={{ paddingLeft: `${(level * 20) + 8}px` }}
+                >
+                    <div className="flex-1 flex items-center">
+                        {hasChildren ? (
                             <Button
+                                type="button"
                                 variant="ghost"
                                 size="sm"
-                                className={cn(
-                                    "ml-2 flex-grow justify-start",
-                                    isSelected && "bg-blue-50 text-blue-600 dark:bg-blue-900 dark:text-blue-400",
-                                    isDisabledItem && "opacity-50 cursor-not-allowed"
-                                )}
-                                onClick={() => !isDisabledItem && onSelect(item.location_id)}
-                                disabled={isDisabledItem}
-                                title={isDisabledItem ? "Cannot select this location" : item.name}
+                                className="h-6 w-6 p-0 hover:bg-transparent"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToggle(item.location_id);
+                                }}
                             >
-                                {item.name}
-                                {item.description && (
-                                    <span className="ml-2 text-xs text-muted-foreground">
-                                        ({item.description})
-                                    </span>
+                                {isExpanded ? (
+                                    <ChevronDown className="h-4 w-4" />
+                                ) : (
+                                    <ChevronRight className="h-4 w-4" />
                                 )}
                             </Button>
-                        </div>
-                        {isExpanded && (
-                            <div role="group">
-                                {children}
-                            </div>
+                        ) : (
+                            <span className="w-6" />
                         )}
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            className={cn(
+                                "px-2 h-8 flex-1 justify-start font-normal hover:bg-transparent",
+                                isSelected && "font-medium"
+                            )}
+                            onClick={() => onSelect(item.location_id)}
+                        >
+                            {item.name}
+                            {item.description && (
+                                <span className="ml-2 text-xs text-muted-foreground">
+                                    ({item.description})
+                                </span>
+                            )}
+                        </Button>
                     </div>
-                );
-            });
-    };
-
-    return (
-        <div
-            className={cn(
-                "border rounded-md p-2",
-                "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
-                className
-            )}
-        >
-            <div className="space-y-2">
-                <input
-                    type="text"
-                    className="w-full px-3 py-1 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="Search locations..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    disabled={disabled}
-                />
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className={cn(
-                        "w-full justify-start",
-                        selectedId === null && "bg-blue-50 text-blue-600 dark:bg-blue-900 dark:text-blue-400"
-                    )}
-                    onClick={() => onSelect(null)}
-                    disabled={disabled}
-                >
-                    No Parent
-                </Button>
-            </div>
-            <div
-                className="mt-2 max-h-48 overflow-y-auto"
-                role="tree"
-            >
-                {buildTree()}
-                {filteredItems.length === 0 && (
-                    <div className="text-sm text-muted-foreground text-center py-2">
-                        No locations found
+                </div>
+                {isExpanded && hasChildren && (
+                    <div className="ml-2">
+                        {children.map(child => renderItem(child, level + 1))}
                     </div>
                 )}
             </div>
-        </div>
+        );
+    };
+
+    return (
+        <Card className={cn("p-2", className)}>
+            <div className="space-y-4">
+                <Input
+                    type="text"
+                    placeholder="Search locations..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="h-8"
+                />
+                <div className="space-y-1">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        className={cn(
+                            "w-full justify-start font-normal hover:bg-transparent",
+                            !selectedId && "bg-neutral-200",
+                            selectedId !== null && "hover:bg-neutral-50"
+                        )}
+                        onClick={() => onSelect(null)}
+                    >
+                        No Parent
+                    </Button>
+                    <div className="max-h-[200px] overflow-y-auto">
+                        {filteredItems
+                            .filter(item => item.parent_id === null)
+                            .map(item => renderItem(item))}
+                    </div>
+                </div>
+            </div>
+        </Card>
     );
 };
 

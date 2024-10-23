@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { useForm } from 'react-hook-form';
+import { useForm, useFormState } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
 import {
@@ -13,17 +13,25 @@ import {
 import { Location } from '@/types/location';
 import TreeSelect from '@/components/tree-select';
 import { Button } from '@/components/ui/button';
+import { useCallback, useEffect } from 'react';
 
 export const locationFormSchema = z.object({
-    name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must not exceed 100 characters'),
-    description: z.string().max(500, 'Description must not exceed 500 characters').nullable(),
+    name: z.string()
+        .min(2, 'Name must be at least 2 characters')
+        .max(100, 'Name must not exceed 100 characters')
+        .trim(),
+    description: z.string()
+        .max(500, 'Description must not exceed 500 characters')
+        .nullable()
+        .transform(val => val === '' ? null : val),
     parent_id: z.number().nullable(),
-    level: z.number().min(1).max(10, 'Maximum nesting level exceeded'),
+    level: z.number()
+        .min(1, 'Level must be at least 1')
+        .max(10, 'Maximum nesting level exceeded'),
 });
 
 export type LocationFormValues = z.infer<typeof locationFormSchema>;
 
-// Props interface with explicit types
 interface CreateLocationFormProps {
     locations: ReadonlyArray<Location>;
     onSubmit: (values: LocationFormValues) => Promise<void>;
@@ -45,43 +53,68 @@ export const CreateLocationForm = ({
             parent_id: initialData?.parent_id ?? null,
             level: initialData?.level ?? 1,
         },
+        mode: 'onChange', // Enable validation on change
     });
 
-    const handleParentSelect = (parentId: number | null): void => {
+    const { control, handleSubmit, setValue, formState } = form;
+
+    // Memoize the parent selection handler
+    const handleParentSelect = useCallback((parentId: number | null): void => {
         const parentLocation = parentId
             ? locations.find(location => location.location_id === parentId)
             : null;
 
+        // Prevent selecting self as parent
+        if (parentId === initialData?.location_id) {
+            return;
+        }
+
+        // Calculate new level based on parent
         const newLevel = parentLocation ? parentLocation.level + 1 : 1;
 
-        form.setValue('parent_id', parentId);
-        form.setValue('level', newLevel);
-    };
+        // Use batch updates to prevent unnecessary re-renders
+        setValue('parent_id', parentId, { shouldValidate: true });
+        setValue('level', newLevel, { shouldValidate: true });
+    }, [locations, setValue, initialData]);
 
-    const handleSubmit = async (data: LocationFormValues): Promise<void> => {
+    // Form submission handler with proper error handling
+    const onFormSubmit = async (data: LocationFormValues): Promise<void> => {
         try {
             await onSubmit(data);
-            form.reset(); // Reset form after successful submission
+            form.reset(data); // Reset form state but keep values
         } catch (error) {
-            // Let the parent component handle the error
+            // Re-enable the form
+            form.reset(data, {
+                keepValues: true,
+                keepDirty: true,
+                keepErrors: true,
+            });
             throw error;
+        }
+    };
+
+    // Handle keyboard events
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        // Prevent form submission on enter in input fields
+        if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+            e.preventDefault();
+        }
+
+        // Allow enter key in textarea (if you add one later)
+        if (e.key === 'Enter' && e.target instanceof HTMLTextAreaElement) {
+            return;
         }
     };
 
     return (
         <Form {...form}>
             <form
-                onSubmit={form.handleSubmit(handleSubmit)}
+                onSubmit={handleSubmit(onFormSubmit)}
                 className="space-y-4"
-                // Prevent double submission
-                onKeyDown={(e) => {
-                    if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
-                        e.preventDefault();
-                    }
-                }}
+                onKeyDown={handleKeyDown}
             >
                 <FormField
-                    control={form.control}
+                    control={control}
                     name="name"
                     render={({ field }) => (
                         <FormItem>
@@ -92,6 +125,13 @@ export const CreateLocationForm = ({
                                     placeholder="Enter location name"
                                     disabled={isLoading}
                                     maxLength={100}
+                                    // Trim whitespace on blur
+                                    onBlur={(e) => {
+                                        field.onBlur();
+                                        setValue('name', e.target.value.trim(), {
+                                            shouldValidate: true,
+                                        });
+                                    }}
                                 />
                             </FormControl>
                             <FormMessage />
@@ -100,7 +140,7 @@ export const CreateLocationForm = ({
                 />
 
                 <FormField
-                    control={form.control}
+                    control={control}
                     name="description"
                     render={({ field }) => (
                         <FormItem>
@@ -112,6 +152,13 @@ export const CreateLocationForm = ({
                                     placeholder="Enter description"
                                     disabled={isLoading}
                                     maxLength={500}
+                                    // Trim whitespace on blur
+                                    onBlur={(e) => {
+                                        field.onBlur();
+                                        setValue('description', e.target.value.trim() || null, {
+                                            shouldValidate: true,
+                                        });
+                                    }}
                                 />
                             </FormControl>
                             <FormMessage />
@@ -129,7 +176,11 @@ export const CreateLocationForm = ({
                                 <TreeSelect
                                     items={locations}
                                     selectedId={field.value}
-                                    onSelect={handleParentSelect}
+                                    onSelect={(id) => {
+                                        field.onChange(id);
+                                        const parent = id ? locations.find(loc => loc.location_id === id) : null;
+                                        form.setValue('level', parent ? parent.level + 1 : 1);
+                                    }}
                                     disabled={isLoading}
                                 />
                             </FormControl>
@@ -137,10 +188,9 @@ export const CreateLocationForm = ({
                         </FormItem>
                     )}
                 />
-
                 <Button
                     type="submit"
-                    disabled={isLoading || !form.formState.isDirty}
+                    disabled={isLoading || !formState.isDirty || !formState.isValid}
                     className="w-full"
                 >
                     {isLoading
