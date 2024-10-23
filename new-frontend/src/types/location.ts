@@ -1,7 +1,6 @@
-import { LocationUpdate } from './../lib/api';
-import { Tables } from "./supabase";
+import { Database } from "./supabase";
 
-type LocationTable = Tables['locations'];
+type LocationTable = Database['public']['Tables']['locations'];
 
 export type Location = LocationTable['Row'];
 
