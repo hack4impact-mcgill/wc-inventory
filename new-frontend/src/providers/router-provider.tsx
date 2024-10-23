@@ -7,7 +7,7 @@ import AdminDashboard from "@/features/admin-dashboard";
 import VolunteerDashboard from "@/features/volunteer-dashboard";
 import CategoryManagement from "@/features/admin-dashboard/tabs/category-management";
 import LocationManagement from "@/features/admin-dashboard/tabs/location-management";
-import UserManagement from "@/features/admin-dashboard/tabs/user-management";
+// import UserManagement from "@/features/admin-dashboard/tabs/user-management";
 
 interface ProtectedRouteProps {
     children?: React.ReactNode;
@@ -25,10 +25,10 @@ const AuthWrapper = ({ children, roles }: ProtectedRouteProps) => {
         return <Navigate to="/login" replace />;
     }
 
-    // RBAC check -- uncomment when fixed
-    // if (roles && !roles.includes(user.role!)) {
-    //     return <Navigate to="/" replace />;
-    // }
+    if (roles && !roles.includes(user.role!)) {
+        // RBAC check -- uncomment when fixed
+        // return <Navigate to="/" replace />;
+    }
 
     return <>{children}</>;
 };

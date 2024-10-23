@@ -36,7 +36,7 @@ const LocationManagement = () => {
                 description: "Location created successfully",
             });
         },
-        onError: (error) => {
+        onError: () => {
             toast({
                 title: "Error",
                 description: "Failed to create location",
@@ -57,7 +57,7 @@ const LocationManagement = () => {
                 description: "Location updated successfully",
             });
         },
-        onError: (error) => {
+        onError: () => {
             toast({
                 title: "Error",
                 description: "Failed to update location",
@@ -75,7 +75,7 @@ const LocationManagement = () => {
                 description: "Location deleted successfully",
             });
         },
-        onError: (error) => {
+        onError: () => {
             toast({
                 title: "Error",
                 description: "Failed to delete location",

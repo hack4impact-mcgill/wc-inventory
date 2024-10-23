@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Users, FolderTree, Tags, LayoutDashboard, ArrowLeft } from 'lucide-react';
+import { FolderTree, Tags, LayoutDashboard, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface NavItem {
