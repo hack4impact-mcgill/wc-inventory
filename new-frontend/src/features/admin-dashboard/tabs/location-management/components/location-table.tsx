@@ -23,6 +23,10 @@ import {
 } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 
+interface NestedLocation extends Location {
+    subRows?: Location[];
+}
+
 interface LocationTableProps {
     locations: Location[];
     onEdit: (location: Location) => void;
@@ -31,8 +35,6 @@ interface LocationTableProps {
     setGlobalFilter: (value: string) => void;
     onAdd: () => void;
 }
-
-const columnHelper = createColumnHelper<Location>();
 
 export const LocationTable = ({
     locations,
@@ -44,11 +46,9 @@ export const LocationTable = ({
 }: LocationTableProps) => {
     const [expanded, setExpanded] = React.useState<ExpandedState>({});
 
-    // Transform flat data into hierarchical structure
     const processedData = useMemo(() => {
         const locationMap = new Map<number | null, Location[]>();
 
-        // Group by parent_id
         locations.forEach(location => {
             const parentId = location.parent_id;
             if (!locationMap.has(parentId)) {
@@ -57,8 +57,7 @@ export const LocationTable = ({
             locationMap.get(parentId)?.push(location);
         });
 
-        // Function to recursively build tree
-        const buildTree = (parentId: number | null): Location[] => {
+        const buildTree = (parentId: number | null): NestedLocation[] => {
             const children = locationMap.get(parentId) || [];
             return children.map(item => ({
                 ...item,
@@ -69,8 +68,9 @@ export const LocationTable = ({
         return buildTree(null);
     }, [locations]);
 
-    const columns = useMemo<ColumnDef<Location>[]>(() => [
-        columnHelper.display({
+    // Transform flat data into hierarchical structure
+    const columns = useMemo<ColumnDef<NestedLocation>[]>(() => [
+        {
             id: 'name',
             header: 'Name',
             cell: ({ row }) => (
@@ -99,25 +99,31 @@ export const LocationTable = ({
                     <span>{row.original.name}</span>
                 </div>
             ),
-        }),
-        columnHelper.accessor('description', {
+        },
+        {
+            id: 'description',
             header: 'Description',
-            cell: info => info.getValue() || '-',
-        }),
-        columnHelper.accessor('level', {
+            accessorFn: row => row.description,
+            cell: ({ getValue }) => getValue() || '-',
+        },
+        {
+            id: 'level',
             header: 'Level',
-            cell: info => info.getValue(),
-        }),
-        columnHelper.accessor('parent_id', {
+            accessorFn: row => row.level,
+            cell: ({ getValue }) => getValue(),
+        },
+        {
+            id: 'parent_id',
             header: 'Parent Location',
-            cell: info => {
-                const parentId = info.getValue();
+            accessorFn: row => row.parent_id,
+            cell: ({ getValue }) => {
+                const parentId = getValue();
                 if (!parentId) return '-';
                 const parent = locations.find(loc => loc.location_id === parentId);
                 return parent?.name || '-';
             },
-        }),
-        columnHelper.display({
+        },
+        {
             id: 'actions',
             header: '',
             cell: ({ row }) => (
@@ -129,7 +135,7 @@ export const LocationTable = ({
                         className="h-8 w-8 p-0"
                     >
                         <Pencil className="h-4 w-4" />
-                    </Button>
+                    </Button> */}
                     <Button
                         variant="ghost"
                         size="sm"
@@ -137,10 +143,10 @@ export const LocationTable = ({
                         className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
                     >
                         <Trash2 className="h-4 w-4" />
-                    </Button> */}
+                    </Button>
                 </div>
             ),
-        }),
+        },
     ], [locations, onEdit, onDelete]);
 
     const table = useReactTable({
