@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { navItems } from '../types/navItems';
+import { navItems } from '../constants/navItems';
 import { SidebarNavItem } from './sidebar-nav-item';
 
 export const Sidebar: React.FC = () => {

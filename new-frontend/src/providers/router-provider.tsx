@@ -8,6 +8,7 @@ import VolunteerDashboard from "@/features/volunteer-dashboard";
 import CategoryManagement from "@/features/admin-dashboard/tabs/category-management";
 import LocationManagement from "@/features/admin-dashboard/tabs/location-management";
 import UserManagement from "@/features/admin-dashboard/tabs/user-management";
+import InventoryManagement from "@/features/admin-dashboard/tabs/inventory-management";
 // import UserManagement from "@/features/admin-dashboard/tabs/user-management";
 
 interface ProtectedRouteProps {
@@ -105,6 +106,10 @@ const router = createBrowserRouter([
             {
                 index: true,
                 element: <div>Welcome to the Admin Overview</div>,
+            },
+            {
+                path: "inventory",
+                element: <InventoryManagement />,
             },
             {
                 path: "users",

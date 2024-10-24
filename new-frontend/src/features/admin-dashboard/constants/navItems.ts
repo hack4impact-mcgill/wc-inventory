@@ -9,6 +9,12 @@ export const navItems: NavItem[] = [
         description: 'Overview component',
     },
     {
+        title: "Inventory Management",
+        href: '/admin/inventory',
+        icon: FolderTree,
+        description: 'Manage inventory items',
+    },
+    {
         title: 'User Management',
         href: '/admin/users',
         icon: Users,

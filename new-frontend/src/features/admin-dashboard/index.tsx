@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { AdminHeader } from './components/admin-header';
-import { navItems } from './types/navItems';
+import { navItems } from './constants/navItems';
 import { Sidebar } from './components/sidebar';
 
 const AdminDashboard: React.FC = () => {
