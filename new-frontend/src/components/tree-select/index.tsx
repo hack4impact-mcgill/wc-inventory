@@ -18,7 +18,7 @@ const TreeSelect = ({
     items,
     selectedId,
     onSelect,
-    disabled = false,
+    // disabled = false,
     className,
 }: TreeSelectProps): JSX.Element => {
     const [expanded, setExpanded] = React.useState<number[]>([]);

@@ -159,7 +159,7 @@ export const CreateLocationForm = ({
                                     onSelect={(id) => {
                                         field.onChange(id);
                                         const parent = id ? locations.find(loc => loc.location_id === id) : null;
-                                        form.setValue('level', parent ? parent.level + 1 : 1);
+                                        form.setValue('level', parent ? parent.level! + 1 : 1);
                                     }}
                                     disabled={isLoading}
                                 />

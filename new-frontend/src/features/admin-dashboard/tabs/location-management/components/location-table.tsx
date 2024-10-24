@@ -5,14 +5,13 @@ import {
     getFilteredRowModel,
     getExpandedRowModel,
     flexRender,
-    createColumnHelper,
     ColumnDef,
     ExpandedState,
 } from '@tanstack/react-table';
 import { Location } from '@/types/location';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronRight, ChevronDown, Plus, Search, Pencil, Trash2 } from 'lucide-react';
+import { ChevronRight, ChevronDown, Plus, Search, Trash2 } from 'lucide-react';
 import {
     Table,
     TableBody,

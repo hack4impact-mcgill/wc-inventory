@@ -1,7 +1,4 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-
-import { fetchCategories } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Search } from 'lucide-react';
@@ -11,12 +8,12 @@ import { Card, CardContent } from '@/components/ui/card';
 const CategoryManagement = () => {
     const [globalFilter, setGlobalFilter] = React.useState('');
 
-    const { data: categories = [], isLoading } = useQuery({
-        queryKey: ['categories'],
-        queryFn: fetchCategories,
-    });
+    // const { data: categories = [], isLoading } = useQuery({
+    //     queryKey: ['categories'],
+    //     queryFn: fetchCategories,
+    // });
 
-    if (isLoading) return <div>Loading...</div>;
+    // if (isLoading) return <div>Loading...</div>;
 
     return (
         <Card>
