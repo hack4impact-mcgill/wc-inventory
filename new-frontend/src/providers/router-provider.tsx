@@ -124,7 +124,6 @@ const router = createBrowserRouter([
     path: "searchforbox",
     element: (
       <VolunteerWrapper>
-        {" "}
         <SearchForBoxByIdPage />
       </VolunteerWrapper>
     ),
