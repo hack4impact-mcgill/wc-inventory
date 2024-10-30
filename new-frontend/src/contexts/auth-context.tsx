@@ -1,6 +1,8 @@
 import { supabase } from '@/lib/supabaseClient';
 import { Session, User } from '@supabase/supabase-js';
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { jwtDecode } from 'jwt-decode'
+
 
 export interface AuthContextType {
     session: Session | null;
@@ -21,7 +23,13 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         setIsLoading(true);
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
-            setUser(session?.user ?? null);
+            const jwt = jwtDecode(session!.access_token) as { [key: string]: any };
+            // Forcing in our Role
+            const user: User = {
+                ...session!.user,
+                role: jwt['user_role']!
+            }
+            setUser(session?.user ? user : null);
             setIsLoading(false);
         });
 

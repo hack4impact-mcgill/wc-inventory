@@ -2,9 +2,8 @@ import { PackageMinus, PackageOpen, PackagePlus, PackageSearch } from 'lucide-re
 
 const VolunteerDashboard = () => {
     return (
-        <div className="p-4 h-full">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-[calc(100vh-120px)]">
-
+        <div className="p-4 h-[calc(100vh-120px)]">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
                 <div className="bg-green-500 rounded-lg shadow-lg flex flex-col items-center justify-center p-6 hover:bg-green-600 transition-colors">
                     <PackageSearch className="w-20 h-20 text-white mb-4" />
                     <span className="text-2xl font-bold text-white">Search for Items</span>
