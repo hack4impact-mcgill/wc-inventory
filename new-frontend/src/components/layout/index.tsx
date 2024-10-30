@@ -34,7 +34,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <div className="h-16 px-4 flex items-center justify-between">
                     <div className="flex items-center space-x-6">
                         <div className="flex flex-shrink-0 items-center">
-                            <img className="h-8 w-auto" src="/logo.png" alt="Company Logo" />
+                            <img className="h-8 w-auto" src="/icons/logo.png" alt="Company Logo" />
                         </div>
                         <h1 className="text-lg font-semibold">WC</h1>
 
