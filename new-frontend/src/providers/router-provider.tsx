@@ -9,6 +9,7 @@ import CategoryManagement from "@/features/admin-dashboard/tabs/category-managem
 import LocationManagement from "@/features/admin-dashboard/tabs/location-management";
 import UserManagement from "@/features/admin-dashboard/tabs/user-management";
 import InventoryManagement from "@/features/admin-dashboard/tabs/inventory-management";
+import UnauthorizedPage from "@/features/auth/unauthorized";
 // import UserManagement from "@/features/admin-dashboard/tabs/user-management";
 
 interface ProtectedRouteProps {
@@ -28,7 +29,7 @@ const AuthWrapper = ({ children, roles }: ProtectedRouteProps) => {
     }
 
     if (roles && !roles.includes(user.role!)) {
-        return <Navigate to="/" replace />;
+        return <Navigate to="/unauthorized" replace />;
     }
 
     return <>{children}</>;
@@ -127,6 +128,10 @@ const router = createBrowserRouter([
     {
         path: "/login",
         element: <LoginPage />,
+    },
+    {
+        path: "/unauthorized",
+        element: <UnauthorizedPage />
     },
     {
         path: "*",
