@@ -28,8 +28,7 @@ const AuthWrapper = ({ children, roles }: ProtectedRouteProps) => {
     }
 
     if (roles && !roles.includes(user.role!)) {
-        // RBAC check -- uncomment when fixed
-        // return <Navigate to="/" replace />;
+        return <Navigate to="/" replace />;
     }
 
     return <>{children}</>;
@@ -47,7 +46,7 @@ const VolunteerWrapper = ({ children }: ProtectedRouteProps) => {
 
 const AdminWrapper = ({ children }: ProtectedRouteProps) => {
     return (
-        <AuthWrapper roles={['Admin']}>
+        <AuthWrapper roles={['admin']}>
             {children}
         </AuthWrapper>
     );

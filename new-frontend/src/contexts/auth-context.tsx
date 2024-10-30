@@ -23,19 +23,37 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         setIsLoading(true);
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
-            const jwt = jwtDecode(session!.access_token) as { [key: string]: any };
-            // Forcing in our Role
-            const user: User = {
-                ...session!.user,
-                role: jwt['user_role']!
+            if (session?.user) {
+                const jwt = jwtDecode(session!.access_token) as { [key: string]: any };
+                // Forcing in our Role
+                const user: User = {
+                    ...session!.user,
+                    role: jwt['user_role']!
+                }
+                setUser(session?.user ? user : null);
             }
-            setUser(session?.user ? user : null);
+            else {
+                setUser(session?.user ? user : null);
+            }
+
             setIsLoading(false);
         });
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
-            setUser(session?.user ?? null);
+            if (session?.user) {
+                const jwt = jwtDecode(session!.access_token) as { [key: string]: any };
+                // Forcing in our Role
+                const user: User = {
+                    ...session!.user,
+                    role: jwt['user_role']!
+                }
+                setUser(session?.user ? user : null);
+            }
+            else {
+                setUser(session?.user ? user : null);
+            }
+
             setIsLoading(false);
         });
 
