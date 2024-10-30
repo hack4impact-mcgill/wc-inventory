@@ -10,6 +10,7 @@ import LocationManagement from "@/features/admin-dashboard/tabs/location-managem
 import UserManagement from "@/features/admin-dashboard/tabs/user-management";
 import InventoryManagement from "@/features/admin-dashboard/tabs/inventory-management";
 import UnauthorizedPage from "@/features/auth/unauthorized";
+import SearchForBoxByIdPage from "@/features/search-box-by-id";
 // import UserManagement from "@/features/admin-dashboard/tabs/user-management";
 
 interface ProtectedRouteProps {
@@ -118,6 +119,15 @@ const router = createBrowserRouter([
         element: <CategoryManagement />,
       },
     ],
+  },
+  {
+    path: "searchforbox",
+    element: (
+      <VolunteerWrapper>
+        {" "}
+        <SearchForBoxByIdPage />
+      </VolunteerWrapper>
+    ),
   },
   {
     path: "/login",
