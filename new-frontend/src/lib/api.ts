@@ -1,19 +1,17 @@
-import { Category, CategoryInsert, CategoryUpdate } from '@/types/category';
-import { supabase } from './supabaseClient';
-import { UserInsert, UserUpdate } from '@/types/users';
-import { Location, LocationInsert, LocationUpdate } from '@/types/location';
-import { User } from '@supabase/supabase-js';
-
-
+import { Category, CategoryInsert, CategoryUpdate } from "@/types/category";
+import { supabase } from "./supabaseClient";
+import { UserInsert, UserUpdate } from "@/types/users";
+import { Location, LocationInsert, LocationUpdate } from "@/types/location";
+import { User } from "@supabase/supabase-js";
 
 /**
  * Fetch all categories.
  */
 export const fetchCategories = async (): Promise<Category[]> => {
   const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .order('name', { ascending: true });
+    .from("categories")
+    .select("*")
+    .order("name", { ascending: true });
 
   if (error) {
     throw new Error(error.message);
@@ -25,15 +23,18 @@ export const fetchCategories = async (): Promise<Category[]> => {
 /**
  * Fetch a single category by ID.
  */
-export const fetchCategoryById = async (categoryId: number): Promise<Category | null> => {
+export const fetchCategoryById = async (
+  categoryId: number,
+): Promise<Category | null> => {
   const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('category_id', categoryId)
+    .from("categories")
+    .select("*")
+    .eq("category_id", categoryId)
     .single();
 
   if (error) {
-    if (error.code === 'PGRST116') { // No rows found
+    if (error.code === "PGRST116") {
+      // No rows found
       return null;
     }
     throw new Error(error.message);
@@ -45,11 +46,13 @@ export const fetchCategoryById = async (categoryId: number): Promise<Category | 
 /**
  * Create a new category.
  */
-export const createCategory = async (category: CategoryInsert): Promise<Category> => {
+export const createCategory = async (
+  category: CategoryInsert,
+): Promise<Category> => {
   const { data, error } = await supabase
-    .from('categories')
+    .from("categories")
     .insert(category)
-    .select('*')
+    .select("*")
     .single();
 
   if (error) {
@@ -62,12 +65,15 @@ export const createCategory = async (category: CategoryInsert): Promise<Category
 /**
  * Update an existing category.
  */
-export const updateCategory = async (categoryId: number, updates: CategoryUpdate): Promise<Category> => {
+export const updateCategory = async (
+  categoryId: number,
+  updates: CategoryUpdate,
+): Promise<Category> => {
   const { data, error } = await supabase
-    .from('categories')
+    .from("categories")
     .update(updates)
-    .eq('category_id', categoryId)
-    .select('*')
+    .eq("category_id", categoryId)
+    .select("*")
     .single();
 
   if (error) {
@@ -82,9 +88,9 @@ export const updateCategory = async (categoryId: number, updates: CategoryUpdate
  */
 export const deleteCategory = async (categoryId: number): Promise<void> => {
   const { error } = await supabase
-    .from('categories')
+    .from("categories")
     .delete()
-    .eq('category_id', categoryId);
+    .eq("category_id", categoryId);
 
   if (error) {
     throw new Error(error.message);
@@ -96,9 +102,9 @@ export const deleteCategory = async (categoryId: number): Promise<void> => {
  */
 export const fetchLocations = async (): Promise<Location[]> => {
   const { data, error } = await supabase
-    .from('locations')
-    .select('*')
-    .order('name', { ascending: true });
+    .from("locations")
+    .select("*")
+    .order("name", { ascending: true });
 
   if (error) {
     throw new Error(error.message);
@@ -110,15 +116,18 @@ export const fetchLocations = async (): Promise<Location[]> => {
 /**
  * Fetch a single location by ID.
  */
-export const fetchLocationById = async (locationId: number): Promise<Location | null> => {
+export const fetchLocationById = async (
+  locationId: number,
+): Promise<Location | null> => {
   const { data, error } = await supabase
-    .from('locations')
-    .select('*')
-    .eq('location_id', locationId)
+    .from("locations")
+    .select("*")
+    .eq("location_id", locationId)
     .single();
 
   if (error) {
-    if (error.code === 'PGRST116') { // No rows found
+    if (error.code === "PGRST116") {
+      // No rows found
       return null;
     }
     throw new Error(error.message);
@@ -130,11 +139,13 @@ export const fetchLocationById = async (locationId: number): Promise<Location | 
 /**
  * Create a new location.
  */
-export const createLocation = async (location: LocationInsert): Promise<Location> => {
+export const createLocation = async (
+  location: LocationInsert,
+): Promise<Location> => {
   const { data, error } = await supabase
-    .from('locations')
+    .from("locations")
     .insert(location)
-    .select('*')
+    .select("*")
     .single();
 
   if (error) {
@@ -147,12 +158,15 @@ export const createLocation = async (location: LocationInsert): Promise<Location
 /**
  * Update an existing location.
  */
-export const updateLocation = async (locationId: number, updates: LocationUpdate): Promise<Location> => {
+export const updateLocation = async (
+  locationId: number,
+  updates: LocationUpdate,
+): Promise<Location> => {
   const { data, error } = await supabase
-    .from('locations')
+    .from("locations")
     .update(updates)
-    .eq('location_id', locationId)
-    .select('*')
+    .eq("location_id", locationId)
+    .select("*")
     .single();
 
   if (error) {
@@ -167,9 +181,9 @@ export const updateLocation = async (locationId: number, updates: LocationUpdate
  */
 export const deleteLocation = async (locationId: number): Promise<void> => {
   const { error } = await supabase
-    .from('locations')
+    .from("locations")
     .delete()
-    .eq('location_id', locationId);
+    .eq("location_id", locationId);
 
   if (error) {
     throw new Error(error.message);
@@ -178,9 +192,9 @@ export const deleteLocation = async (locationId: number): Promise<void> => {
 
 export const fetchUsers = async (): Promise<User[]> => {
   const { data, error } = await supabase
-    .from('users')
-    .select('*')
-    .order('first_name', { ascending: true });
+    .from("users")
+    .select("*")
+    .order("first_name", { ascending: true });
 
   if (error) {
     throw new Error(error.message);
@@ -191,13 +205,14 @@ export const fetchUsers = async (): Promise<User[]> => {
 
 export const fetchUserById = async (userId: string): Promise<User | null> => {
   const { data, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', userId)
+    .from("users")
+    .select("*")
+    .eq("id", userId)
     .single();
 
   if (error) {
-    if (error.code === 'PGRST116') { // No rows found
+    if (error.code === "PGRST116") {
+      // No rows found
       return null;
     }
     throw new Error(error.message);
@@ -206,12 +221,11 @@ export const fetchUserById = async (userId: string): Promise<User | null> => {
   return data as User;
 };
 
-
 export const createUser = async (user: UserInsert): Promise<User> => {
   const { data, error } = await supabase
-    .from('users')
+    .from("users")
     .insert(user)
-    .select('*')
+    .select("*")
     .single();
 
   if (error) {
@@ -221,12 +235,15 @@ export const createUser = async (user: UserInsert): Promise<User> => {
   return data as User;
 };
 
-export const updateUser = async (userId: string, updates: UserUpdate): Promise<User> => {
+export const updateUser = async (
+  userId: string,
+  updates: UserUpdate,
+): Promise<User> => {
   const { data, error } = await supabase
-    .from('users')
+    .from("users")
     .update(updates)
-    .eq('id', userId)
-    .select('*')
+    .eq("id", userId)
+    .select("*")
     .single();
 
   if (error) {

@@ -13,44 +13,38 @@ import UnauthorizedPage from "@/features/auth/unauthorized";
 // import UserManagement from "@/features/admin-dashboard/tabs/user-management";
 
 interface ProtectedRouteProps {
-    children?: React.ReactNode;
-    roles?: string[];
+  children?: React.ReactNode;
+  roles?: string[];
 }
 
 const AuthWrapper = ({ children, roles }: ProtectedRouteProps) => {
-    const { user, isLoading } = useAuthContext();
+  const { user, isLoading } = useAuthContext();
 
-    if (isLoading) {
-        return <LoadingScreen />;
-    }
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
-    if (!user) {
-        return <Navigate to="/login" replace />;
-    }
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
-    if (roles && !roles.includes(user.role!)) {
-        return <Navigate to="/unauthorized" replace />;
-    }
+  if (roles && !roles.includes(user.role!)) {
+    return <Navigate to="/unauthorized" replace />;
+  }
 
-    return <>{children}</>;
+  return <>{children}</>;
 };
 
 const VolunteerWrapper = ({ children }: ProtectedRouteProps) => {
-    return (
-        <AuthWrapper>
-            <Layout>
-                {children}
-            </Layout>
-        </AuthWrapper>
-    );
+  return (
+    <AuthWrapper>
+      <Layout>{children}</Layout>
+    </AuthWrapper>
+  );
 };
 
 const AdminWrapper = ({ children }: ProtectedRouteProps) => {
-    return (
-        <AuthWrapper roles={['admin']}>
-            {children}
-        </AuthWrapper>
-    );
+  return <AuthWrapper roles={["admin"]}>{children}</AuthWrapper>;
 };
 
 // interface Route {
@@ -87,56 +81,56 @@ const AdminWrapper = ({ children }: ProtectedRouteProps) => {
 //     },
 // ]
 const router = createBrowserRouter([
-    {
-        path: "/",
-        element: (
-            <VolunteerWrapper>
-                <VolunteerDashboard />
-            </VolunteerWrapper>
-        ),
-    },
-    {
-        path: "/admin",
-        element: (
-            <AdminWrapper>
-                <AdminDashboard />
-            </AdminWrapper>
-        ),
-        children: [
-            {
-                index: true,
-                element: <div>Welcome to the Admin Overview</div>,
-            },
-            {
-                path: "inventory",
-                element: <InventoryManagement />,
-            },
-            {
-                path: "users",
-                element: <UserManagement />,
-            },
-            {
-                path: "locations",
-                element: <LocationManagement />,
-            },
-            {
-                path: "categories",
-                element: <CategoryManagement />,
-            }
-        ],
-    },
-    {
-        path: "/login",
-        element: <LoginPage />,
-    },
-    {
-        path: "/unauthorized",
-        element: <UnauthorizedPage />
-    },
-    {
-        path: "*",
-        element: <Navigate to="/" replace />,
-    }
+  {
+    path: "/",
+    element: (
+      <VolunteerWrapper>
+        <VolunteerDashboard />
+      </VolunteerWrapper>
+    ),
+  },
+  {
+    path: "/admin",
+    element: (
+      <AdminWrapper>
+        <AdminDashboard />
+      </AdminWrapper>
+    ),
+    children: [
+      {
+        index: true,
+        element: <div>Welcome to the Admin Overview</div>,
+      },
+      {
+        path: "inventory",
+        element: <InventoryManagement />,
+      },
+      {
+        path: "users",
+        element: <UserManagement />,
+      },
+      {
+        path: "locations",
+        element: <LocationManagement />,
+      },
+      {
+        path: "categories",
+        element: <CategoryManagement />,
+      },
+    ],
+  },
+  {
+    path: "/login",
+    element: <LoginPage />,
+  },
+  {
+    path: "/unauthorized",
+    element: <UnauthorizedPage />,
+  },
+  {
+    path: "*",
+    element: <Navigate to="/" replace />,
+  },
 ]);
 
 export default router;
