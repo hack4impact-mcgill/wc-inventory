@@ -13,6 +13,7 @@ export type Database = {
         Row: {
           category_id: number
           description: string | null
+          icon: string | null
           level: number
           name: string
           parent_id: number | null
@@ -20,6 +21,7 @@ export type Database = {
         Insert: {
           category_id?: number
           description?: string | null
+          icon?: string | null
           level: number
           name: string
           parent_id?: number | null
@@ -27,6 +29,7 @@ export type Database = {
         Update: {
           category_id?: number
           description?: string | null
+          icon?: string | null
           level?: number
           name?: string
           parent_id?: number | null
@@ -73,30 +76,39 @@ export type Database = {
           },
         ]
       }
-      users: {
+      role_permissions: {
         Row: {
-          created_at: string | null
-          first_name: string
-          id: string
-          last_name: string
-          role: Database["public"]["Enums"]["user_role_enum"]
-          updated_at: string | null
+          id: number
+          permission: Database["public"]["Enums"]["app_permission"]
+          role: Database["public"]["Enums"]["app_role"]
         }
         Insert: {
-          created_at?: string | null
-          first_name: string
-          id: string
-          last_name: string
-          role?: Database["public"]["Enums"]["user_role_enum"]
-          updated_at?: string | null
+          id?: number
+          permission: Database["public"]["Enums"]["app_permission"]
+          role: Database["public"]["Enums"]["app_role"]
         }
         Update: {
-          created_at?: string | null
-          first_name?: string
-          id?: string
-          last_name?: string
-          role?: Database["public"]["Enums"]["user_role_enum"]
-          updated_at?: string | null
+          id?: number
+          permission?: Database["public"]["Enums"]["app_permission"]
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: number
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: number
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: number
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -105,9 +117,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      custom_access_token_hook: {
+        Args: {
+          event: Json
+        }
+        Returns: Json
+      }
     }
     Enums: {
+      app_permission: "users.create" | "users.edit" | "users.delete"
+      app_role: "admin" | "volunteer"
       box_status_enum: "Active" | "Donated" | "Archived"
       gender_enum: "Male" | "Female" | "Unisex"
       movement_type_enum: "Create" | "Move" | "Donate" | "Archive"
