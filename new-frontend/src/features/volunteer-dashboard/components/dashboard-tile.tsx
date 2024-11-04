@@ -6,6 +6,7 @@ interface DashboardTileProps {
   title: string;
   bgColor: string;
   hoverColor: string;
+  onClick?: () => void;
 }
 
 const DashboardTile: FC<DashboardTileProps> = ({
@@ -13,9 +14,11 @@ const DashboardTile: FC<DashboardTileProps> = ({
   title,
   bgColor,
   hoverColor,
+  onClick,
 }) => {
   return (
     <div
+      onClick={onClick}
       className={`${bgColor} cursor-pointer rounded-lg shadow-lg flex flex-col items-center justify-center p-6 ${hoverColor} transition-colors`}
     >
       <Icon className="w-20 h-20 text-white mb-4" />
