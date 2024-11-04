@@ -1,6 +1,5 @@
 import { Category, CategoryInsert, CategoryUpdate } from "@/types/category";
 import { supabase } from "./supabaseClient";
-import { UserInsert, UserUpdate } from "@/types/users";
 import { Location, LocationInsert, LocationUpdate } from "@/types/location";
 import { User } from "@supabase/supabase-js";
 
@@ -201,54 +200,4 @@ export const fetchUsers = async (): Promise<User[]> => {
   }
 
   return data as User[];
-};
-
-export const fetchUserById = async (userId: string): Promise<User | null> => {
-  const { data, error } = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", userId)
-    .single();
-
-  if (error) {
-    if (error.code === "PGRST116") {
-      // No rows found
-      return null;
-    }
-    throw new Error(error.message);
-  }
-
-  return data as User;
-};
-
-export const createUser = async (user: UserInsert): Promise<User> => {
-  const { data, error } = await supabase
-    .from("users")
-    .insert(user)
-    .select("*")
-    .single();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data as User;
-};
-
-export const updateUser = async (
-  userId: string,
-  updates: UserUpdate,
-): Promise<User> => {
-  const { data, error } = await supabase
-    .from("users")
-    .update(updates)
-    .eq("id", userId)
-    .select("*")
-    .single();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data as User;
 };
