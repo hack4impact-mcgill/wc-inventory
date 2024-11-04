@@ -1,5 +1,5 @@
 # Web Collective Inventory Management Solution
-
+[![Netlify Status](https://api.netlify.com/api/v1/badges/d4f6c68a-954f-42f8-b172-9fb6e3a79b9f/deploy-status)](https://app.netlify.com/sites/wc-inventory/deploys)
 ## Overview
 This project is a comprehensive Inventory Management Solution for Web Collective. It consists of a React-based frontend and an Express.js backend, designed to efficiently manage and track inventory items.
 
