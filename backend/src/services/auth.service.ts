@@ -28,7 +28,7 @@ export class AuthService {
 
   async refreshToken(refreshToken: string): Promise<{ token: string }> {
     try {
-      const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!) as { userId: string };
+      const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!) as { userId: number };
       const user = await this.userService.getUserById(decoded.userId);
       if (!user) {
         throw new AuthenticationError("User not found");
@@ -40,7 +40,7 @@ export class AuthService {
     }
   }
 
-  async getProfile(userId: string): Promise<UserResponseDTO> {
+  async getProfile(userId: number): Promise<UserResponseDTO> {
     const user = await this.userService.getUserById(userId);
     if (!user) {
       throw new AuthenticationError("User not found");

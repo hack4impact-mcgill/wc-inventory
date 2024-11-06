@@ -99,6 +99,7 @@ export class AuthController extends Controller {
   @Response<AuthResponseDTO>(200, "OK")
   public async logout(): Promise<AuthResponseDTO> {
     this.setHeader('Set-Cookie', 'refreshToken=; HttpOnly; Secure; SameSite=Strict; Max-Age=0');
+    // TODO - Invalidate the issued token
     return { message: "Logged out successfully" };
   }
 
