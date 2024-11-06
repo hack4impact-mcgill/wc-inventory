@@ -10,7 +10,7 @@ import LocationManagement from "@/features/admin-dashboard/tabs/location-managem
 import UserManagement from "@/features/admin-dashboard/tabs/user-management";
 import InventoryManagement from "@/features/admin-dashboard/tabs/inventory-management";
 import UnauthorizedPage from "@/features/auth/unauthorized";
-import SearchForBoxByIdPage from "@/features/search-box-by-id";
+import BoxSearch from "@/features/search-box-by-id";
 import SearchForItem from "@/features/search-for-item";
 // import UserManagement from "@/features/admin-dashboard/tabs/user-management";
 
@@ -122,21 +122,21 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: "searchforbox",
+    path: "boxsearch",
     element: (
       <VolunteerWrapper>
-        <SearchForBoxByIdPage />
+        <BoxSearch />
       </VolunteerWrapper>
     ),
   },
-  {
-    path: "search-for-item",
-    element: (
-      <VolunteerWrapper>
-        <SearchForItem />
-      </VolunteerWrapper>
-    ),
-  },
+  // {
+  //   path: "search-for-item",
+  //   element: (
+  //     <VolunteerWrapper>
+  //       <SearchForItem />
+  //     </VolunteerWrapper>
+  //   ),
+  // },
   {
     path: "/login",
     element: <LoginPage />,
