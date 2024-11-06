@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import {
   PackageMinus,
   PackageOpen,
@@ -7,12 +8,15 @@ import {
 import DashboardTile from "./components/dashboard-tile";
 
 const VolunteerDashboard = () => {
+  const navigate = useNavigate();
+
   const tiles = [
     {
       icon: PackageSearch,
       title: "Search for Items",
       bgColor: "bg-green-500",
       hoverColor: "hover:bg-green-600",
+      onClick: () => navigate("/search-for-items"),
     },
     {
       icon: PackageMinus,
@@ -44,6 +48,7 @@ const VolunteerDashboard = () => {
             title={tile.title}
             bgColor={tile.bgColor}
             hoverColor={tile.hoverColor}
+            onClick={tile.onClick}
           />
         ))}
       </div>
