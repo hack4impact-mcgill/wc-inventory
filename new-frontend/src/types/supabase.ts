@@ -9,6 +9,83 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      box_contents: {
+        Row: {
+          box_content_id: number
+          box_id: number | null
+          category_id: number
+          gender: Database["public"]["Enums"]["gender_enum"]
+          quantity: number
+          size: Database["public"]["Enums"]["size_enum"]
+        }
+        Insert: {
+          box_content_id?: number
+          box_id?: number | null
+          category_id: number
+          gender: Database["public"]["Enums"]["gender_enum"]
+          quantity?: number
+          size: Database["public"]["Enums"]["size_enum"]
+        }
+        Update: {
+          box_content_id?: number
+          box_id?: number | null
+          category_id?: number
+          gender?: Database["public"]["Enums"]["gender_enum"]
+          quantity?: number
+          size?: Database["public"]["Enums"]["size_enum"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "box_contents_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "boxes"
+            referencedColumns: ["box_id"]
+          },
+          {
+            foreignKeyName: "box_contents_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["category_id"]
+          },
+        ]
+      }
+      boxes: {
+        Row: {
+          box_id: number
+          box_number: string
+          created_at: string | null
+          location_id: number | null
+          status: Database["public"]["Enums"]["box_status_enum"]
+          updated_at: string | null
+        }
+        Insert: {
+          box_id?: number
+          box_number: string
+          created_at?: string | null
+          location_id?: number | null
+          status?: Database["public"]["Enums"]["box_status_enum"]
+          updated_at?: string | null
+        }
+        Update: {
+          box_id?: number
+          box_number?: string
+          created_at?: string | null
+          location_id?: number | null
+          status?: Database["public"]["Enums"]["box_status_enum"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boxes_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["location_id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           category_id: number
@@ -117,11 +194,70 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_user_role:
+        | {
+            Args: {
+              new_user_id: number
+              new_role: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              new_user_id: string
+              new_role: string
+            }
+            Returns: undefined
+          }
+      add_user_role_uuid:
+        | {
+            Args: {
+              new_user_id: string
+              new_role: Database["public"]["Enums"]["app_role"]
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              new_user_id: string
+              new_role: string
+            }
+            Returns: undefined
+          }
+      authorize: {
+        Args: {
+          requested_permission: Database["public"]["Enums"]["app_permission"]
+        }
+        Returns: boolean
+      }
+      check_user_exists: {
+        Args: {
+          input_email: string
+        }
+        Returns: boolean
+      }
+      create_new_user: {
+        Args: {
+          email: string
+          password: string
+          first_name: string
+          last_name: string
+          role: string
+        }
+        Returns: undefined
+      }
       custom_access_token_hook: {
         Args: {
           event: Json
         }
         Returns: Json
+      }
+      insert_user_role_uuid: {
+        Args: {
+          new_user_id: string
+          new_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: undefined
       }
     }
     Enums: {
