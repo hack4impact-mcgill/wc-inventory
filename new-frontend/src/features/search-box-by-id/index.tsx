@@ -3,6 +3,25 @@ import { Search } from 'lucide-react';
 import { Box } from '@/types/box'
 import { mockBoxes } from './mock-data';
 import debounce from 'lodash/debounce';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
+import { Button } from '@/components/ui/button';
+
+const CATEGORIES: Record<number, string> = {
+  1: 'T-Shirts',
+  2: 'Jackets',
+  3: 'Socks',
+  4: 'Shorts',
+  // Add more categories as needed
+};
 
 const HighlightedText = ({ text, highlight }: { text: string; highlight: string }) => {
   if (!highlight.trim()) {
@@ -252,9 +271,32 @@ const BoxSearch = () => {
             <p>
               <span className="font-medium">Location ID:</span> {selectedBox.location_id}
             </p>
-            <p>
-              <span className="font-medium">Contents:</span> {selectedBox.contents}
-            </p>
+            <div>
+              <span className="font-medium">Contents:</span>
+
+              <Drawer>
+                <DrawerTrigger asChild>
+                  <Button variant="outline">See contents</Button>
+                </DrawerTrigger>
+                <DrawerContent>
+                  <DrawerHeader>
+                    <DrawerTitle>See contents</DrawerTitle>
+                    <DrawerDescription>ASDFSDF</DrawerDescription>
+                  </DrawerHeader>
+
+                </DrawerContent>
+
+              </Drawer>
+
+              <ul className="ml-4 mt-1">
+                {selectedBox.contents.map((item) => (
+                  <li key={item.box_content_id}>
+                    {item.quantity}x {item.size} {CATEGORIES[item.category_id]} 
+                    {item.gender !== 'U' && ` (${item.gender})`}
+                  </li>
+                ))}
+              </ul>
+            </div>
             <p>
               <span className="font-medium">Movement:</span> {selectedBox.movement}
             </p>
