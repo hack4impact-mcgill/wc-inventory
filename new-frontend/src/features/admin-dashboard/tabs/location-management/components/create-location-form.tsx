@@ -25,7 +25,7 @@ export const locationFormSchema = z.object({
     .max(500, "Description must not exceed 500 characters")
     .nullable()
     .transform((val) => (val === "" ? null : val)),
-  parent_id: z.number().nullable(),
+  parent_id: z.string().nullable(),
   level: z
     .number()
     .min(1, "Level must be at least 1")
@@ -96,7 +96,7 @@ export const CreateLocationForm = ({
         className="space-y-4"
         onKeyDown={handleKeyDown}
       >
-        <FormField
+        {/* <FormField
           control={control}
           name="name"
           render={({ field }) => (
@@ -172,7 +172,7 @@ export const CreateLocationForm = ({
               <FormMessage />
             </FormItem>
           )}
-        />
+        /> */}
         <Button
           type="submit"
           disabled={isLoading || !formState.isDirty || !formState.isValid}
