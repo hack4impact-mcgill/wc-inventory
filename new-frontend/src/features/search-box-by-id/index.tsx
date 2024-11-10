@@ -3,17 +3,19 @@ import { Search } from 'lucide-react';
 import { Box } from '@/types/box'
 import { mockBoxes } from './mock-data';
 import debounce from 'lodash/debounce';
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer"
 import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import BoxSearch from './components/BoxSearch';
+import React from 'react';
+import { Command, CommandDialog, CommandGroup, CommandEmpty, CommandInput, CommandList, CommandItem } from '@/components/ui/command';
+
 
 const CATEGORIES: Record<number, string> = {
   1: 'T-Shirts',
@@ -43,7 +45,9 @@ const HighlightedText = ({ text, highlight }: { text: string; highlight: string 
   );
 };
 
-const BoxSearch = () => {
+
+
+const BoxSearchById = () => {
   const [searchId, setSearchId] = useState("");
   const [searchResults, setSearchResults] = useState<Box[]>([]);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
@@ -109,64 +113,6 @@ const BoxSearch = () => {
     return ""; // Empty string means no error
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!isDropdownOpen) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        const validationError = validateInput(searchId);
-        if (validationError) {
-          setError(validationError);
-          return;
-        }
-
-        // Check if the box exists in mockBoxes
-        const boxExists = mockBoxes.some(
-          box => String(box.box_id).toLowerCase() === searchId.toLowerCase()
-        );
-
-        if (!boxExists) {
-          setNotFoundError(`No box found with ID "${searchId}"`);
-          setSearchResults([]);
-          return;
-        }
-
-        setNotFoundError("");
-        debouncedSearch(searchId);
-      }
-      return;
-    }
-    
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setFocusedIndex(prev => 
-          prev < searchResults.length - 1 ? prev + 1 : prev
-        );
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setFocusedIndex(prev => prev > 0 ? prev - 1 : prev);
-        break;
-      case 'Enter':
-        e.preventDefault();
-        const validationError = validateInput(searchId);
-        if (validationError) {
-          setError(validationError);
-          return;
-        }
-        
-        if (focusedIndex >= 0) {
-          handleBoxSelect(searchResults[focusedIndex]);
-        } else if (searchResults.length === 1) {
-          handleBoxSelect(searchResults[0]);
-        } else if (searchResults.length === 0) {
-          setNotFoundError(`No box found with ID "${searchId}"`);
-        }
-        setIsDropdownOpen(false);
-        break;
-    }
-  };
-
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchId(value);
@@ -196,11 +142,15 @@ const BoxSearch = () => {
 
   return (
     <div className="w-full max-w-xl mx-auto p-4">
+
+      <BoxSearch boxes={mockBoxes}/>
+
+
       {/* Search Container */}
+
       <div 
         className="relative w-full"
         ref={dropdownRef}
-        onKeyDown={handleKeyDown}
         tabIndex={0}
       >
         {/* Search Input */}
@@ -273,29 +223,32 @@ const BoxSearch = () => {
             </p>
             <div>
               <span className="font-medium">Contents:</span>
-
-              <Drawer>
-                <DrawerTrigger asChild>
-                  <Button variant="outline">See contents</Button>
-                </DrawerTrigger>
-                <DrawerContent>
-                  <DrawerHeader>
-                    <DrawerTitle>See contents</DrawerTitle>
-                    <DrawerDescription>ASDFSDF</DrawerDescription>
-                  </DrawerHeader>
-
-                </DrawerContent>
-
-              </Drawer>
-
-              <ul className="ml-4 mt-1">
+              <div className="flex flex-col space-y-2 mt-2">
                 {selectedBox.contents.map((item) => (
-                  <li key={item.box_content_id}>
-                    {item.quantity}x {item.size} {CATEGORIES[item.category_id]} 
-                    {item.gender !== 'U' && ` (${item.gender})`}
-                  </li>
+                  <Card key={item.box_content_id} className="w-full">
+                    <div className="p-4 flex items-center justify-between">
+                      <div className="flex items-center">
+                        {item.icon ? <item.icon className="h-6 w-6 text-gray-700 mr-2" /> : null}
+                        <div className="flex flex-col">
+                          <div className="font-medium">
+                            {CATEGORIES[item.category_id]}  { /* needa revisit this, item category should be ENUM...? */}
+                            {item.gender !== 'U' && ` (${item.gender})`}
+                            <span className="text-sm text-gray-500 ml-2">
+                              Size: {item.size}
+                            </span>
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            ID: {item.box_content_id}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-medium">Qty: {item.quantity}</div>
+                      </div>
+                    </div>
+                  </Card>
                 ))}
-              </ul>
+              </div>
             </div>
             <p>
               <span className="font-medium">Movement:</span> {selectedBox.movement}
@@ -310,4 +263,4 @@ const BoxSearch = () => {
   );
 };
 
-export default BoxSearch;
+export default BoxSearchById;
