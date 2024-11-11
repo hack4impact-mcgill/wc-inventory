@@ -5,15 +5,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-
-import { CATEGORIES } from "../mock-data";
+import BoxContent from "./BoxContent";
 
 interface BoxDetailsProps {
   selectedBox: Box;
 }
 
-
 function BoxDetails({ selectedBox }: BoxDetailsProps) {
+
   return (
       <Card>
       <CardHeader>
@@ -38,32 +37,12 @@ function BoxDetails({ selectedBox }: BoxDetailsProps) {
         </div>
 
         <div className="space-y-2">
-          <h4 className="font-medium">Contents:</h4>
+          <h4 className="font-medium">Content:</h4>
           <div className="grid gap-2">
-            {selectedBox.contents.map((item) => (
-              <Card key={item.box_content_id}>
-                <CardContent className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    {item.icon && <item.icon className="h-6 w-6 text-gray-600" />}
-                    <div className="flex flex-col">
-                      <div className="font-medium">
-                        {CATEGORIES[item.category_id]}
-                        {item.gender !== 'U' && ` (${item.gender})`}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        Size: {item.size}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        ID: {item.box_content_id}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-medium">Qty: {item.quantity}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            {selectedBox.content.map((item) => 
+            
+              <BoxContent key={item.box_content_id} item={item} />
+            )}
           </div>
         </div>
       </CardContent>
