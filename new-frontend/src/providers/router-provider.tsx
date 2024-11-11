@@ -49,39 +49,6 @@ const AdminWrapper = ({ children }: ProtectedRouteProps) => {
   return <AuthWrapper roles={["admin"]}>{children}</AuthWrapper>;
 };
 
-// interface Route {
-//     name: string;
-//     href: string;
-//     icon: Icon;
-// }
-
-// export const Routes: Route[] = [
-//     {
-//         name: "Home",
-//         href: "/",
-//         icon: Icons.home,
-//     },
-//     {
-//         name: "Groceries",
-//         href: "/groceries",
-//         icon: Icons.groceries,
-//     },
-//     {
-//         name: "Budgets",
-//         href: "/budgets",
-//         icon: Icons.budget,
-//     },
-//     {
-//         name: "Literature",
-//         href: "/literature",
-//         icon: Icons.literature,
-//     },
-//     {
-//         name: "Account",
-//         href: "/account",
-//         icon: Icons.user,
-//     },
-// ]
 const router = createBrowserRouter([
   {
     path: "/",
