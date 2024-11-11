@@ -1,3 +1,5 @@
+import { LucideIcon } from "lucide-react";
+
 type Size = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'ONESIZE';
 type Gender = 'M' | 'F' | 'U';
 
@@ -7,10 +9,11 @@ export interface BoxContent {
   category_id: number;
   gender: Gender;
   quantity: number;
+  icon: LucideIcon; // svg
 }
 
 export type Box = {
-  box_id: number;
+  box_id: string;
   name: string;
   description: string;
   location_id: number;
