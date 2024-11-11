@@ -1,10 +1,9 @@
 import { Box } from '@/types/box'
 import { Shirt } from 'lucide-react';
-import { v4 as uuidv4 } from 'uuid';  // Import UUID generation
 
 export const mockBoxes: Box[] = [
   {
-    box_id: uuidv4(),
+    box_id: '123e4567-e89b-12d3-a456-426614174000',
     name: 'BOX001',
     description: 'Winter clothing collection',
     location_id: 4,
@@ -19,7 +18,7 @@ export const mockBoxes: Box[] = [
     tags: [1, 3]
   },
   {
-    box_id: uuidv4(),
+    box_id: '123e4567-e89b-12d3-a456-426614174001',
     name: 'BOX002',
     description: 'Summer clothing collection',
     location_id: 5,
@@ -33,7 +32,7 @@ export const mockBoxes: Box[] = [
     tags: [2, 3]
   },
   {
-    box_id: uuidv4(),
+    box_id: '123e4567-e89b-12d3-a456-426614174002',
     name: 'BOX003',
     description: 'Mixed accessories',
     location_id: 6,
@@ -47,7 +46,7 @@ export const mockBoxes: Box[] = [
     tags: [4]
   },
   {
-    box_id: uuidv4(),
+    box_id: '123e4567-e89b-12d3-a456-426614174003',
     name: 'BOX004',
     description: 'Denim collection',
     location_id: 4,
@@ -61,7 +60,7 @@ export const mockBoxes: Box[] = [
     tags: [3, 5]
   },
   {
-    box_id: uuidv4(),
+    box_id: '123e4567-e89b-12d3-a456-426614174004',
     name: 'BOX005',
     description: 'Children\'s toys',
     location_id: 7,
@@ -75,7 +74,7 @@ export const mockBoxes: Box[] = [
     tags: [5]
   },
   {
-    box_id: uuidv4(),
+    box_id: '123e4567-e89b-12d3-a456-426614174005',
     name: 'BOX006',
     description: 'Electronics storage',
     location_id: 8,
@@ -89,7 +88,7 @@ export const mockBoxes: Box[] = [
     tags: [4, 5]
   },
   {
-    box_id: uuidv4(),
+    box_id: '123e4567-e89b-12d3-a456-426614174006',
     name: 'BOX007',
     description: 'Office supplies',
     location_id: 4,
@@ -103,7 +102,7 @@ export const mockBoxes: Box[] = [
     tags: [3]
   },
   {
-    box_id: uuidv4(),
+    box_id: '123e4567-e89b-12d3-a456-426614174007',
     name: 'BOX008',
     description: 'Kitchen equipment',
     location_id: 5,
@@ -117,7 +116,7 @@ export const mockBoxes: Box[] = [
     tags: [5]
   },
   {
-    box_id: uuidv4(),
+    box_id: '123e4567-e89b-12d3-a456-426614174008',
     name: 'BOX009',
     description: 'Sports gear',
     location_id: 6,
@@ -131,7 +130,7 @@ export const mockBoxes: Box[] = [
     tags: [2]
   },
   {
-    box_id: uuidv4(),
+    box_id: '123e4567-e89b-12d3-a456-426614174009',
     name: 'BOX010',
     description: 'Books and magazines',
     location_id: 7,
@@ -145,7 +144,7 @@ export const mockBoxes: Box[] = [
     tags: [4]
   },
   {
-    box_id: uuidv4(),
+    box_id: '123e4567-e89b-12d3-a456-426614174010',
     name: 'BOX011',
     description: 'Art supplies',
     location_id: 8,
@@ -159,7 +158,7 @@ export const mockBoxes: Box[] = [
     tags: [3, 5]
   },
   {
-    box_id: uuidv4(),
+    box_id: '123e4567-e89b-12d3-a456-426614174011',
     name: 'BOX012',
     description: 'Winter sports equipment',
     location_id: 4,
@@ -173,7 +172,7 @@ export const mockBoxes: Box[] = [
     tags: [1]
   },
   {
-    box_id: uuidv4(),
+    box_id: '123e4567-e89b-12d3-a456-426614174012',
     name: 'BOX013',
     description: 'Gardening tools',
     location_id: 5,
@@ -187,7 +186,7 @@ export const mockBoxes: Box[] = [
     tags: [2, 4]
   },
   {
-    box_id: uuidv4(),
+    box_id: '123e4567-e89b-12d3-a456-426614174013',
     name: 'BOX014',
     description: 'Holiday decorations',
     location_id: 6,
@@ -201,7 +200,7 @@ export const mockBoxes: Box[] = [
     tags: [1, 5]
   },
   {
-    box_id: uuidv4(),
+    box_id: '123e4567-e89b-12d3-a456-426614174014',
     name: 'BOX015',
     description: 'Camping gear',
     location_id: 7,
@@ -215,7 +214,7 @@ export const mockBoxes: Box[] = [
     tags: [2]
   },
   {
-    box_id: uuidv4(),
+    box_id: '123e4567-e89b-12d3-a456-426614174015',
     name: 'BOX016',
     description: 'Musical instruments',
     location_id: 8,
@@ -229,7 +228,7 @@ export const mockBoxes: Box[] = [
     tags: [5]
   },
   {
-    box_id: uuidv4(),
+    box_id: '123e4567-e89b-12d3-a456-426614174016',
     name: 'BOX017',
     description: 'Pet supplies',
     location_id: 4,
@@ -243,7 +242,7 @@ export const mockBoxes: Box[] = [
     tags: [3, 4]
   },
   {
-    box_id: uuidv4(),
+    box_id: '123e4567-e89b-12d3-a456-426614174017',
     name: 'BOX018',
     description: 'Bathroom accessories',
     location_id: 5,
@@ -257,7 +256,7 @@ export const mockBoxes: Box[] = [
     tags: [3]
   },
   {
-    box_id: uuidv4(),
+    box_id: '123e4567-e89b-12d3-a456-426614174018',
     name: 'BOX019',
     description: 'Home maintenance tools',
     location_id: 6,
@@ -271,7 +270,7 @@ export const mockBoxes: Box[] = [
     tags: [4]
   },
   {
-    box_id: uuidv4(),
+    box_id: '123e4567-e89b-12d3-a456-426614174019',
     name: 'BOX020',
     description: 'Vintage collection',
     location_id: 7,
@@ -286,7 +285,7 @@ export const mockBoxes: Box[] = [
   }
 ];
 
-export const CATEGORIES = {
+export const CATEGORIES: Record<number, string> = {
   1: 'T-Shirts',
   2: 'Jackets',
   3: 'Socks',
