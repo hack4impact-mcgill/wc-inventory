@@ -2,18 +2,19 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
-
 import { Card, CardContent } from "@/components/ui/card";
+import { fetchCategories } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 
 const CategoryManagement = () => {
   const [globalFilter, setGlobalFilter] = React.useState("");
 
-  // const { data: categories = [], isLoading } = useQuery({
-  //     queryKey: ['categories'],
-  //     queryFn: fetchCategories,
-  // });
+  const { data: categories, isLoading } = useQuery({
+    queryKey: ["categories"],
+    queryFn: fetchCategories,
+  });
 
-  // if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <div>Loading...</div>;
 
   return (
     <Card>
@@ -34,7 +35,9 @@ const CategoryManagement = () => {
           </Button>
         </div>
 
-        <div className="rounded-md border"></div>
+        <div className="rounded-md border">
+          {/* Adding a mock table for now */}
+        </div>
       </CardContent>
     </Card>
   );
