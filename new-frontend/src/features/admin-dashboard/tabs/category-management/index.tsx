@@ -5,6 +5,7 @@ import { Plus, Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { fetchCategories } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
+import CategoriesTable from "./components/category-table";
 
 const CategoryManagement = () => {
   const [globalFilter, setGlobalFilter] = React.useState("");
@@ -35,9 +36,7 @@ const CategoryManagement = () => {
           </Button>
         </div>
 
-        <div className="rounded-md border">
-          {/* Adding a mock table for now */}
-        </div>
+        <CategoriesTable data={categories} filter={globalFilter} />
       </CardContent>
     </Card>
   );
