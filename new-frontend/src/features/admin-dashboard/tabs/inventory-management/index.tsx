@@ -67,100 +67,101 @@ const InventoryDashboard = () => {
   };
 
   return (
-    <div className="p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Inventory</h1>
-          <p className="text-gray-600">Manage and move around boxes</p>
-        </div>
-        <div className="flex gap-4">
-          <Button variant="outline">
-            <Plus className="mr-2 h-4 w-4" /> Create Box
-          </Button>
-          <Button variant="outline">
-            <X className="mr-2 h-4 w-4" /> Move Box(es)
-          </Button>
-        </div>
-      </div>
+    // <div className="p-6">
+    //   {/* Header */}
+    //   <div className="flex justify-between items-center mb-6">
+    //     <div>
+    //       <h1 className="text-2xl font-bold">Inventory</h1>
+    //       <p className="text-gray-600">Manage and move around boxes</p>
+    //     </div>
+    //     <div className="flex gap-4">
+    //       <Button variant="outline">
+    //         <Plus className="mr-2 h-4 w-4" /> Create Box
+    //       </Button>
+    //       <Button variant="outline">
+    //         <X className="mr-2 h-4 w-4" /> Move Box(es)
+    //       </Button>
+    //     </div>
+    //   </div>
 
-      {/* Search Bar */}
-      <Input className="max-w-md mb-6" placeholder="Search items..." />
+    //   {/* Search Bar */}
+    //   <Input className="max-w-md mb-6" placeholder="Search items..." />
 
-      {/* Categories Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {categories.map((category) => (
-          <Card key={category.id} className="relative">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 right-2"
-              onClick={() => removeCategory(category.id)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-            <CardContent className="pt-6">
-              <div className="flex items-start gap-4">
-                <div className="h-12 w-12 rounded bg-blue-100" />{" "}
-                {/* Placeholder icon */}
-                <div>
-                  <h3 className="font-semibold">
-                    {category.name} ({category.gender})
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    Quantity available: {category.totalQuantity}
-                  </p>
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-4 mt-4">
-                {category.sizes.map((size) => (
-                  <div key={size.size} className="p-3 bg-gray-50 rounded">
-                    <div className="font-medium">{size.size}</div>
-                    <div className="text-sm text-gray-600">{size.quantity}</div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+    //   {/* Categories Grid */}
+    //   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    //     {categories.map((category) => (
+    //       <Card key={category.id} className="relative">
+    //         <Button
+    //           variant="ghost"
+    //           size="icon"
+    //           className="absolute top-2 right-2"
+    //           onClick={() => removeCategory(category.id)}
+    //         >
+    //           <X className="h-4 w-4" />
+    //         </Button>
+    //         <CardContent className="pt-6">
+    //           <div className="flex items-start gap-4">
+    //             <div className="h-12 w-12 rounded bg-blue-100" />{" "}
+    //             {/* Placeholder icon */}
+    //             <div>
+    //               <h3 className="font-semibold">
+    //                 {category.name} ({category.gender})
+    //               </h3>
+    //               <p className="text-sm text-gray-600">
+    //                 Quantity available: {category.totalQuantity}
+    //               </p>
+    //             </div>
+    //           </div>
+    //           <div className="grid grid-cols-3 gap-4 mt-4">
+    //             {category.sizes.map((size) => (
+    //               <div key={size.size} className="p-3 bg-gray-50 rounded">
+    //                 <div className="font-medium">{size.size}</div>
+    //                 <div className="text-sm text-gray-600">{size.quantity}</div>
+    //               </div>
+    //             ))}
+    //           </div>
+    //         </CardContent>
+    //       </Card>
+    //     ))}
 
-        {/* Add Category Card */}
-        <Dialog open={isAddingCategory} onOpenChange={setIsAddingCategory}>
-          <DialogTrigger asChild>
-            <Button
-              variant="ghost"
-              className="h-[300px] border-2 border-dashed border-gray-200 hover:border-gray-300 flex flex-col items-center justify-center"
-            >
-              <Plus className="h-8 w-8 mb-2" />
-              <span>Create new category</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Category to Dashboard</DialogTitle>
-            </DialogHeader>
-            <Input
-              placeholder="Search for a category..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="mb-4"
-            />
-            <div className="space-y-2">
-              {filteredCategories.map((category) => (
-                <Button
-                  key={category.id}
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => addCategory(category as any)}
-                >
-                  {category.name} ({category.gender})
-                </Button>
-              ))}
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-    </div>
+    //     {/* Add Category Card */}
+    //     <Dialog open={isAddingCategory} onOpenChange={setIsAddingCategory}>
+    //       <DialogTrigger asChild>
+    //         <Button
+    //           variant="ghost"
+    //           className="h-[300px] border-2 border-dashed border-gray-200 hover:border-gray-300 flex flex-col items-center justify-center"
+    //         >
+    //           <Plus className="h-8 w-8 mb-2" />
+    //           <span>Create new category</span>
+    //         </Button>
+    //       </DialogTrigger>
+    //       <DialogContent>
+    //         <DialogHeader>
+    //           <DialogTitle>Add Category to Dashboard</DialogTitle>
+    //         </DialogHeader>
+    //         <Input
+    //           placeholder="Search for a category..."
+    //           value={searchTerm}
+    //           onChange={(e) => setSearchTerm(e.target.value)}
+    //           className="mb-4"
+    //         />
+    //         <div className="space-y-2">
+    //           {filteredCategories.map((category) => (
+    //             <Button
+    //               key={category.id}
+    //               variant="outline"
+    //               className="w-full justify-start"
+    //               onClick={() => addCategory(category as any)}
+    //             >
+    //               {category.name} ({category.gender})
+    //             </Button>
+    //           ))}
+    //         </div>
+    //       </DialogContent>
+    //     </Dialog>
+    //   </div>
+    // </div>
+    <></>
   );
 };
 
