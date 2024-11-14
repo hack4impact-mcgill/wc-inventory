@@ -42,13 +42,6 @@ export type Database = {
             referencedRelation: "boxes"
             referencedColumns: ["box_id"]
           },
-          {
-            foreignKeyName: "box_contents_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["category_id"]
-          },
         ]
       }
       box_movements: {
@@ -145,7 +138,7 @@ export type Database = {
         Row: {
           category_id: string
           description: string | null
-          icon: string | null
+          icon: string
           level: number
           name: string
           parent_id: string | null
@@ -153,7 +146,7 @@ export type Database = {
         Insert: {
           category_id?: string
           description?: string | null
-          icon?: string | null
+          icon: string
           level: number
           name: string
           parent_id?: string | null
@@ -161,7 +154,7 @@ export type Database = {
         Update: {
           category_id?: string
           description?: string | null
-          icon?: string | null
+          icon?: string
           level?: number
           name?: string
           parent_id?: string | null
