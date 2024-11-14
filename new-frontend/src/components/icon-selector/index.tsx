@@ -1,5 +1,4 @@
 import { type FC, useState } from "react";
-import * as Icons from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -14,37 +13,31 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Check, Folder, LucideIcon } from "lucide-react";
-
-// Exclude non-icon exports from lucide-react
-type IconKeys = Exclude<
-  keyof typeof Icons,
-  "createLucideIcon" | "icons" | "default"
->;
-
-// Create a record of only the icon components
-const iconComponents: Record<string, LucideIcon> = Object.fromEntries(
-  Object.entries(Icons).filter(
-    ([key]) =>
-      typeof Icons[key as keyof typeof Icons] === "function" &&
-      !["createLucideIcon", "icons", "default"].includes(key),
-  ),
-) as Record<string, LucideIcon>;
-
-const iconNames = Object.keys(iconComponents);
+import { Check, Folder } from "lucide-react";
+import { CATEGORY_ICONS, type CategoryIconName } from "@/types/icons";
 
 interface IconSelectorProps {
-  value: string;
-  onChange: (value: string) => void;
+  value: string | null;
+  onChange: (value: CategoryIconName) => void;
+  className?: string;
 }
 
-const IconSelector: FC<IconSelectorProps> = ({ value, onChange }) => {
+const IconSelector: FC<IconSelectorProps> = ({
+  value,
+  onChange,
+  className,
+}) => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Get the current icon component or fallback to Folder
+  // Get all icon names
+  const iconNames = Object.keys(CATEGORY_ICONS) as CategoryIconName[];
+
+  // Get current icon component
   const CurrentIcon =
-    value && iconComponents[value] ? iconComponents[value] : Folder;
+    value && CATEGORY_ICONS[value as CategoryIconName]
+      ? CATEGORY_ICONS[value as CategoryIconName]
+      : Folder;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -53,7 +46,7 @@ const IconSelector: FC<IconSelectorProps> = ({ value, onChange }) => {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className={className ?? "w-[200px] justify-between"}
         >
           <div className="flex items-center gap-2">
             <CurrentIcon className="h-4 w-4" />
@@ -76,7 +69,7 @@ const IconSelector: FC<IconSelectorProps> = ({ value, onChange }) => {
                   name.toLowerCase().includes(searchQuery.toLowerCase()),
                 )
                 .map((name) => {
-                  const Icon = iconComponents[name];
+                  const Icon = CATEGORY_ICONS[name];
                   return (
                     <CommandItem
                       key={name}

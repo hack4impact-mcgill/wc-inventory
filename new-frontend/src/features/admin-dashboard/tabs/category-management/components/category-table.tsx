@@ -1,5 +1,4 @@
 import { type FC } from "react";
-import * as Icons from "lucide-react";
 import {
   Table,
   TableBody,
@@ -15,13 +14,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import {
-  MoreHorizontal,
-  Folder,
-  FolderTree,
-  type LucideIcon,
-} from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import type { Database } from "@/types/supabase";
+import { getCategoryIcon } from "@/types/icons";
 
 type Category = Database["public"]["Tables"]["categories"]["Row"];
 
@@ -32,31 +27,12 @@ interface CategoriesTableProps {
   onDelete?: (categoryId: string) => void;
 }
 
-// Type for the dynamic icon lookup
-type IconsType = typeof Icons;
-interface IconComponent extends LucideIcon {}
-
 const CategoriesTable: FC<CategoriesTableProps> = ({
   data = [],
   filter = "",
   onEdit,
   onDelete,
 }) => {
-  // Helper function to get the icon component
-  const getIconComponent = (
-    iconName: string | null,
-    level: number,
-  ): IconComponent => {
-    if (!iconName) {
-      return level === 0 ? Folder : FolderTree;
-    }
-
-    const IconComponent = (Icons as IconsType)[
-      iconName as keyof IconsType
-    ] as IconComponent;
-    return IconComponent || (level === 0 ? Folder : FolderTree);
-  };
-
   // Filter categories based on search input
   const filteredCategories = data?.filter(
     (category) =>
@@ -97,10 +73,7 @@ const CategoriesTable: FC<CategoriesTableProps> = ({
             </TableRow>
           ) : (
             filteredCategories.map((category) => {
-              const IconComponent = getIconComponent(
-                category.icon,
-                category.level,
-              );
+              const IconComponent = getCategoryIcon(category.icon);
 
               return (
                 <TableRow key={category.category_id}>
