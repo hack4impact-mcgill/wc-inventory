@@ -1,4 +1,5 @@
 import { type FC } from "react";
+import * as Icons from "lucide-react";
 import {
   Table,
   TableBody,
@@ -14,7 +15,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Folder, FolderTree } from "lucide-react";
+import {
+  MoreHorizontal,
+  Folder,
+  FolderTree,
+  type LucideIcon,
+} from "lucide-react";
 import type { Database } from "@/types/supabase";
 
 type Category = Database["public"]["Tables"]["categories"]["Row"];
@@ -26,12 +32,31 @@ interface CategoriesTableProps {
   onDelete?: (categoryId: string) => void;
 }
 
+// Type for the dynamic icon lookup
+type IconsType = typeof Icons;
+interface IconComponent extends LucideIcon {}
+
 const CategoriesTable: FC<CategoriesTableProps> = ({
   data = [],
   filter = "",
   onEdit,
   onDelete,
 }) => {
+  // Helper function to get the icon component
+  const getIconComponent = (
+    iconName: string | null,
+    level: number,
+  ): IconComponent => {
+    if (!iconName) {
+      return level === 0 ? Folder : FolderTree;
+    }
+
+    const IconComponent = (Icons as IconsType)[
+      iconName as keyof IconsType
+    ] as IconComponent;
+    return IconComponent || (level === 0 ? Folder : FolderTree);
+  };
+
   // Filter categories based on search input
   const filteredCategories = data?.filter(
     (category) =>
@@ -52,7 +77,7 @@ const CategoriesTable: FC<CategoriesTableProps> = ({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[50px]"></TableHead>
+            <TableHead className="w-[50px]">Icon</TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Description</TableHead>
             <TableHead>Level</TableHead>
@@ -71,44 +96,51 @@ const CategoriesTable: FC<CategoriesTableProps> = ({
               </TableCell>
             </TableRow>
           ) : (
-            filteredCategories.map((category) => (
-              <TableRow key={category.category_id}>
-                <TableCell>
-                  {category.level === 0 ? (
-                    <Folder className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <FolderTree className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </TableCell>
-                <TableCell className="font-medium">{category.name}</TableCell>
-                <TableCell>{category.description || "-"}</TableCell>
-                <TableCell>{category.level}</TableCell>
-                <TableCell>{getParentName(category.parent_id)}</TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => onEdit?.(category.category_id)}
-                      >
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-destructive"
-                        onClick={() => onDelete?.(category.category_id)}
-                      >
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))
+            filteredCategories.map((category) => {
+              const IconComponent = getIconComponent(
+                category.icon,
+                category.level,
+              );
+
+              return (
+                <TableRow key={category.category_id}>
+                  <TableCell className="pl-4">
+                    <IconComponent className="h-4 w-4 text-muted-foreground" />
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    <div style={{ marginLeft: `${category.level * 12}px` }}>
+                      {category.name}
+                    </div>
+                  </TableCell>
+                  <TableCell>{category.description || "-"}</TableCell>
+                  <TableCell>{category.level}</TableCell>
+                  <TableCell>{getParentName(category.parent_id)}</TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => onEdit?.(category.category_id)}
+                        >
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => onDelete?.(category.category_id)}
+                        >
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              );
+            })
           )}
         </TableBody>
       </Table>
