@@ -34,6 +34,7 @@ const CategoriesTable: FC<CategoriesTableProps> = ({
   onDelete,
 }) => {
   // Filter categories based on search input
+
   const filteredCategories = data?.filter(
     (category) =>
       category.name.toLowerCase().includes(filter.toLowerCase()) ||

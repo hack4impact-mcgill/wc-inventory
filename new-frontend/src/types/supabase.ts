@@ -243,7 +243,47 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      box_table: {
+        Row: {
+          box_content_id: string | null
+          box_created_at: string | null
+          box_id: string | null
+          box_updated_at: string | null
+          category_description: string | null
+          category_id: string | null
+          category_name: string | null
+          gender: Database["public"]["Enums"]["gender_enum"] | null
+          location_id: string | null
+          location_name: string | null
+          name: string | null
+          quantity: number | null
+          size: Database["public"]["Enums"]["size_enum"] | null
+          status: Database["public"]["Enums"]["box_status_enum"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "box_contents_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "boxes"
+            referencedColumns: ["box_id"]
+          },
+          {
+            foreignKeyName: "box_contents_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["category_id"]
+          },
+          {
+            foreignKeyName: "boxes_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["location_id"]
+          },
+        ]
+      }
     }
     Functions: {
       add_user_role:
