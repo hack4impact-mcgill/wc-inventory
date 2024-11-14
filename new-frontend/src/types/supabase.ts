@@ -12,7 +12,7 @@ export type Database = {
       box_contents: {
         Row: {
           box_content_id: string
-          box_id: string | null
+          box_id: string
           category_id: string
           gender: Database["public"]["Enums"]["gender_enum"]
           quantity: number
@@ -20,7 +20,7 @@ export type Database = {
         }
         Insert: {
           box_content_id?: string
-          box_id?: string | null
+          box_id: string
           category_id: string
           gender: Database["public"]["Enums"]["gender_enum"]
           quantity?: number
@@ -28,7 +28,7 @@ export type Database = {
         }
         Update: {
           box_content_id?: string
-          box_id?: string | null
+          box_id?: string
           category_id?: string
           gender?: Database["public"]["Enums"]["gender_enum"]
           quantity?: number
@@ -41,6 +41,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "boxes"
             referencedColumns: ["box_id"]
+          },
+          {
+            foreignKeyName: "box_contents_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["category_id"]
           },
         ]
       }
@@ -102,25 +109,25 @@ export type Database = {
       boxes: {
         Row: {
           box_id: string
-          box_number: string
           created_at: string | null
           location_id: string | null
+          name: string
           status: Database["public"]["Enums"]["box_status_enum"]
           updated_at: string | null
         }
         Insert: {
           box_id?: string
-          box_number: string
           created_at?: string | null
           location_id?: string | null
+          name: string
           status?: Database["public"]["Enums"]["box_status_enum"]
           updated_at?: string | null
         }
         Update: {
           box_id?: string
-          box_number?: string
           created_at?: string | null
           location_id?: string | null
+          name?: string
           status?: Database["public"]["Enums"]["box_status_enum"]
           updated_at?: string | null
         }
