@@ -29,7 +29,7 @@ interface NestedLocation extends Location {
 interface LocationTableProps {
   locations: Location[];
   onEdit: (location: Location) => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: string) => void;
   globalFilter: string;
   setGlobalFilter: (value: string) => void;
   onAdd: () => void;
@@ -46,7 +46,7 @@ export const LocationTable = ({
   const [expanded, setExpanded] = React.useState<ExpandedState>({});
 
   const processedData = useMemo(() => {
-    const locationMap = new Map<number | null, Location[]>();
+    const locationMap = new Map<string | null, Location[]>();
 
     locations.forEach((location) => {
       const parentId = location.parent_id;
@@ -56,7 +56,7 @@ export const LocationTable = ({
       locationMap.get(parentId)?.push(location);
     });
 
-    const buildTree = (parentId: number | null): NestedLocation[] => {
+    const buildTree = (parentId: string | null): NestedLocation[] => {
       const children = locationMap.get(parentId) || [];
       return children.map((item) => ({
         ...item,

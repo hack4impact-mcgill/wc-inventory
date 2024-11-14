@@ -53,7 +53,7 @@ const LocationManagement = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<Location> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<Location> }) =>
       updateLocation(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["locations"] });
@@ -102,7 +102,7 @@ const LocationManagement = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this location?")) {
       await deleteMutation.mutateAsync(id);
     }

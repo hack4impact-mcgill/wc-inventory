@@ -165,7 +165,7 @@ export const createLocation = async (
  * Update an existing location.
  */
 export const updateLocation = async (
-  locationId: number,
+  locationId: string,
   updates: LocationUpdate,
 ): Promise<Location> => {
   const { data, error } = await supabase
@@ -186,7 +186,7 @@ export const updateLocation = async (
 /**
  * Delete a location.
  */
-export const deleteLocation = async (locationId: number): Promise<void> => {
+export const deleteLocation = async (locationId: string): Promise<void> => {
   const { error } = await supabase
     .from("locations")
     .delete()
