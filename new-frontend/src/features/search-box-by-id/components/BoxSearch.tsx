@@ -3,7 +3,7 @@ import { CommandEmpty, CommandInput, CommandList, CommandItem, CommandGroup, Com
 import { Box } from "@/types/box";
 import { Search, Package } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { DialogTitle } from "@/components/ui/dialog";
+import { DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import BoxDetails from "./BoxDetails";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -150,6 +150,7 @@ export default function BoxSearch({ boxes = [] }: BoxSearchProps) {
 
       <CommandDialog open={open} onOpenChange={setOpen}>
         <DialogTitle className="sr-only">Search Boxes</DialogTitle>
+        <DialogDescription></DialogDescription> {/* Empty description to prevent console warning */}
         <CommandInput
           placeholder="Enter box ID (e.g., BOX001)"
           value={searchQuery}
