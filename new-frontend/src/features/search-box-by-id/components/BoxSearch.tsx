@@ -5,6 +5,7 @@ import { Search, Package } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { DialogTitle } from "@/components/ui/dialog";
 import BoxDetails from "./BoxDetails";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface BoxSearchProps {
   boxes: Box[];
@@ -53,6 +54,9 @@ const saveToStorage = (history: Box[]) => {
 };
 
 export default function BoxSearch({ boxes = [] }: BoxSearchProps) {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [open, setOpen] = useState(true);
@@ -79,6 +83,20 @@ export default function BoxSearch({ boxes = [] }: BoxSearchProps) {
     }
   }, [storageAvailable]);
 
+ // Handle URL parameter changes and initialize selected box
+  useEffect(() => {
+    const boxId = searchParams.get('id');
+    if (boxId) {
+      const box = boxes.find(b => b.box_id === boxId);
+      if (box) {
+        setSelectedBox(box);
+        setOpen(false);
+      }
+    } else {
+      setSelectedBox(null);
+    }
+  }, [searchParams, boxes]);
+
   // Save search history whenever it changes
   useEffect(() => {
     if (storageAvailable && searchHistory.length > 0) {
@@ -89,6 +107,9 @@ export default function BoxSearch({ boxes = [] }: BoxSearchProps) {
   const handleSelect = (boxId: string) => {
     const box = boxes.find(b => b.box_id === boxId);
     if (box) {
+      // Update URL with the selected box ID
+      setSearchParams({ id: boxId });
+      
       setSelectedBox(box);
       setSearchQuery("");
       setOpen(false);
