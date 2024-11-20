@@ -10,7 +10,7 @@ import LocationManagement from "@/features/admin-dashboard/tabs/location-managem
 import UserManagement from "@/features/admin-dashboard/tabs/user-management";
 import InventoryManagement from "@/features/admin-dashboard/tabs/inventory-management";
 import UnauthorizedPage from "@/features/auth/unauthorized";
-import BoxSearch from "@/features/search-box-by-id";
+import BoxSearchByNamePage from "@/features/search-box-by-name";
 import SearchForItems from "@/features/volunteer-dashboard/search-for-items";
 // import UserManagement from "@/features/admin-dashboard/tabs/user-management";
 
@@ -100,7 +100,7 @@ const router = createBrowserRouter([
     path: "box-search",
     element: (
       <VolunteerWrapper>
-        <BoxSearch />
+        <BoxSearchByNamePage />
       </VolunteerWrapper>
     ),
   },

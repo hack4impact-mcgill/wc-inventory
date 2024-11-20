@@ -3,6 +3,7 @@ import { supabase } from "./supabaseClient";
 import { Location, LocationInsert, LocationUpdate } from "@/types/location";
 import { User } from "@supabase/supabase-js";
 import * as Sentry from "@sentry/react";
+import { Box } from "@/types/box";
 
 /**
  * Fetch all categories.
@@ -213,4 +214,21 @@ export const fetchUsers = async (): Promise<User[]> => {
   }
 
   return data as User[];
+};
+
+/**
+ * Fetch all boxes.
+ */
+export const fetchBoxes = async (): Promise<Box[]> => {
+  const { data, error } = await supabase
+    .from("boxes")
+    .select("*")
+    .order("name", { ascending: true });
+
+  if (error) {
+    Sentry.captureException(error);
+    throw new Error(error.message);
+  }
+
+  return data as Box[];
 };

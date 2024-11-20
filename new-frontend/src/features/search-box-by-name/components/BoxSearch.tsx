@@ -131,9 +131,9 @@ export default function BoxSearch({ boxes = [] }: BoxSearchProps) {
   };
 
   const filteredBoxes = boxes.filter(box => {
-    const boxId = String(box.box_id).toLowerCase();
+    const boxName = String(box.name).toLowerCase();
     const query = searchQuery.toLowerCase();
-    return boxId.includes(query);
+    return boxName.includes(query);
   });
 
   return (
@@ -144,7 +144,7 @@ export default function BoxSearch({ boxes = [] }: BoxSearchProps) {
           className="flex items-center gap-2"
         >
           <Search className="h-4 w-4" />
-          Search Box by ID
+          Search Box by Name
         </Button>
       </div>
 
@@ -152,7 +152,7 @@ export default function BoxSearch({ boxes = [] }: BoxSearchProps) {
         <DialogTitle className="sr-only">Search Boxes</DialogTitle>
         <DialogDescription></DialogDescription> {/* Empty description to prevent console warning */}
         <CommandInput
-          placeholder="Enter box ID (e.g., BOX001)"
+          placeholder="Enter box name (e.g., BOX001)"
           value={searchQuery}
           onValueChange={setSearchQuery}
         />
@@ -171,9 +171,9 @@ export default function BoxSearch({ boxes = [] }: BoxSearchProps) {
                 >
                   <div className="flex items-center gap-2">
                     <Package className="h-4 w-4" />
-                    <HighlightedText text={box.box_id.toString()} highlight={searchQuery} />
+                    <HighlightedText text={box.name.toString()} highlight={searchQuery} />
                   </div>
-                  <span className="text-sm text-gray-500">{box.name}</span>
+                  <span className="text-sm text-gray-500">{box.box_id}</span>
                 </CommandItem>
               ))}
               <Button onClick={clearHistory} className="mt-2">Clear History</Button>
@@ -189,9 +189,9 @@ export default function BoxSearch({ boxes = [] }: BoxSearchProps) {
                 >
                   <div className="flex items-center gap-2">
                     <Package className="h-4 w-4" />
-                    <HighlightedText text={box.box_id.toString()} highlight={searchQuery} />
+                    <HighlightedText text={box.name.toString()} highlight={searchQuery} />
                   </div>
-                  <span className="text-sm text-gray-500">{box.name}</span>
+                  <span className="text-sm text-gray-500">{box.box_id}</span>
                 </CommandItem>
               ))}
             </CommandGroup>
