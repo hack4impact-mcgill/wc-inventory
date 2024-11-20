@@ -6,12 +6,47 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import BoxContent from "./BoxContent";
+import { useEffect, useState } from "react";
+import { BoxContent as BoxContentType } from "@/types/box";
+import { fetchBoxContentsByBoxId } from "@/lib/api";
 
 interface BoxDetailsProps {
   selectedBox: Box;
 }
 
 function BoxDetails({ selectedBox }: BoxDetailsProps) {
+  const [boxContents, setBoxContents] = useState<BoxContentType[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadBoxContents = async () => {
+      try {
+        const contents = await fetchBoxContentsByBoxId(selectedBox.box_id);
+        setBoxContents(contents);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        setBoxContents([]);
+      }
+    };
+
+    loadBoxContents();
+  }, [selectedBox.box_id]);
+
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Box Details</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-red-500">Error loading box contents: {error}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+
 
   return (
       <Card>
@@ -30,15 +65,18 @@ function BoxDetails({ selectedBox }: BoxDetailsProps) {
           <span className="font-medium">Location ID:</span> {selectedBox.location_id}
         </div>
 
-        {/* <div className="space-y-2">
+        <div className="space-y-2">
           <h4 className="font-medium">Content:</h4>
           <div className="grid gap-2">
-            {selectedBox.content.map((item) => 
+            {boxContents.map((item) => (
+                  <BoxContent key={item.box_content_id} item={item} />
+                ))}
+            {/* {selectedBox.content.map((item) => 
             
               <BoxContent key={item.box_content_id} item={item} />
-            )}
+            )} */}
           </div>
-        </div> */}
+        </div>
       </CardContent>
     </Card>
   );

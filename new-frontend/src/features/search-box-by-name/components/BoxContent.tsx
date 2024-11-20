@@ -12,7 +12,7 @@ const BoxContentComponent = ({ item }: BoxContentProps ) => {
     <Card>
       <CardContent className="p-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          {item.icon && <item.icon className="h-6 w-6 text-gray-600" />}
+          {item.icon ? <item.icon className="h-6 w-6 text-gray-600" /> : <div className="h-6 w-6 bg-gray-200" />}
           <div className="flex flex-col">
             <div className="font-medium">
               {CATEGORIES[item.category_id]}

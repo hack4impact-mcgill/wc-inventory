@@ -3,7 +3,7 @@ import { supabase } from "./supabaseClient";
 import { Location, LocationInsert, LocationUpdate } from "@/types/location";
 import { User } from "@supabase/supabase-js";
 import * as Sentry from "@sentry/react";
-import { Box } from "@/types/box";
+import { Box, BoxContent } from "@/types/box";
 
 /**
  * Fetch all categories.
@@ -232,3 +232,23 @@ export const fetchBoxes = async (): Promise<Box[]> => {
 
   return data as Box[];
 };
+
+
+/**
+ * Fetch BoxContents by box_id
+ */
+
+export const fetchBoxContentsByBoxId = async (boxId: string): Promise<BoxContent[]> => {
+  const { data, error } = await supabase
+    .from("box_contents")
+    .select("*")
+    .eq("box_id", boxId);
+
+  if (error) {
+    Sentry.captureException(error);
+    throw new Error(error.message);
+  }
+
+  return data as BoxContent[];
+};
+
