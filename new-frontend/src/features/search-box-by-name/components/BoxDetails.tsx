@@ -55,11 +55,10 @@ function BoxDetails({ selectedBox }: BoxDetailsProps) {
       </CardHeader>
       <CardContent className="space-y-2">
         <div>
-          <span className="font-medium">Box ID:</span>{" "}
-          {selectedBox.box_id}
+          <span className="font-medium">Name:</span> {selectedBox.name}
         </div>
         <div>
-          <span className="font-medium">Name:</span> {selectedBox.name}
+          <span className="font-medium">Box ID:</span> {selectedBox.box_id}
         </div>
         <div>
           <span className="font-medium">Location ID:</span> {selectedBox.location_id}
