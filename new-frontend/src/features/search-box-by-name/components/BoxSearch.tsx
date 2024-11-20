@@ -32,6 +32,7 @@ const HighlightedText = ({ text, highlight }: { text: string; highlight: string 
 
 // Utility functions for localStorage operations
 const STORAGE_KEY = "boxSearchHistory";
+const SELECTED_BOX_KEY = "selectedBoxId";
 
 const getStoredHistory = (): Box[] => {
   try {
@@ -59,9 +60,10 @@ export default function BoxSearch({ boxes = [] }: BoxSearchProps) {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [searchHistory, setSearchHistory] = useState<Box[]>(() => getStoredHistory());
   const [storageAvailable, setStorageAvailable] = useState(true);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
 
   // Check if localStorage is available
   useEffect(() => {
@@ -75,15 +77,29 @@ export default function BoxSearch({ boxes = [] }: BoxSearchProps) {
     }
   }, []);
 
-  // Load search history only once on component mount
+  // Load search history and handle initial box selection
   useEffect(() => {
     if (storageAvailable) {
       const history = getStoredHistory();
       setSearchHistory(history);
-    }
-  }, [storageAvailable]);
 
- // Handle URL parameter changes and initialize selected box
+      // Check for previously selected box on first load
+      const savedBoxId = localStorage.getItem(SELECTED_BOX_KEY);
+      if (savedBoxId && boxes.length > 0) {
+        const box = boxes.find(b => b.box_id === savedBoxId);
+        if (box) {
+          setSelectedBox(box);
+          setOpen(false);
+        }
+      } else if (isFirstLoad) {
+        // Open dialog only on first load if no saved box
+        setOpen(true);
+        setIsFirstLoad(false);
+      }
+    }
+  }, [storageAvailable, boxes]);
+
+  // Handle URL parameter changes and initialize selected box
   useEffect(() => {
     const boxId = searchParams.get('id');
     if (boxId) {
@@ -91,11 +107,21 @@ export default function BoxSearch({ boxes = [] }: BoxSearchProps) {
       if (box) {
         setSelectedBox(box);
         setOpen(false);
+        
+        // Save to localStorage for persistence
+        if (storageAvailable) {
+          localStorage.setItem(SELECTED_BOX_KEY, boxId);
+        }
       }
     } else {
       setSelectedBox(null);
+      
+      // Remove saved box ID if no box is selected
+      if (storageAvailable) {
+        localStorage.removeItem(SELECTED_BOX_KEY);
+      }
     }
-  }, [searchParams, boxes]);
+  }, [searchParams, boxes, storageAvailable]);
 
   // Save search history whenever it changes
   useEffect(() => {
@@ -115,6 +141,9 @@ export default function BoxSearch({ boxes = [] }: BoxSearchProps) {
       setOpen(false);
       
       if (storageAvailable) {
+        // Save to localStorage for persistence
+        localStorage.setItem(SELECTED_BOX_KEY, boxId);
+
         setSearchHistory(prev => {
           const updatedHistory = [box, ...prev.filter(b => b.box_id !== boxId)].slice(0, 5);
           return updatedHistory;
@@ -204,4 +233,4 @@ export default function BoxSearch({ boxes = [] }: BoxSearchProps) {
       )}
     </div>
   );
-}
+};
