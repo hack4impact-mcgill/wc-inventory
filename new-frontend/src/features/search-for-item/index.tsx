@@ -22,7 +22,9 @@ import {
 } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button";
 import ItemCard from "@/components/search/components/ItemCard";
-import { categories, sizes, genders, items, ContentSize, Gender } from './mock-data';
+import { categories, sizes, genders, ContentSize, Gender } from './mock-data';
+import { useQuery } from '@tanstack/react-query';
+import { fetchBoxes } from '@/lib/api';
 
 const ALL_VALUE = "all";
 
@@ -36,6 +38,13 @@ const SearchForItem = () => {
   const [size, setSize] = useState(searchParams.get('size') || ALL_VALUE);
   const [gender, setGender] = useState(searchParams.get('gender') || ALL_VALUE);
   const [searchResults, setSearchResults] = useState<{ box_content_id: number; box: string; size: ContentSize; categories: string; gender: Gender; quantity: number; }[] | null>(null);
+
+  const { data: boxes, isLoading } = useQuery({
+    queryKey: ["boxView"],
+    queryFn: fetchBoxes,
+  });
+
+  console.log(boxes);
 
   // Effect to handle URL parameter changes
   useEffect(() => {
@@ -51,20 +60,21 @@ const SearchForItem = () => {
     if (urlCategory || urlSize || urlGender) {
       performSearch(urlCategory, urlSize, urlGender);
     }
-  }, [searchParams]);
+  }, [searchParams, boxes]);
 
   const performSearch = (
     categoryValue: string,
     sizeValue: string,
     genderValue: string
   ) => {
-    const results = items.filter(item => {
-      const categoryMatch = categoryValue === ALL_VALUE || item.categories === categoryValue;
-      const sizeMatch = sizeValue === ALL_VALUE || item.size === sizeValue;
-      const genderMatch = genderValue === ALL_VALUE || item.gender === genderValue;
+    if (!boxes) return;
+
+    const results = boxes.filter(box => {
+      const categoryMatch = categoryValue === ALL_VALUE || box.category_name === categoryValue;
+      const sizeMatch = sizeValue === ALL_VALUE || box.size === sizeValue;
+      const genderMatch = genderValue === ALL_VALUE || box.gender === genderValue;
       return categoryMatch && sizeMatch && genderMatch;
     });
-
     setSearchResults(results);
   };
 
@@ -172,21 +182,24 @@ const SearchForItem = () => {
       </Button>
 
       {/* Results Section */}
-      {searchResults && (
-        <div className="space-y-4">
-          {searchResults.length === 0 ? (
-            <p className="text-center text-gray-500">No items found</p>
-          ) : (
-            searchResults.map((item) => (
-              <ItemCard
-                key={item.box_content_id}
-                item={item}
-                categories={categories}
-                onBoxClick={handleBoxClick}
-              />
-            ))
-          )}
-        </div>
+      {isLoading ? (
+        <p className="text-center text-gray-500">Loading...</p>
+      ) : (
+        searchResults && (
+          <div className="space-y-4">
+            {searchResults.length === 0 ? (
+              <p className="text-center text-gray-500">No items found</p>
+            ) : (
+              searchResults.map((box) => (
+                <ItemCard
+                  key={box.box_content_id}
+                  box={box}
+                  onBoxClick={handleBoxClick}
+                />
+              ))
+            )}
+          </div>
+        )
       )}
     </div>
   );

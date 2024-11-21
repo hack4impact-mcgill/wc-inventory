@@ -2,10 +2,11 @@ import { Shirt, ShoppingBag, Tag } from 'lucide-react';
 
 // Enums for ContentSize and Gender
 export enum ContentSize {
-    Small = "Small",
-    Medium = "Medium",
-    Large = "Large",
-    ExtraLarge = "Extra Large"
+    ExtraSmall = "XS",
+    Small = "S",
+    Medium = "M",
+    Large = "L",
+    ExtraLarge = "XL"
 }
 
 export enum Gender {

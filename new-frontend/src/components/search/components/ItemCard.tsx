@@ -2,11 +2,11 @@ import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 
 interface ItemCardProps {
-    item: {
-        box_content_id: number;
+    box: {
+        name: string;
         box: string;
         size: string;
-        categories: string;
+        category_name: string;
         gender: string;
         quantity: number;
     };
@@ -14,19 +14,19 @@ interface ItemCardProps {
     onBoxClick: (box: string) => void;
 }
 
-const ItemCard: React.FC<ItemCardProps> = ({ item, categories, onBoxClick }) => {
+const ItemCard: React.FC<ItemCardProps> = ({ box, onBoxClick }) => {
     return (
-        <Card key={item.box_content_id} className="cursor-pointer hover:bg-gray-50" onClick={() => onBoxClick(item.box)}>
+        <Card key={box.name} className="cursor-pointer hover:bg-gray-50" onClick={() => onBoxClick(box.box)}>
             <CardContent className="p-4">
                 <div className="flex justify-between items-center">
                     <div>
-                        <p className="font-medium">Box: {item.box}</p>
-                        <p className="text-sm text-gray-500">Size: {item.size}</p>
-                        <p className="text-sm text-gray-500">Gender: {item.gender}</p>
-                        <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
+                        <p className="font-medium">Box: {box.name}</p>
+                        <p className="text-sm text-gray-500">Size: {box.size}</p>
+                        <p className="text-sm text-gray-500">Gender: {box.gender}</p>
+                        <p className="text-sm text-gray-500">Quantity: {box.quantity}</p>
                     </div>
                     <div className="text-sm text-gray-500">
-                        Category: {categories.find((cat) => cat.value === item.categories)?.label}
+                        Category: {box.category_name}
                     </div>
                 </div>
             </CardContent>

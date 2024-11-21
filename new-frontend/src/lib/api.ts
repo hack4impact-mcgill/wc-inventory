@@ -219,7 +219,7 @@ export const fetchUsers = async (): Promise<User[]> => {
 
 export const fetchBoxes = async (): Promise<Box[]> => {
   const { data, error } = await supabase
-    .from("boxes")
+    .from("box_table")
     .select("*");
 
   if (error) {
