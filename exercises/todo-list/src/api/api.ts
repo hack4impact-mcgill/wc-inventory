@@ -1,3 +1,5 @@
+// Exporting types and functions allows usage from other files
+
 export type Task = {
   id: number;
   title: string;
@@ -24,6 +26,7 @@ export const addTask = (title: string): Promise<Task> => {
   });
 };
 
+// Flip value of task's completed property
 export const toggleTaskCompletion = (id: number): Promise<Task> => {
   return new Promise((resolve, reject) => {
     const task = mockTasks.find((task) => task.id === id);
