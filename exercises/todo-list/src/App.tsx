@@ -30,7 +30,7 @@ function App() {
   };
 
 
-  // Adds new task submitted and triggers rerender
+  // Adds new task submitted and triggers re-render
   const addNewTask = async () => {
     if (newTaskTitle.trim() === "") {return};
     const newTask = await addTask(newTaskTitle); // Add new task to mock API's list
