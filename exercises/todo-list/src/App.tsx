@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { getTasks, Task, toggleTaskCompletion, addTask } from "./api/api.ts";
 import { Checkbox } from "./components/ui/checkbox";
+import { Input } from "./components/ui/input.tsx";
+import { Button } from "./components/ui/button.tsx";
 
 function App() {
 
@@ -58,17 +60,17 @@ function App() {
                 </li>
               ))}
             </ol>
-            <div className=" flex flex-row bg-stone-100 justify-between">
-              <input 
+            <div className="flex gap-2">
+            <Input
                 type="text"
                 value={newTaskTitle}
-                onChange={handleInputChange} 
-                className="bg-stone-400 text-stone-100 w-[75%] px-4 py-2 rounded-full"
+                onChange={handleInputChange}
+                placeholder="Add a new task..."
+                className="flex-1"
               />
-              <button 
-                className="bg-stone-400 w-15 px-3 rounded-full"
-                onClick={addNewTask} 
-              >Add</button>
+              <Button onClick={addNewTask}>
+                Add
+              </Button>
             </div>
           </div>
         </div>

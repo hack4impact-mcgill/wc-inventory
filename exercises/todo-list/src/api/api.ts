@@ -7,14 +7,18 @@ export type Task = {
 };
   
 const mockTasks: Task[] = [
-  { id: 2, title: "Pair program with a teammate", completed: false },
+  { id: 1, title: "Pair program with a teammate", completed: false },
 ];
 
 let idCounter = mockTasks.length + 1;
 
 export const getTasks = (): Promise<Task[]> => {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(mockTasks), 500);
+    setTimeout(() => {
+      // Create a new array with new task objects
+      const tasksCopy = mockTasks.map(task => ({...task}));
+      resolve(tasksCopy);
+    }, 500);
   });
 };
 
