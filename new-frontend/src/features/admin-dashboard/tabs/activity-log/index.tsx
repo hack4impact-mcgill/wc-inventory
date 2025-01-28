@@ -1,5 +1,7 @@
 
 const ActivityLog = () => {
+    
+    
     return (
         <>
             <h1>asdf Log</h1>
