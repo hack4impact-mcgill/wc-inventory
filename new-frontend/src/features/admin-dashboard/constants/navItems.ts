@@ -32,4 +32,10 @@ export const navItems: NavItem[] = [
     icon: Tags,
     description: "Define and organize categories",
   },
+  {
+    title: "Activity Log",
+    href: "/admin/activity-log",
+    icon: LayoutDashboard,
+    description: "View activity log",
+  }
 ];
