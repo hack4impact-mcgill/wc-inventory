@@ -26,7 +26,6 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setSession(session);
       if (session?.user) {
         const jwt = jwtDecode(session!.access_token) as { [key: string]: any };
-        console.log("Decoded JWT:", jwt);
         const user: User = {
           ...session!.user,
           role: jwt["user_role"]!,
