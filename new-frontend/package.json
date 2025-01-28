@@ -6,17 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "lint": "eslint .",
     "format": "prettier --write .",
     "preview": "vite preview",
     "update-types": "npx supabase gen types typescript --project-id qtozlukrkvmcjdfkrstp > src/types/supabase.ts",
     "prepare": "husky && husky install",
     "postinstall": "husky install"
-  },
-  "lint-staged": {
-    "**/*": "prettier --write --ignore-unknown",
-    "*.ts": "eslint --cache --fix",
-    "*.{ts,css,md}": "prettier --write"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
