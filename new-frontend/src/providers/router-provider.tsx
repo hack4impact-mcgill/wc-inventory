@@ -12,7 +12,6 @@ import InventoryManagement from "@/features/admin-dashboard/tabs/inventory-manag
 import UnauthorizedPage from "@/features/auth/unauthorized";
 import SearchForBoxByIdPage from "@/features/search-box-by-id";
 import SearchForItem from "@/features/search-for-item";
-import UserInfo from "@/features/user-info";
 import ActivityLog from "@/features/admin-dashboard/tabs/activity-log";
 // import UserManagement from "@/features/admin-dashboard/tabs/user-management";
 
@@ -79,10 +78,6 @@ const router = createBrowserRouter([
       {
         path: "users",
         element: <UserManagement />,
-      },
-      {
-        path: "users/:id",
-        element: <UserInfo />,
       },
       {
         path: "locations",
