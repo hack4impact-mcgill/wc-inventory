@@ -2,6 +2,7 @@ import { Category, CategoryInsert, CategoryUpdate } from "@/types/category";
 import { supabase } from "./supabaseClient";
 import { Location, LocationInsert, LocationUpdate } from "@/types/location";
 import { User } from "@supabase/supabase-js";
+import * as Sentry from "@sentry/react";
 
 /**
  * Fetch all categories.
@@ -13,6 +14,7 @@ export const fetchCategories = async (): Promise<Category[]> => {
     .order("name", { ascending: true });
 
   if (error) {
+    Sentry.captureException(error);
     throw new Error(error.message);
   }
 
@@ -33,9 +35,9 @@ export const fetchCategoryById = async (
 
   if (error) {
     if (error.code === "PGRST116") {
-      // No rows found
       return null;
     }
+    Sentry.captureException(error);
     throw new Error(error.message);
   }
 
@@ -55,6 +57,7 @@ export const createCategory = async (
     .single();
 
   if (error) {
+    Sentry.captureException(error);
     throw new Error(error.message);
   }
 
@@ -76,6 +79,7 @@ export const updateCategory = async (
     .single();
 
   if (error) {
+    Sentry.captureException(error);
     throw new Error(error.message);
   }
 
@@ -92,6 +96,7 @@ export const deleteCategory = async (categoryId: number): Promise<void> => {
     .eq("category_id", categoryId);
 
   if (error) {
+    Sentry.captureException(error);
     throw new Error(error.message);
   }
 };
@@ -106,6 +111,7 @@ export const fetchLocations = async (): Promise<Location[]> => {
     .order("name", { ascending: true });
 
   if (error) {
+    Sentry.captureException(error);
     throw new Error(error.message);
   }
 
@@ -126,9 +132,9 @@ export const fetchLocationById = async (
 
   if (error) {
     if (error.code === "PGRST116") {
-      // No rows found
       return null;
     }
+    Sentry.captureException(error);
     throw new Error(error.message);
   }
 
@@ -148,6 +154,7 @@ export const createLocation = async (
     .single();
 
   if (error) {
+    Sentry.captureException(error);
     throw new Error(error.message);
   }
 
@@ -158,7 +165,7 @@ export const createLocation = async (
  * Update an existing location.
  */
 export const updateLocation = async (
-  locationId: number,
+  locationId: string,
   updates: LocationUpdate,
 ): Promise<Location> => {
   const { data, error } = await supabase
@@ -169,6 +176,7 @@ export const updateLocation = async (
     .single();
 
   if (error) {
+    Sentry.captureException(error);
     throw new Error(error.message);
   }
 
@@ -178,17 +186,21 @@ export const updateLocation = async (
 /**
  * Delete a location.
  */
-export const deleteLocation = async (locationId: number): Promise<void> => {
+export const deleteLocation = async (locationId: string): Promise<void> => {
   const { error } = await supabase
     .from("locations")
     .delete()
     .eq("location_id", locationId);
 
   if (error) {
+    Sentry.captureException(error);
     throw new Error(error.message);
   }
 };
 
+/**
+ * Fetch all users.
+ */
 export const fetchUsers = async (): Promise<User[]> => {
   const { data, error } = await supabase
     .from("users")
@@ -196,6 +208,7 @@ export const fetchUsers = async (): Promise<User[]> => {
     .order("first_name", { ascending: true });
 
   if (error) {
+    Sentry.captureException(error);
     throw new Error(error.message);
   }
 
