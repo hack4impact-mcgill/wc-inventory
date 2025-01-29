@@ -13,6 +13,7 @@ import UnauthorizedPage from "@/features/auth/unauthorized";
 import SearchForBoxByIdPage from "@/features/search-box-by-id";
 import SearchForItem from "@/features/search-for-item";
 import ActivityLog from "@/features/admin-dashboard/tabs/activity-log";
+import UserInfo from "@/features/user-info";
 // import UserManagement from "@/features/admin-dashboard/tabs/user-management";
 
 interface ProtectedRouteProps {
@@ -78,6 +79,10 @@ const router = createBrowserRouter([
       {
         path: "users",
         element: <UserManagement />,
+      },
+      {
+        path: "users/:id",
+        element: <UserInfo/>
       },
       {
         path: "locations",

@@ -8,8 +8,6 @@ import { SidebarNavItem } from "./sidebar-nav-item";
 export const Sidebar: React.FC = () => {
   const navigate = useNavigate();
 
-  const test = false;
-
   return (
     <aside className="fixed inset-y-0 z-50 flex w-72 flex-col">
       <div className="flex flex-col flex-1 min-h-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
