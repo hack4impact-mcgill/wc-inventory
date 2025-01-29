@@ -72,7 +72,7 @@ const ManageStaff = () => {
   );
 
   return (
-    <Card className="w-full max-w-4xl">
+    <Card className="w-full max-w-3xl">
       <CardHeader className="pb-3">
         <CardTitle className="text-2xl font-bold">Manage Staff</CardTitle>
         <div className="text-sm text-muted-foreground">
