@@ -1,31 +1,9 @@
+import SearchBar from "./components/searchbar.tsx";
 
 const ActivityLog = () => {
-    
-    
     return (
-        <>
-            <table>
-                <tr> 
-                    <td>Column 1 </td>
-                    <td>Column 2 </td>
-                    <td>Column 3 </td>
-                </tr>
-                <tr> 
-                    <td>Column 1 </td>
-                    <td>Column 2 </td>
-                    <td>Column 3 </td>
-                </tr>
-                <tr> 
-                    <td>Column 1 </td>
-                    <td>Column 2 </td>
-                    <td>Column 3 </td>
-                </tr>
-                </table>
-            
-        </>
-    )
-
-
+        <SearchBar />
+    );
 };
 
 export default ActivityLog;
