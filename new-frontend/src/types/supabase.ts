@@ -303,7 +303,15 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      user_view: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_user_role:

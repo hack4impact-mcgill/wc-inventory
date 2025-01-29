@@ -17,6 +17,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabaseClient";
+import { UserView } from "@/types/user";
 
 const UserInfo: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +39,21 @@ const UserInfo: React.FC = () => {
     }));
   };
 
+  const {data: user, isLoading, error} = useQuery({
+    queryKey: ['user', id],
+    queryFn: async () => {
+      const data = await supabase.from("user_view").select().eq("id", id)
+      return (data.data as any)[0] as UserView;
+    }
+  });
+
+  console.log(user);
+
+  if (isLoading || !user) return <div>Loading...</div>;
+
+  // TODO -> Instead of permissions, let's just do user role.
+
+
   return (
     <Card className="max-w mx-auto">
       <CardHeader>
@@ -46,12 +64,12 @@ const UserInfo: React.FC = () => {
           {/* User Details */}
           <div>
             <div className="mb-4">
-              <label className="font-semibold">Name: {id}</label>
+              <label className="font-semibold">Name: {user.email}</label>
               <p>User 1</p>
             </div>
             <div className="mb-4">
               <label className="font-semibold">Created on:</label>
-              <p>2025-01-21</p>
+              <p>{user.created_at}</p>
             </div>
             <div className="mb-4">
               <label className="font-semibold">Account Status:</label>
