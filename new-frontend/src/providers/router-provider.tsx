@@ -12,7 +12,7 @@ import InventoryManagement from "@/features/admin-dashboard/tabs/inventory-manag
 import UnauthorizedPage from "@/features/auth/unauthorized";
 import SearchForBoxByIdPage from "@/features/search-box-by-id";
 import SearchForItem from "@/features/search-for-item";
-import UserInfo from "@/features/user-info";
+import ActivityLog from "@/features/admin-dashboard/tabs/activity-log";
 // import UserManagement from "@/features/admin-dashboard/tabs/user-management";
 
 interface ProtectedRouteProps {
@@ -80,10 +80,6 @@ const router = createBrowserRouter([
         element: <UserManagement />,
       },
       {
-        path: "users/:id",
-        element: <UserInfo />,
-      },
-      {
         path: "locations",
         element: <LocationManagement />,
       },
@@ -91,6 +87,10 @@ const router = createBrowserRouter([
         path: "categories",
         element: <CategoryManagement />,
       },
+      {
+        path: "activity-log",
+        element: <ActivityLog/>,
+      }
     ],
   },
   {
