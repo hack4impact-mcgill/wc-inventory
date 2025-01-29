@@ -1,8 +1,21 @@
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useParams } from "react-router-dom";
 
 const UserInfo: React.FC = () => {
@@ -42,13 +55,20 @@ const UserInfo: React.FC = () => {
             </div>
             <div className="mb-4">
               <label className="font-semibold">Account Status:</label>
-              <Select onValueChange={(value) => setAccountStatus(value)} defaultValue={accountStatus}>
+              <Select
+                onValueChange={(value) => setAccountStatus(value)}
+                defaultValue={accountStatus}
+              >
                 <SelectTrigger className="mt-1 w-full">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Active (current volunteer)</SelectItem>
-                  <SelectItem value="inactive">Inactive (no longer volunteer)</SelectItem>
+                  <SelectItem value="active">
+                    Active (current volunteer)
+                  </SelectItem>
+                  <SelectItem value="inactive">
+                    Inactive (no longer volunteer)
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -62,9 +82,13 @@ const UserInfo: React.FC = () => {
                 <label key={key} className="flex items-center space-x-2">
                   <Checkbox
                     checked={permissions[key as keyof typeof permissions]}
-                    onCheckedChange={() => togglePermission(key as keyof typeof permissions)}
+                    onCheckedChange={() =>
+                      togglePermission(key as keyof typeof permissions)
+                    }
                   />
-                  <span className="capitalize">{key.replace(/([A-Z])/g, " $1").toLowerCase()}</span>
+                  <span className="capitalize">
+                    {key.replace(/([A-Z])/g, " $1").toLowerCase()}
+                  </span>
                 </label>
               ))}
             </div>
