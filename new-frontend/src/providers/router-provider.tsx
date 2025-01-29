@@ -14,6 +14,7 @@ import SearchForBoxByIdPage from "@/features/search-box-by-id";
 import SearchForItem from "@/features/search-for-item";
 import ActivityLog from "@/features/admin-dashboard/tabs/activity-log";
 import UserInfo from "@/features/user-info";
+import ManageStaff from "@/features/userlist";
 // import UserManagement from "@/features/admin-dashboard/tabs/user-management";
 
 interface ProtectedRouteProps {
@@ -78,12 +79,13 @@ const router = createBrowserRouter([
       },
       {
         path: "users",
-        element: <UserManagement />,
+        element: <ManageStaff />, 
       },
       {
         path: "users/:id",
         element: <UserInfo/>
       },
+
       {
         path: "locations",
         element: <LocationManagement />,
