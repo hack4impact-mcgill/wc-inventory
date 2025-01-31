@@ -198,19 +198,5 @@ export const deleteLocation = async (locationId: string): Promise<void> => {
   }
 };
 
-/**
- * Fetch all users.
- */
-export const fetchUsers = async (): Promise<User[]> => {
-  const { data, error } = await supabase
-    .from("users")
-    .select("*")
-    .order("first_name", { ascending: true });
 
-  if (error) {
-    Sentry.captureException(error);
-    throw new Error(error.message);
-  }
 
-  return data as User[];
-};
