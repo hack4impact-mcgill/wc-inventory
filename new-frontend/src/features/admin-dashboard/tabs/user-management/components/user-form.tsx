@@ -43,7 +43,7 @@ export function UserForm({ onSubmit, onCancel, isLoading }: UserFormProps) {
           control={form.control}
           name="email"
           render={({ field }) => (
-            <FormItem>
+            <FormItem aria-describedby="email-help">
               <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input {...field} type="email" placeholder="Enter email" />
@@ -57,7 +57,7 @@ export function UserForm({ onSubmit, onCancel, isLoading }: UserFormProps) {
           control={form.control}
           name="password"
           render={({ field }) => (
-            <FormItem>
+            <FormItem aria-describedby="password">
               <FormLabel>Password</FormLabel>
               <FormControl>
                 <Input

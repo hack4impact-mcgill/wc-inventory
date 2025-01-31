@@ -1,6 +1,7 @@
 import { UserFormData } from "@/features/admin-dashboard/tabs/user-management/types";
 import { UserView } from "@/types/user";
 import { supabase } from "../supabaseClient";
+import { cryptoUtils } from "@/lib/crypto";
 
 export const userApi = {
     getUsers: async () => {
@@ -13,24 +14,23 @@ export const userApi = {
       return data as UserView[];
     },
   
-    createUser: async (userData: UserFormData) => {
-      const { data: exists } = await supabase
-        .rpc('check_user_exists', { input_email: userData.email });
-      
-      if (exists) {
-        throw new Error('User already exists');
-      }
-  
-      const { data, error } = await supabase
-        .rpc('create_new_user', {
+    createUser: async (userData: UserFormData): Promise<{ user: UserFormData; message: string }> => {
+      const encrypted = cryptoUtils.encrypt(userData.password);
+
+      // TODO - Permissions Check
+      const { data, error } = await supabase.functions.invoke('create-user', {
+        body: {
           email: userData.email,
-          password: userData.password,
+          password: encrypted,
           role: userData.role,
-          first_name: '', // Optional parameters
-          last_name: ''
-        });
-  
-      if (error) throw new Error(error.message);
+          name: userData.name,
+        }
+      });
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      // `data` should contain { user, message }
       return data;
     }
-  };
+};

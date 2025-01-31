@@ -1,44 +1,99 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.48.1";
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import CryptoJS from "https://esm.sh/crypto-js@4.2.0";  
 
-Deno.serve(async (req) => {
-  if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), {
-      status: 405,
-      headers: { "Content-Type": "application/json" },
-    });
+serve(async (req) => {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  };
+
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const { email, password, role, firstName, lastName } = await req.json();
+    const { email, password, role, name } = await req.json();
+
+    if (!email || !password || !role) {
+      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     const supabaseAdmin = createClient(
-      Deno.env.get("PROJECT_URL") ?? "",
-      Deno.env.get("SERVICE_ROLE_KEY") ?? "",
+      Deno.env.get('PROJECT_URL') || '',
+      Deno.env.get('SERVICE_ROLE_KEY') || '', 
       {
         auth: {
           autoRefreshToken: false,
           persistSession: false,
         },
-      },
+      }
     );
 
-    const { data, error } = await supabaseAdmin.auth.admin.createUser({
-      email,
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('No authorization header');
+    }
+    
+    // Decrpytion Step
+    const decryptedPassword = CryptoJS.AES.decrypt(
       password,
-      user_metadata: { first_name: firstName, last_name: lastName, role },
+      Deno.env.get('ENCRYPTION_KEY') // same key used on the client
+    ).toString(CryptoJS.enc.Utf8);
+
+    console.log('Decryption attempt completed');
+    console.log('Decrypted password length:', decryptedPassword.length);
+
+    if (!decryptedPassword) {
+      return new Response(JSON.stringify({ error: 'Password decryption failed' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // 4) Create the user in Supabase Auth
+    const { data: userData, error: createUserError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: decryptedPassword,
+      email_confirm: true,  // skip sending the confirmation email, or set to false if you want them to confirm
+      user_metadata: { name, role },
     });
 
-    if (error) throw error;
+    if (createUserError) {
+      throw createUserError;
+    }
 
-    return new Response(JSON.stringify({ data }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    const { error: userError } = await supabaseAdmin
+      .from('users')
+      .insert([
+        {
+          id: userData.user.id,
+          name,
+          role,
+        }
+      ]);
+
+    if (userError) {
+      throw userError;
+    }
+
+    return new Response(
+      JSON.stringify({
+        user: userData.user,
+        message: 'User created successfully',
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
   } catch (error) {
-    return new Response(JSON.stringify({ error: (error as Error).message }), {
+    return new Response(JSON.stringify({ error: `${error}` }), {
       status: 500,
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });

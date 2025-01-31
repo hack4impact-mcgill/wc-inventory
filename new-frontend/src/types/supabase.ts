@@ -293,6 +293,7 @@ export type Database = {
           can_modify_box: boolean | null
           can_move_box: boolean | null
           id: string
+          name: string | null
           role: Database["public"]["Enums"]["user_role"] | null
         }
         Insert: {
@@ -301,6 +302,7 @@ export type Database = {
           can_modify_box?: boolean | null
           can_move_box?: boolean | null
           id: string
+          name?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
         }
         Update: {
@@ -309,6 +311,7 @@ export type Database = {
           can_modify_box?: boolean | null
           can_move_box?: boolean | null
           id?: string
+          name?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
         }
         Relationships: []
@@ -320,6 +323,7 @@ export type Database = {
           created_at: string | null
           email: string | null
           id: string | null
+          name: string | null
           role: Database["public"]["Enums"]["user_role"] | null
         }
         Relationships: []
@@ -372,8 +376,7 @@ export type Database = {
         Args: {
           email: string
           password: string
-          first_name: string
-          last_name: string
+          name: string
           role: string
         }
         Returns: undefined

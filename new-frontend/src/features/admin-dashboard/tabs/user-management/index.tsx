@@ -65,7 +65,7 @@ export default function UserManagement() {
         />
 
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent>
+          <DialogContent aria-describedby="create-user-dialog">
             <DialogHeader>
               <DialogTitle>Create New User</DialogTitle>
             </DialogHeader>
