@@ -15,7 +15,6 @@ import SearchForItem from "@/features/search-for-item";
 import ActivityLog from "@/features/admin-dashboard/tabs/activity-log";
 import UserInfo from "@/features/user-info";
 import ManageStaff from "@/features/userlist";
-// import UserManagement from "@/features/admin-dashboard/tabs/user-management";
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
@@ -79,7 +78,7 @@ const router = createBrowserRouter([
       },
       {
         path: "users",
-        element: <ManageStaff />, 
+        element: <UserManagement /> 
       },
       {
         path: "users/:id",

@@ -40,7 +40,7 @@ const UserInfo: React.FC = () => {
   };
 
   const {data: user, isLoading, error} = useQuery({
-    queryKey: ['user', id],
+    queryKey: ['users', id],
     queryFn: async () => {
       const data = await supabase.from("user_view").select().eq("id", id)
       return (data.data as any)[0] as UserView;
