@@ -14,7 +14,6 @@ import SearchForBoxByIdPage from "@/features/search-box-by-id";
 import SearchForItem from "@/features/search-for-item";
 import ActivityLog from "@/features/admin-dashboard/tabs/activity-log";
 import UserInfo from "@/features/user-info";
-import ManageStaff from "@/features/userlist";
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
@@ -30,7 +29,7 @@ const AuthWrapper = ({ children, roles }: ProtectedRouteProps) => {
 
   if (!user) {
     return <Navigate to="/login" replace />;
-}
+  }
 
   if (roles && !roles.includes(user.role!)) {
     return <Navigate to="/unauthorized" replace />;
@@ -78,11 +77,11 @@ const router = createBrowserRouter([
       },
       {
         path: "users",
-        element: <UserManagement /> 
+        element: <UserManagement />
       },
       {
         path: "users/:id",
-        element: <UserInfo/>
+        element: <UserInfo />
       },
 
       {
@@ -95,7 +94,7 @@ const router = createBrowserRouter([
       },
       {
         path: "activity-log",
-        element: <ActivityLog/>,
+        element: <ActivityLog />,
       }
     ],
   },

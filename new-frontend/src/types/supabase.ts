@@ -288,14 +288,26 @@ export type Database = {
       }
       users: {
         Row: {
+          can_create_box: boolean | null
+          can_delete_box: boolean | null
+          can_modify_box: boolean | null
+          can_move_box: boolean | null
           id: string
           role: Database["public"]["Enums"]["user_role"] | null
         }
         Insert: {
+          can_create_box?: boolean | null
+          can_delete_box?: boolean | null
+          can_modify_box?: boolean | null
+          can_move_box?: boolean | null
           id: string
           role?: Database["public"]["Enums"]["user_role"] | null
         }
         Update: {
+          can_create_box?: boolean | null
+          can_delete_box?: boolean | null
+          can_modify_box?: boolean | null
+          can_move_box?: boolean | null
           id?: string
           role?: Database["public"]["Enums"]["user_role"] | null
         }
