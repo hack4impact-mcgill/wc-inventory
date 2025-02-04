@@ -1,10 +1,17 @@
-//Category Form
 import React, { FC, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import IconSelector from "@/components/icon-selector";
-import { Category, CategoryFormData, CategoryFormProps } from "@/types/category";
+import { Category, CategoryFormData } from "@/types/category";
 import { type CategoryIconName } from "@/types/icons";
+
+export interface CategoryFormProps {
+    categories: ReadonlyArray<Category>;
+    onSubmit: (values: CategoryFormData) => Promise<void>;
+    initialData?: Category | null;
+    isLoading: boolean;
+    onClose: () => void;
+}
 
 const CategoryForm: FC<CategoryFormProps> = ({ categories, onSubmit, initialData, isLoading, onClose }) => {
     const [formData, setFormData] = useState<CategoryFormData>(() => ({
@@ -137,26 +144,26 @@ const CategoryForm: FC<CategoryFormProps> = ({ categories, onSubmit, initialData
                 />
 
 
-            <div className="grid gap-2 relative">
-                <label htmlFor="parent" className="text-gray-700 font-medium">Parent Category:</label>
-                <Input
-                    id="parent"
-                    value={parentSearch}
-                    onChange={handleParentSearch}
-                    onFocus={() => setShowSuggestions(true)}
-                    placeholder="Search for parent category..."
-                />
-                {parentSearch && (
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleClearParent}
-                        className="shrink-0"
-                    >
-                        Clear Parent Category
-                    </Button>
-                )}
-            </div>
+                <div className="grid gap-2 relative">
+                    <label htmlFor="parent" className="text-gray-700 font-medium">Parent Category:</label>
+                    <Input
+                        id="parent"
+                        value={parentSearch}
+                        onChange={handleParentSearch}
+                        onFocus={() => setShowSuggestions(true)}
+                        placeholder="Search for parent category..."
+                    />
+                    {parentSearch && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleClearParent}
+                            className="shrink-0"
+                        >
+                            Clear Parent Category
+                        </Button>
+                    )}
+                </div>
                 {showSuggestions && parentSearch && (
                     <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-md border border-gray-200 shadow-lg z-10">
                         {filteredCategories.length > 0 ? (

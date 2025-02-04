@@ -71,10 +71,10 @@ export const useLocationColumns = (
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onEdit(row.original)}
+              // TODO -> Disabled for now.
+              // onClick={() => onEdit(row.original)}
               className="h-8 w-8 p-0"
             >
-              {/* Replace with an actual icon if needed */}
               <span>Edit</span>
             </Button>
             <Button

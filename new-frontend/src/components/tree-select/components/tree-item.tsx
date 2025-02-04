@@ -32,7 +32,7 @@ const TreeItem: React.FC<TreeItemProps> = ({
   const isSelected = selectedId === item.location_id;
 
   // Calculate left padding for indentation based on level
-  const paddingLeft = level * 16;
+  const paddingLeft = level * 16 + (hasChildren ? 0 : 16);
 
   return (
     <div>

@@ -9,6 +9,10 @@ export const queryKeys = {
         all: ['locations'] as const,
         detail: (locationId: string) => [...queryKeys.locations.all, locationId] as const,
     },
+    categories: {
+        all: ['categories'] as const,
+        detail: (categoryId: string) => [...queryKeys.categories.all, categoryId] as const
+    },
     users: {
         all: ['users'] as const,
         detail: (userId: string) => [...queryKeys.users.all, userId] as const,

@@ -1,14 +1,5 @@
-//CategoryManagement
-
-import React, { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-    fetchCategories,
-    createCategory,
-    updateCategory,
-    deleteCategory,
-} from "@/lib/api";
-import type { Category, CategoryFormProps } from "@/types/category";
+import { useState } from "react";
+import type { Category } from "@/types/category";
 import { Card, CardContent } from "@/components/ui/card";
 import {
     Dialog,
@@ -18,67 +9,24 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import CategoryForm from "./components/category-form";
+import CategoryForm, { CategoryFormProps } from "./components/category-form";
 import CategoriesTable from "./components/category-table";
 import { Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {Toaster} from "@/components/ui/toaster.tsx";
-
-
+import { useCategories } from "./hooks/use-categories";
 
 const CategoryManagement = () => {
-    const queryClient = useQueryClient();
+    const {
+        categories,
+        isLoading,
+        createMutation,
+        updateMutation,
+        deleteMutation
+    } = useCategories();
     const [globalFilter, setGlobalFilter] = useState("");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-
-    const { data: categories = [], isLoading } = useQuery({
-        queryKey: ["categories"],
-        queryFn: fetchCategories,
-    });
-
-    const createMutation = useMutation({
-        mutationFn: createCategory,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["categories"] });
-            setIsDialogOpen(false);
-            setSelectedCategory(null);
-            toast({
-                title: "Success",
-                description: "Category created successfully",
-            });
-        },
-        onError: () => {
-            toast({
-                title: "Error",
-                description: "Failed to create category",
-                variant: "destructive",
-            });
-        },
-    });
-
-    const updateMutation = useMutation({
-        mutationFn: ({ id, data }: { id: string; data: Partial<Category> }) =>
-            updateCategory(id, data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["categories"] });
-            setIsDialogOpen(false);
-            setSelectedCategory(null);
-            toast({
-                title: "Success",
-                description: "Category updated successfully",
-            });
-        },
-        onError: () => {
-            toast({
-                title: "Error",
-                description: "Failed to update category",
-                variant: "destructive",
-            });
-        },
-    });
-
 
     const handleSubmit: CategoryFormProps["onSubmit"] = async (data) => {
         try {
@@ -93,10 +41,11 @@ const CategoryManagement = () => {
         } catch (error) {
             console.error('Form submission error:', error);
         }
+        handleClose();
     };
 
     const handleDelete = (id: string) => {
-        // Check if the category has any children
+        // Check if category has any children
         const hasChildren = categories.some(category => category.parent_id === id);
 
         if (hasChildren) {
@@ -113,33 +62,12 @@ const CategoryManagement = () => {
         }
     };
 
-// Update the deleteMutation to handle the error more gracefully
-    const deleteMutation = useMutation({
-        mutationFn: deleteCategory,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["categories"] });
-            toast({
-                title: "Success",
-                description: "Category deleted successfully",
-            });
-        },
-        onError: (error) => {
-            toast({
-                title: "Error",
-                description: error instanceof Error
-                    ? error.message
-                    : "Failed to delete category. It may have dependent sub-categories.",
-                variant: "destructive",
-            });
-        },
-    });
-
     const handleClose = () => {
         setIsDialogOpen(false);
         setSelectedCategory(null);
     };
 
-    const handleEdit = () => (category: Category) => {
+    const handleEdit = (category: Category) => {
         setSelectedCategory(category);  // Update selectedCategory to the full Category
         setIsDialogOpen(true);  // Open the dialog to edit
     };
@@ -197,7 +125,6 @@ const CategoryManagement = () => {
                     />
                 </DialogContent>
             </Dialog>
-            <Toaster/>
         </>
     );
 };
