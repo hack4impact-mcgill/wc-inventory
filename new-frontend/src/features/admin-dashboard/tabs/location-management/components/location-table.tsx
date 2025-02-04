@@ -21,6 +21,7 @@ import type { Location } from "@/types/location";
 import { SearchBar } from "@/components/search-bar";
 import { useLocationColumns } from "../hooks/use-location-columns";
 import { NestedLocation, buildLocationTree } from "../utils";
+import { Plus } from "lucide-react";
 
 export interface LocationTableProps {
   locations: Location[];
@@ -70,8 +71,8 @@ export const LocationTable = ({
       <div className="flex items-center justify-between">
         <SearchBar value={globalFilter} onChange={setGlobalFilter} />
         <Button onClick={onAdd}>
-          {/* You can replace the span with an icon component like <Plus /> */}
-          <span className="mr-2">+</span> Add Location
+          <Plus className="mr-2 h-4 w-4" />
+          Add Location
         </Button>
       </div>
 

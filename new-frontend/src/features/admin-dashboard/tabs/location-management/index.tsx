@@ -46,10 +46,14 @@ const LocationManagement = () => {
       });
       return;
     }
-
     if (window.confirm("Are you sure you want to delete this location?")) {
       await deleteMutation.mutateAsync(id);
     }
+  };
+
+  const handleEdit = (location: Location) => {
+    setSelectedLocation(location);
+    setIsDialogOpen(true);
   };
 
   const handleClose = () => {
@@ -63,10 +67,7 @@ const LocationManagement = () => {
         <CardContent className="pt-6">
           <LocationTable
             locations={locations}
-            onEdit={(location) => {
-              setSelectedLocation(location);
-              setIsDialogOpen(true);
-            }}
+            onEdit={handleEdit}
             onDelete={handleDelete}
             globalFilter={globalFilter}
             setGlobalFilter={setGlobalFilter}
@@ -88,7 +89,7 @@ const LocationManagement = () => {
             </DialogDescription>
           </DialogHeader>
           <LocationForm
-            locations={locations}
+            locations={locations.filter(loc => loc.location_id !== selectedLocation?.location_id)}
             onSubmit={handleSubmit}
             initialData={selectedLocation}
             isLoading={

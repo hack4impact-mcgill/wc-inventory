@@ -66,7 +66,7 @@ export const LocationForm = ({
 
   const onFormSubmit = async (data: LocationFormValues): Promise<void> => {
     try {
-      // Convert form values to LocationInsert type
+      // Convert form values to LocationInsert type -- TODO - > Check if update or insert
       const locationData: LocationInsert = {
         name: data.name,
         description: data.description,

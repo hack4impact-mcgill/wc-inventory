@@ -21,11 +21,10 @@ export function useLocations() {
         description: "Location created successfully",
       });
     },
-    onError: (error) => {
+    onError: (_) => {
       toast({
         title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to create location",
+        description: "Failed to create location",
         variant: "destructive",
       });
     },
