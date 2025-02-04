@@ -1,3 +1,14 @@
+
+import React from "react";
+import CategoryManagement from "./CategoryManagement";
+
+const CategoriesPage = () => {
+  return <CategoryManagement />;
+};
+
+export default CategoriesPage;
+
+/*
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,3 +54,4 @@ const CategoryManagement = () => {
 };
 
 export default CategoryManagement;
+*/

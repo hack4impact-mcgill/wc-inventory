@@ -1,12 +1,4 @@
-import React, { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  fetchLocations,
-  createLocation,
-  updateLocation,
-  deleteLocation,
-} from "@/lib/api";
-import { Location } from "@/types/location";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
@@ -16,82 +8,23 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { CreateLocationForm } from "./components/create-location-form";
 import { LocationTable } from "./components/location-table";
+import { LocationInsert, Location } from "@/types/location";
+import LocationForm from "./components/create-location-form";
+import { useLocations } from "./hooks/use-locations";
 
 const LocationManagement = () => {
-  const queryClient = useQueryClient();
-  const [globalFilter, setGlobalFilter] = React.useState("");
+  const {
+    locations,
+    createMutation,
+    updateMutation,
+    deleteMutation,
+  } = useLocations();
+  const [globalFilter, setGlobalFilter] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(
-    null,
-  );
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
 
-  const { data: locations = [], isLoading } = useQuery({
-    queryKey: ["locations"],
-    queryFn: fetchLocations,
-  });
-
-  const createMutation = useMutation({
-    mutationFn: createLocation,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["locations"] });
-      setIsDialogOpen(false);
-      setSelectedLocation(null);
-      toast({
-        title: "Success",
-        description: "Location created successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to create location",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Location> }) =>
-      updateLocation(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["locations"] });
-      setIsDialogOpen(false);
-      setSelectedLocation(null);
-      toast({
-        title: "Success",
-        description: "Location updated successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to update location",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: deleteLocation,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["locations"] });
-      toast({
-        title: "Success",
-        description: "Location deleted successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to delete location",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleSubmit = async (data: Omit<Location, "location_id">) => {
+  const handleSubmit = async (data: LocationInsert) => {
     if (selectedLocation) {
       await updateMutation.mutateAsync({
         id: selectedLocation.location_id,
@@ -100,9 +33,20 @@ const LocationManagement = () => {
     } else {
       await createMutation.mutateAsync(data);
     }
+    handleClose();
   };
 
   const handleDelete = async (id: string) => {
+    const hasChildren = locations.some((loc) => loc.parent_id === id);
+    if (hasChildren) {
+      toast({
+        title: "Cannot Delete",
+        description: "Please delete or move child locations first",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (window.confirm("Are you sure you want to delete this location?")) {
       await deleteMutation.mutateAsync(id);
     }
@@ -112,8 +56,6 @@ const LocationManagement = () => {
     setIsDialogOpen(false);
     setSelectedLocation(null);
   };
-
-  if (isLoading) return <div>Loading...</div>;
 
   return (
     <>
@@ -134,7 +76,7 @@ const LocationManagement = () => {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={handleClose}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>
               {selectedLocation ? "Edit Location" : "Create New Location"}
@@ -145,11 +87,13 @@ const LocationManagement = () => {
                 : "Add a new location to the system"}
             </DialogDescription>
           </DialogHeader>
-          <CreateLocationForm
+          <LocationForm
             locations={locations}
             onSubmit={handleSubmit}
             initialData={selectedLocation}
-            isLoading={createMutation.isPending || updateMutation.isPending}
+            isLoading={
+              createMutation.isPending || updateMutation.isPending
+            }
           />
         </DialogContent>
       </Dialog>

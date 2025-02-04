@@ -1,7 +1,6 @@
 import { Category, CategoryInsert, CategoryUpdate } from "@/types/category";
 import { supabase } from "./supabaseClient";
 import { Location, LocationInsert, LocationUpdate } from "@/types/location";
-import { User } from "@supabase/supabase-js";
 import * as Sentry from "@sentry/react";
 
 /**
@@ -25,7 +24,7 @@ export const fetchCategories = async (): Promise<Category[]> => {
  * Fetch a single category by ID.
  */
 export const fetchCategoryById = async (
-  categoryId: number,
+  categoryId: string,
 ): Promise<Category | null> => {
   const { data, error } = await supabase
     .from("categories")
@@ -68,7 +67,7 @@ export const createCategory = async (
  * Update an existing category.
  */
 export const updateCategory = async (
-  categoryId: number,
+  categoryId: string,
   updates: CategoryUpdate,
 ): Promise<Category> => {
   const { data, error } = await supabase
@@ -89,7 +88,7 @@ export const updateCategory = async (
 /**
  * Delete a category.
  */
-export const deleteCategory = async (categoryId: number): Promise<void> => {
+export const deleteCategory = async (categoryId: string): Promise<void> => {
   const { error } = await supabase
     .from("categories")
     .delete()
@@ -122,7 +121,7 @@ export const fetchLocations = async (): Promise<Location[]> => {
  * Fetch a single location by ID.
  */
 export const fetchLocationById = async (
-  locationId: number,
+  locationId: string,
 ): Promise<Location | null> => {
   const { data, error } = await supabase
     .from("locations")
@@ -198,19 +197,5 @@ export const deleteLocation = async (locationId: string): Promise<void> => {
   }
 };
 
-/**
- * Fetch all users.
- */
-export const fetchUsers = async (): Promise<User[]> => {
-  const { data, error } = await supabase
-    .from("users")
-    .select("*")
-    .order("first_name", { ascending: true });
 
-  if (error) {
-    Sentry.captureException(error);
-    throw new Error(error.message);
-  }
 
-  return data as User[];
-};
