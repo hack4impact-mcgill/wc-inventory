@@ -18,8 +18,6 @@ import {
 } from "@/components/ui/select";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabaseClient";
-import { UserView } from "@/types/user";
 import { activityLogApi } from "@/lib/api/activity-log";
 import { queryKeys } from "@/lib/api/queryKeys";
 import { userApi } from "@/lib/api/users";
