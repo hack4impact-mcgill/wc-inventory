@@ -95,6 +95,13 @@ export type Database = {
             referencedColumns: ["location_id"]
           },
           {
+            foreignKeyName: "box_movements_moved_by_fkey"
+            columns: ["moved_by"]
+            isOneToOne: false
+            referencedRelation: "box_movements_view"
+            referencedColumns: ["moved_by_user_id"]
+          },
+          {
             foreignKeyName: "box_movements_to_location_id_fkey"
             columns: ["to_location_id"]
             isOneToOne: false
@@ -284,7 +291,15 @@ export type Database = {
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "box_movements_view"
+            referencedColumns: ["moved_by_user_id"]
+          },
+        ]
       }
       users: {
         Row: {
@@ -314,19 +329,61 @@ export type Database = {
           name?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "users_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "box_movements_view"
+            referencedColumns: ["moved_by_user_id"]
+          },
+        ]
       }
     }
     Views: {
+      box_movements_view: {
+        Row: {
+          box_id: string | null
+          box_movement_id: string | null
+          box_name: string | null
+          from_location_name: string | null
+          moved_at: string | null
+          moved_by_email: string | null
+          moved_by_user_id: string | null
+          note: string | null
+          to_location_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "box_movements_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "boxes"
+            referencedColumns: ["box_id"]
+          },
+        ]
+      }
       user_view: {
         Row: {
+          can_create_box: boolean | null
+          can_delete_box: boolean | null
+          can_modify_box: boolean | null
+          can_move_box: boolean | null
           created_at: string | null
           email: string | null
           id: string | null
           name: string | null
           role: Database["public"]["Enums"]["user_role"] | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "users_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "box_movements_view"
+            referencedColumns: ["moved_by_user_id"]
+          },
+        ]
       }
     }
     Functions: {

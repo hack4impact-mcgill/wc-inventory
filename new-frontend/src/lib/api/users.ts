@@ -13,6 +13,17 @@ export const userApi = {
       if (error) throw new Error(error.message);
       return data as UserView[];
     },
+
+    getUser: async (userId: string) => {
+      const { data, error } = await supabase
+        .from("user_view")
+        .select()
+        .eq("id", userId)
+        .single();
+      
+      if (error) throw new Error(error.message);
+      return data as UserView;
+    },
   
     createUser: async (userData: UserFormData): Promise<{ user: UserFormData; message: string }> => {
       const encrypted = cryptoUtils.encrypt(userData.password);
