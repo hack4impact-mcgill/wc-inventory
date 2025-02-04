@@ -1,22 +1,83 @@
-import { Users } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { UserForm } from "./components/user-form";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
+import { SearchBar } from "./components/search-bar";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { UserTable } from "./components/user-table";
+import { UserFormData } from "./types";
+import { useUsers } from "./hooks/use-users";
 
-const UserManagement = () => {
-  return (
-    <div className="h-[70vh] flex items-center justify-center">
-      <section className="relative block w-full max-w-6xl mx-auto rounded-lg border-2 border-dashed border-gray-300 p-12 py-24 text-center">
-        <Users
-          className="mx-auto h-16 w-16 text-gray-400 mb-3"
-          strokeWidth={1.5}
-        />
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-          Coming Soon!
-        </h3>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          This feature is currently under development
-        </p>
-      </section>
-    </div>
+export default function UserManagement() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { users, isLoading, error, createUser, isCreating } = useUsers();
+
+  const filteredUsers = users?.filter(user =>
+    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
-};
 
-export default UserManagement;
+  const handleCreateUser = async (data: UserFormData) => {
+    try {
+      await createUser(data);
+      toast({ title: 'Success', description: 'User created successfully' });
+      setIsModalOpen(false);
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to create user'
+      });
+    }
+  };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error instanceof Error ? error.message : 'Unknown error'}</div>;
+  }
+
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>User Management</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex justify-between items-center mb-4">
+          <SearchBar value={searchTerm} onChange={setSearchTerm} />
+          <Button onClick={() => setIsModalOpen(true)}>Create User</Button>
+        </div>
+
+        <UserTable
+          users={filteredUsers || []}
+          onUserClick={(id) => navigate(`/admin/users/${id}`)}
+        />
+
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogContent aria-describedby="create-user-dialog">
+            <DialogHeader>
+              <DialogTitle>Create New User</DialogTitle>
+            </DialogHeader>
+            <UserForm
+              onSubmit={handleCreateUser}
+              onCancel={() => setIsModalOpen(false)}
+              isLoading={isCreating}
+            />
+          </DialogContent>
+        </Dialog>
+      </CardContent>
+    </Card>
+  );
+}
+
