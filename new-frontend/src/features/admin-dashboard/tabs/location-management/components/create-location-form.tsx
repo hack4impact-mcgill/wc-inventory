@@ -10,9 +10,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Location } from "@/types/location";
-import TreeSelect from "@/components/tree-select";
 import { Button } from "@/components/ui/button";
+import TreeSelect from "@/components/tree-select";
+import { Location, LocationInsert } from "@/types/location";
+
 
 export const locationFormSchema = z.object({
   name: z
@@ -26,27 +27,29 @@ export const locationFormSchema = z.object({
     .nullable()
     .transform((val) => (val === "" ? null : val)),
   parent_id: z.string().nullable(),
+  // Level is computed based on parent, no need for direct input
   level: z
     .number()
     .min(1, "Level must be at least 1")
     .max(10, "Maximum nesting level exceeded"),
+  location_id: z.string().optional() // For updates
 });
 
 export type LocationFormValues = z.infer<typeof locationFormSchema>;
 
-interface CreateLocationFormProps {
+interface LocationFormProps {
   locations: ReadonlyArray<Location>;
-  onSubmit: (values: LocationFormValues) => Promise<void>;
+  onSubmit: (values: LocationInsert) => Promise<void>;
   initialData?: Location | null;
   isLoading: boolean;
 }
 
-export const CreateLocationForm = ({
+export const LocationForm = ({
   locations,
   onSubmit,
   initialData,
   isLoading,
-}: CreateLocationFormProps): JSX.Element => {
+}: LocationFormProps): JSX.Element => {
   const form = useForm<LocationFormValues>({
     resolver: zodResolver(locationFormSchema),
     defaultValues: {
@@ -54,19 +57,27 @@ export const CreateLocationForm = ({
       description: initialData?.description ?? null,
       parent_id: initialData?.parent_id ?? null,
       level: initialData?.level ?? 1,
+      location_id: initialData?.location_id
     },
-    mode: "onChange", // Enable validation on change
+    mode: "onChange"
   });
 
   const { control, handleSubmit, setValue, formState } = form;
 
-  // Form submission handler with proper error handling
   const onFormSubmit = async (data: LocationFormValues): Promise<void> => {
     try {
-      await onSubmit(data);
-      form.reset(data); // Reset form state but keep values
+      // Convert form values to LocationInsert type -- TODO - > Check if update or insert
+      const locationData: LocationInsert = {
+        name: data.name,
+        description: data.description,
+        parent_id: data.parent_id,
+        level: data.level,
+        ...(initialData?.location_id && { location_id: initialData.location_id })
+      };
+
+      await onSubmit(locationData);
+      form.reset(data);
     } catch (error) {
-      // Re-enable the form
       form.reset(data, {
         keepValues: true,
         keepDirty: true,
@@ -76,27 +87,16 @@ export const CreateLocationForm = ({
     }
   };
 
-  // Handle keyboard events
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Prevent form submission on enter in input fields
-    if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
-      e.preventDefault();
-    }
-
-    // Allow enter key in textarea (if you add one later)
-    if (e.key === "Enter" && e.target instanceof HTMLTextAreaElement) {
-      return;
-    }
-  };
+  // Compute max allowed level based on hierarchy
+  const maxLevel = Math.max(...locations.map(loc => loc.level ?? 1), 0) + 1;
 
   return (
     <Form {...form}>
       <form
         onSubmit={handleSubmit(onFormSubmit)}
         className="space-y-4"
-        onKeyDown={handleKeyDown}
       >
-        {/* <FormField
+        <FormField
           control={control}
           name="name"
           render={({ field }) => (
@@ -108,7 +108,6 @@ export const CreateLocationForm = ({
                   placeholder="Enter location name"
                   disabled={isLoading}
                   maxLength={100}
-                  // Trim whitespace on blur
                   onBlur={(e) => {
                     field.onBlur();
                     setValue("name", e.target.value.trim(), {
@@ -135,7 +134,6 @@ export const CreateLocationForm = ({
                   placeholder="Enter description"
                   disabled={isLoading}
                   maxLength={500}
-                  // Trim whitespace on blur
                   onBlur={(e) => {
                     field.onBlur();
                     setValue("description", e.target.value.trim() || null, {
@@ -150,7 +148,7 @@ export const CreateLocationForm = ({
         />
 
         <FormField
-          control={form.control}
+          control={control}
           name="parent_id"
           render={({ field }) => (
             <FormItem>
@@ -161,10 +159,13 @@ export const CreateLocationForm = ({
                   selectedId={field.value}
                   onSelect={(id) => {
                     field.onChange(id);
-                    const parent = id
-                      ? locations.find((loc) => loc.location_id === id)
-                      : null;
-                    form.setValue("level", parent ? parent.level! + 1 : 1);
+                    // Update level based on parent
+                    const parent = locations.find(loc => loc.location_id === id);
+                    const newLevel = parent ? (parent.level ?? 0) + 1 : 1;
+
+                    if (newLevel <= maxLevel) {
+                      setValue("level", newLevel, { shouldValidate: true });
+                    }
                   }}
                   disabled={isLoading}
                 />
@@ -172,17 +173,19 @@ export const CreateLocationForm = ({
               <FormMessage />
             </FormItem>
           )}
-        /> */}
+        />
+
+
         <Button
           type="submit"
           disabled={isLoading || !formState.isDirty || !formState.isValid}
           className="w-full"
         >
-          {isLoading
-            ? "Saving..."
-            : `${initialData ? "Update" : "Create"} Location`}
+          {isLoading ? "Saving..." : `${initialData ? "Update" : "Create"} Location`}
         </Button>
       </form>
     </Form>
   );
 };
+
+export default LocationForm;

@@ -1,4 +1,4 @@
-import { type FC } from "react";
+import { type FC, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -14,39 +14,131 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal } from "lucide-react";
-import type { Database } from "@/types/supabase";
+import { MoreHorizontal, ChevronRight, ChevronDown } from "lucide-react";
 import { getCategoryIcon } from "@/types/icons";
-
-type Category = Database["public"]["Tables"]["categories"]["Row"];
+import { Category } from "@/types/category";
+import { buildHierarchy, CategoryWithChildren, matchesFilter } from "../utils";
+import React from "react";
 
 interface CategoriesTableProps {
   data: Category[] | undefined;
   filter: string;
-  onEdit?: (categoryId: string) => void;
-  onDelete?: (categoryId: string) => void;
+  onEdit: (category: Category) => void;
+  onDelete: (categoryId: string) => void;
 }
-
 const CategoriesTable: FC<CategoriesTableProps> = ({
   data = [],
   filter = "",
   onEdit,
   onDelete,
 }) => {
-  // Filter categories based on search input
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  // Move expansion logic to useEffect
+  useEffect(() => {
+    if (filter) {
+      const categoryMap = new Map<string, CategoryWithChildren>();
+      data.forEach(category => {
+        categoryMap.set(category.category_id, { ...category, children: [] });
+      });
 
-  const filteredCategories = data?.filter(
-    (category) =>
-      category.name.toLowerCase().includes(filter.toLowerCase()) ||
-      (category.description?.toLowerCase() ?? "").includes(
-        filter.toLowerCase(),
-      ),
-  );
+      const toExpand = new Set<string>();
+      data.forEach(category => {
+        if (matchesFilter({ ...category, children: [] }, filter)) {
+          let currentId = category.parent_id;
+          while (currentId) {
+            toExpand.add(currentId);
+            const parent = categoryMap.get(currentId);
+            currentId = parent?.parent_id || null;
+          }
+        }
+      });
 
-  // Helper function to get parent category name
-  const getParentName = (parentId: string | null): string => {
-    if (!parentId) return "-";
-    return data?.find((cat) => cat.category_id === parentId)?.name ?? "-";
+      setExpandedCategories(toExpand);
+    } else {
+      setExpandedCategories(new Set());
+    }
+  }, [filter, data]);
+
+  const hierarchicalCategories = buildHierarchy(data);
+
+  const toggleExpand = (categoryId: string) => {
+    setExpandedCategories(prev => {
+      const next = new Set(prev);
+      if (next.has(categoryId)) {
+        next.delete(categoryId);
+      } else {
+        next.add(categoryId);
+      }
+      return next;
+    });
+  };
+
+  const renderCategoryRow = (category: CategoryWithChildren, level: number = 0) => {
+    const hasChildren = category.children && category.children.length > 0;
+    const isExpanded = expandedCategories.has(category.category_id);
+    const IconComponent = getCategoryIcon(category.icon);
+
+    // Skip this category and its children  they don't match the filter
+    if (filter && !matchesFilter(category, filter)) {
+      return null;
+    }
+
+    return (
+      <React.Fragment key={category.category_id}>
+        <TableRow>
+          <TableCell className="pl-4">
+            {hasChildren && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-0 h-6 w-6"
+                onClick={() => toggleExpand(category.category_id)}
+              >
+                {isExpanded ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+              </Button>
+            )}
+          </TableCell>
+          <TableCell>
+            <IconComponent className="h-4 w-4 text-muted-foreground" />
+          </TableCell>
+          <TableCell className="font-medium">
+            <span>
+              {category.name}
+            </span>
+          </TableCell>
+          <TableCell>{category.description || "-"}</TableCell>
+          <TableCell>{category.level}</TableCell>
+          <TableCell>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onEdit(category)}>
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-destructive"
+                  onClick={() => onDelete(category.category_id)}
+                >
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </TableCell>
+        </TableRow>
+        {hasChildren &&
+          (isExpanded || filter) &&
+          category.children?.map(child => renderCategoryRow(child, level + 1))}
+      </React.Fragment>
+    );
   };
 
   return (
@@ -54,16 +146,16 @@ const CategoriesTable: FC<CategoriesTableProps> = ({
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-[50px]"></TableHead>
             <TableHead className="w-[50px]">Icon</TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Description</TableHead>
             <TableHead>Level</TableHead>
-            <TableHead>Parent Category</TableHead>
-            <TableHead className="w-[70px]"></TableHead>
+            <TableHead className="w-[70px]">Options</TableHead>  { }
           </TableRow>
         </TableHeader>
         <TableBody>
-          {!filteredCategories || filteredCategories.length === 0 ? (
+          {hierarchicalCategories.length === 0 ? (
             <TableRow>
               <TableCell
                 colSpan={6}
@@ -73,48 +165,7 @@ const CategoriesTable: FC<CategoriesTableProps> = ({
               </TableCell>
             </TableRow>
           ) : (
-            filteredCategories.map((category) => {
-              const IconComponent = getCategoryIcon(category.icon);
-
-              return (
-                <TableRow key={category.category_id}>
-                  <TableCell className="pl-4">
-                    <IconComponent className="h-4 w-4 text-muted-foreground" />
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    <div style={{ marginLeft: `${category.level * 12}px` }}>
-                      {category.name}
-                    </div>
-                  </TableCell>
-                  <TableCell>{category.description || "-"}</TableCell>
-                  <TableCell>{category.level}</TableCell>
-                  <TableCell>{getParentName(category.parent_id)}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Open menu</span>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => onEdit?.(category.category_id)}
-                        >
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={() => onDelete?.(category.category_id)}
-                        >
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              );
-            })
+            hierarchicalCategories.map(category => renderCategoryRow(category))
           )}
         </TableBody>
       </Table>
