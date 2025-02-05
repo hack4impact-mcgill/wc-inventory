@@ -24,10 +24,7 @@ const AdminDashboard: React.FC = () => {
         <AdminHeader pageTitle={getCurrentPageTitle()} />
         <div className="p-6">
           <Outlet />
-          <div className="p-6">
-          <h1 className="text-xl font-bold mb-4">Activity Log</h1>
-          <ActivityLogTable />
-          </div>
+
         </div>
       </main>
     </div>

@@ -1,59 +1,58 @@
 
 import React, { useState } from "react";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-  } from "@/components/ui/table";
-import { ArrowUpDown } from "lucide-react"; // ✅ Correct import
-import SearchBar from "./searchbar"; // Import SearchBar
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ArrowUpDown } from "lucide-react";
+
 
 //sample Data; 
-const activityLogData = [  
+const activityLogData = [
   { user: "Jean G.", action: "Moved box from Winter Inventory room to Level 1 > Aisle 2 > Side B", box: 1, time: "timestamp" },
   { user: "Laura R.", action: "Donated Box", box: 25, time: "timestamp" },
   { user: "Harry T.", action: "Deleted Box", box: 51, time: "timestamp" }
 ];
 
 
-const ActivityLogTable: React.FC = () => { 
-  const [searchTerm, setSearchTerm] = useState(""); 
+const ActivityLogTable: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState("");
   const [sortKey, setSortKey] = useState<"user" | "box" | "time" | "action" | null>(null);
-  const [sortOrder, setSortOrder] = useState<"asc" 
-  | "desc">("asc"); 
+  const [sortOrder, setSortOrder] = useState<"asc"
+    | "desc">("asc");
+
+
 
   //filter table based on search 
-  const filteredData = activityLogData.filter((entry) => 
+  const filteredData = activityLogData.filter((entry) =>
     entry.box.toString().includes(searchTerm)
-);
+  );
 
-//sort Table: 
-const sortedData = [...filteredData].sort((a,b) => { 
-  if (!sortKey) return 0;
-  const valueA = a[sortKey];
-  const valueB = b[sortKey];
+  //sort Table: 
+  const sortedData = [...filteredData].sort((a, b) => {
+    if (!sortKey) return 0;
+    const valueA = a[sortKey];
+    const valueB = b[sortKey];
 
-  if (typeof valueA === "string" && typeof valueB === "string") {
-    return sortOrder === "asc"
-      ? valueA.localeCompare(valueB)
-      : valueB.localeCompare(valueA);
-  } else {
-    return sortOrder === "asc"
-      ? (valueA as number) - (valueB as number)
-      : (valueB as number) - (valueA as number);
-  }
-});
+    if (typeof valueA === "string" && typeof valueB === "string") {
+      return sortOrder === "asc"
+        ? valueA.localeCompare(valueB)
+        : valueB.localeCompare(valueA);
+    } else {
+      return sortOrder === "asc"
+        ? (valueA as number) - (valueB as number)
+        : (valueB as number) - (valueA as number);
+    }
+  });
 
-return ( 
-  <div className="p-4"> 
-  <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
-
-
-  <Table className="border-collapse w-full">
-  <TableHeader>
+  return (
+    <div className="p-4">
+      <Table className="border-collapse w-full">
+        <TableHeader>
           <TableRow>
             <TableHead className="font-bold cursor-pointer" onClick={() => {
               setSortKey("user");
@@ -63,10 +62,10 @@ return (
             </TableHead>
 
             <TableHead className="font-bold cursor-pointer" onClick={() => {
-            setSortKey("action");
-            setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+              setSortKey("action");
+              setSortOrder(sortOrder === "asc" ? "desc" : "asc");
             }}>
-            Action <ArrowUpDown className="inline" />
+              Action <ArrowUpDown className="inline" />
             </TableHead>
 
             <TableHead className="font-bold">Action</TableHead>
