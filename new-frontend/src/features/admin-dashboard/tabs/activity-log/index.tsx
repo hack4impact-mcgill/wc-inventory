@@ -33,7 +33,6 @@ const ActivityLog = () => {
   console.log(filteredLogs as BoxMovementView[]);
   return (
     <>
-      <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
       <div className="p-6">
         <h1 className="text-xl font-bold mb-4">Activity Log</h1>
         <ActivityLogTable filteredData={filteredLogs!} isLoading={isLoading} />
