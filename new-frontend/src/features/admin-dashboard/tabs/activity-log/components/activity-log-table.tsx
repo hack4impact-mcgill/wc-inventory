@@ -8,7 +8,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ArrowUpDown } from "lucide-react";
-import SearchBar from "./searchbar";
 import { BoxMovementView } from "@/types/activity-log";
 import { format } from "date-fns";
 
@@ -25,12 +24,12 @@ const ActivityLogTable = ({
     return <p className="text-center p-4">Loading...</p>;
   }
 
-  const [searchTerm, setSearchTerm] = useState("");
   const [sortKey, setSortKey] = useState<
     "user" | "box" | "time" | "action" | null
   >(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-
+  // TODO: Enable Sorting
+  //
   //sort Table:
   // const sortedData = [...filteredData].sort((a, b) => {
   //   if (!sortKey) return 0;
@@ -48,13 +47,8 @@ const ActivityLogTable = ({
   //   }
   // });
 
-  const filteredRows = filteredData.filter((e) =>
-    e.box_name !== null && e.box_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <div className="p-4">
-      <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
       <Table className="border-collapse w-full">
         <TableHeader>
           <TableRow>
@@ -100,17 +94,21 @@ const ActivityLogTable = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredRows.length > 0 ? (
-            filteredRows.map((entry, index) => (
+          {filteredData.length > 0 ? (
+            filteredData.map((entry, index) => (
               <TableRow key={index} className="border">
-                 <TableCell className="text-blue-500 underline cursor-pointer">
+                <TableCell className="text-blue-500 underline cursor-pointer">
                   {entry.moved_by_email}
                 </TableCell>
                 <TableCell>{entry.note}</TableCell>
                 <TableCell className="text-blue-500 underline cursor-pointer">
                   {entry.box_name}
                 </TableCell>
-                <TableCell>{entry.moved_at? format(new Date(entry.moved_at), "MMM dd, yyyy, hh:mm a") : "N/A"}</TableCell> 
+                <TableCell>
+                  {entry.moved_at
+                    ? format(new Date(entry.moved_at), "MMM dd, yyyy, hh:mm a")
+                    : "N/A"}
+                </TableCell>
               </TableRow>
             ))
           ) : (
