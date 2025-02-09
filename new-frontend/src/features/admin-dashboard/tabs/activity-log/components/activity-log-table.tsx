@@ -48,7 +48,7 @@ const ActivityLogTable = ({
   // });
 
   return (
-    <div className="p-4">
+    <div>
       <Table className="border-collapse w-full">
         <TableHeader>
           <TableRow>
