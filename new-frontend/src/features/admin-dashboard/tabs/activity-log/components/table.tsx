@@ -9,23 +9,31 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ArrowUpDown } from "lucide-react";
+import { useActivityLogs } from "../hooks/use-activity-logs";
+import SearchBar from "./searchbar"; 
 
 
 //sample Data; 
-const activityLogData = [
+/*const activityLogData = [
   { user: "Jean G.", action: "Moved box from Winter Inventory room to Level 1 > Aisle 2 > Side B", box: 1, time: "timestamp" },
   { user: "Laura R.", action: "Donated Box", box: 25, time: "timestamp" },
   { user: "Harry T.", action: "Deleted Box", box: 51, time: "timestamp" }
-];
+];*/
 
 
 const ActivityLogTable: React.FC = () => {
+  const { data: activityLogData, error, isLoading } = useActivityLogs();
+  if (isLoading) {
+    return <p className="text-center p-4">Loading...</p>;
+  }
+
+  if (error) {
+    return <p className="text-center p-4 text-red-500">Error fetching activity logs</p>;
+  }
+
   const [searchTerm, setSearchTerm] = useState("");
   const [sortKey, setSortKey] = useState<"user" | "box" | "time" | "action" | null>(null);
-  const [sortOrder, setSortOrder] = useState<"asc"
-    | "desc">("asc");
-
-
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   //filter table based on search 
   const filteredData = activityLogData.filter((entry) =>
@@ -51,6 +59,8 @@ const ActivityLogTable: React.FC = () => {
 
   return (
     <div className="p-4">
+      <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+
       <Table className="border-collapse w-full">
         <TableHeader>
           <TableRow>
