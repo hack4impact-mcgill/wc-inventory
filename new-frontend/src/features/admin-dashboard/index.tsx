@@ -3,9 +3,6 @@ import { Outlet, useLocation } from "react-router-dom";
 import { AdminHeader } from "./components/admin-header";
 import { navItems } from "./constants/navItems";
 import { Sidebar } from "./components/sidebar";
-import ActivityLogTable from "@/features/admin-dashboard/tabs/activity-log/components/table";
-
-
 
 const AdminDashboard: React.FC = () => {
   const location = useLocation();
@@ -24,7 +21,6 @@ const AdminDashboard: React.FC = () => {
         <AdminHeader pageTitle={getCurrentPageTitle()} />
         <div className="p-6">
           <Outlet />
-
         </div>
       </main>
     </div>
