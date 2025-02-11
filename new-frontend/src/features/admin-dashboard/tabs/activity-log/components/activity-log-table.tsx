@@ -28,6 +28,7 @@ const ActivityLogTable = ({
     "user" | "box" | "time" | "action" | null
   >(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
   // TODO: Enable Sorting
   //
   //sort Table:
@@ -97,11 +98,13 @@ const ActivityLogTable = ({
           {filteredData.length > 0 ? (
             filteredData.map((entry, index) => (
               <TableRow key={index} className="border">
-                <TableCell className="text-blue-500 underline cursor-pointer">
-                  {entry.moved_by_email}
+                <TableCell className="text-blue-500">
+                  <span className="hover:underline cursor-pointer">
+                    {entry.moved_by_email}
+                  </span>
                 </TableCell>
                 <TableCell>{entry.note}</TableCell>
-                <TableCell className="text-blue-500 underline cursor-pointer">
+                <TableCell className="text-blue-500 underline">
                   {entry.box_name}
                 </TableCell>
                 <TableCell>
