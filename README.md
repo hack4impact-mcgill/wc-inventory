@@ -1,67 +1,52 @@
 # Web Collective Inventory Management Solution
+
 [![Netlify Status](https://api.netlify.com/api/v1/badges/d4f6c68a-954f-42f8-b172-9fb6e3a79b9f/deploy-status)](https://app.netlify.com/sites/wc-inventory/deploys)
+
 ## Overview
-This project is a comprehensive Inventory Management Solution for Web Collective. It consists of a React-based frontend and an Express.js backend, designed to efficiently manage and track inventory items.
+
+TODO: Rewrite
 
 ## Project Structure
-```
+
+```txt
 web-collective-inventory/
-  ├── frontend/
-  │   ├── src/
-  │   ├── package.json
-  │   └── README.md
-  ├── backend/
-  │   ├── src/
-  │   ├── package.json
-  │   └── README.md
-  └── README.md
+├── new-frontend/
+│ ├── src/
+│ ├── package.json
+│ └── README.md
+
 ```
 
 ## Technologies Used
 
 ### Frontend
+
 - Vite.js
 - React
 - React Query
 - TypeScript
 
-### Backend
-- Express.js
-- TypeScript
-- TypeORM
-- tsoa
-- Swagger
-- Nodemon
-- Morgan
-
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js (v14 or later)
 - npm (v6 or later)
-- PostgreSQL
-
-### Setting Up the Backend
-1. Navigate to the backend directory:
-   ```
-   cd backend
-   ```
-2. Follow the installation instructions in the backend README.
 
 ### Setting Up the Frontend
+
 1. Navigate to the frontend directory:
-   ```
-   cd frontend
-   ```
-2. Follow the installation instructions in the frontend README.
+
+```bash
+cd frontend
+```
+
+2. Follow the installation instructions in the FE README.
 
 ## Development Workflow
-1. Start the backend development server.
-2. Start the frontend development server.
-3. Access the application via the frontend URL (usually `http://localhost:3000`).
 
-## API Documentation
-API documentation is available via Swagger UI. When the backend server is running, access it at `/docs`.
+1. Start the FE development server.
+2. Access the application via Browser (usually `http://localhost:3000`).
 
 ## Contributing
 

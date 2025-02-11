@@ -1,6 +1,7 @@
-# New WCInv Frontend
+# WCInventory Frontend
 
-The New WCInv Frontend is an inventory management application that utilizes modern frontend tools and styles, featuring **TailwindCSS** for styling, **shadcn/ui** components, and **Supabase** as the backend.
+The Welcome Collective Inventory Frontend is an
+inventory management application for the Welcome Collective.
 
 ## Get Started
 
@@ -18,9 +19,11 @@ The New WCInv Frontend is an inventory management application that utilizes mode
    ```
 
 3. Start the development server:
+
    ```bash
    npm run dev
    ```
+
    The app should now be running on [localhost:3000](http://localhost:3000).
 
 ---
@@ -30,28 +33,32 @@ The New WCInv Frontend is an inventory management application that utilizes mode
 - **`/assets`**: Static assets used across the application.
 - **`/components`**: Reusable UI components.
 - **`/contexts`**: Contexts for application-wide state management, such as authentication.
-- **`/features`**: Grouped features for distinct sections, such as `admin-dashboard` and `volunteer-dashboard`.
+- **`/features`**: Grouped features for distinct sections,
+  such as `admin-dashboard` and `volunteer-dashboard`.
 - **`/hooks`**: Custom hooks to abstract common logic.
 - **`/lib`**: Utility files, including API functions.
-- **`/providers`**: Providers for third-party libraries, including React Query and our Router.
+- **`/providers`**: Providers for third-party libraries,
+  including React Query and our Router.
 - **`/types`**: Type definitions for structured data and our supabase exported schema.
 
 ---
 
 ## Technologies
 
-- **Supabase**: Used for backend database and authentication services. For more information, visit [Supabase](https://supabase.com/).
-- **TailwindCSS**: Utility-first CSS framework for styling. For more information, visit [TailwindCSS](https://tailwindcss.com/).
-- **shadcn/ui**: Styled component library providing reusable UI elements, built on top of TailwindCSS. Learn more at [shadcn](https://shadcn.dev/).
+- **Supabase**: Used for DB and authentication services.
+  For more information, visit [Supabase](https://supabase.com/).
+- **TailwindCSS**: Utility-first CSS framework for styling.
+  For more information, visit [TailwindCSS](https://tailwindcss.com/).
+- **shadcn/ui**: Styled component library providing reusable UI elements,
+  built on top of TailwindCSS.
+  Learn more at [shadcn](https://shadcn.dev/).
 
 ---
 
 ## Scripts
 
+- **`npm install`**: Installs dependencies
 - **`npm run dev`**: Starts the development server.
-- **`npm run build`**: Builds the app for production into the dist folder.
-- **`npm run format`**: Formats code with Prettier.
-- **`npm run lint`**: Lints code with ESLint (still being configured)
 
 ---
 
@@ -60,7 +67,7 @@ The New WCInv Frontend is an inventory management application that utilizes mode
 1. **Fork the repository** and create a story branch, where # is the number of your ticket:
 
    ```bash
-   git checkout -b WC-#
+   git checkout -b WC-##
    ```
 
 2. **Stage and commit your changes**:
@@ -71,10 +78,7 @@ The New WCInv Frontend is an inventory management application that utilizes mode
    ```
 
 3. **Push to your branch** and then create a pull request:
+
    ```bash
    git push origin WC-#
    ```
-
----
-
-For additional setup questions or guidelines, please refer to the documentation for [Supabase](https://supabase.com/docs), [TailwindCSS](https://tailwindcss.com/docs), and [shadcn](https://shadcn.dev/docs).
