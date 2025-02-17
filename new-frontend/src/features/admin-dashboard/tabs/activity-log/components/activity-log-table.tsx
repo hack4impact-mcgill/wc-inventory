@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -9,7 +9,10 @@ import {
 } from "@/components/ui/table";
 import { ArrowUpDown } from "lucide-react";
 import { BoxMovementView } from "@/types/activity-log";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
+import { useNavigate } from "react-router-dom";
+
+type SortKeyOption = "moved_by_email" | "box_name" | "moved_at" | "action" | null;
 
 interface ActivityLogTableProps {
   filteredData: BoxMovementView[];
@@ -20,92 +23,121 @@ const ActivityLogTable = ({
   filteredData,
   isLoading,
 }: ActivityLogTableProps) => {
+  const navigate = useNavigate();
+  const [sortKey, setSortKey] = useState<SortKeyOption>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+  useEffect(() => {
+
+    if (!sortKey) {
+      setSortKey("box_name");
+    }
+    
+    filteredData.sort((a, b) => {
+      let result = 0;
+
+      switch (sortKey) {
+        case "moved_by_email":
+          result = a.moved_by_email!.localeCompare(b.moved_by_email!);
+          break;
+        case "action":
+          result = a.note!.localeCompare(b.note!);
+          break;
+        case "box_name":
+          result = a.box_name!.localeCompare(b.box_name!);
+          break;
+        case "moved_at":
+          result = a.moved_at!.localeCompare(b.moved_at!);
+          break;
+        default: 
+          console.error("Invalid sort key");
+          return 0;
+      }
+      return sortOrder === "asc" ? result : -result;
+    });
+    console.log(filteredData);
+  }, [sortKey, sortOrder]);
+
   if (isLoading) {
     return <p className="text-center p-4">Loading...</p>;
   }
 
-  const [sortKey, setSortKey] = useState<
-    "user" | "box" | "time" | "action" | null
-  >(null);
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-
-  // TODO: Enable Sorting
-  //
-  //sort Table:
-  // const sortedData = [...filteredData].sort((a, b) => {
-  //   if (!sortKey) return 0;
-  //   const valueA = a[sortKey];
-  //   const valueB = b[sortKey];
-
-  //   if (typeof valueA === "string" && typeof valueB === "string") {
-  //     return sortOrder === "asc"
-  //       ? valueA.localeCompare(valueB)
-  //       : valueB.localeCompare(valueA);
-  //   } else {
-  //     return sortOrder === "asc"
-  //       ? (valueA as number) - (valueB as number)
-  //       : (valueB as number) - (valueA as number);
-  //   }
-  // });
+// ----------------------------- Table Header -----------------------------------------
 
   return (
     <div>
       <Table className="border-collapse w-full">
         <TableHeader>
           <TableRow>
-            <TableHead
-              className="font-bold cursor-pointer"
+            <TableHead className="font-bold cursor-pointer">
+              User <ArrowUpDown 
+              className="inline"
               onClick={() => {
-                setSortKey("user");
-                setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                setSortKey("moved_by_email");
+                console.log("sortKey", sortKey);
+                (sortOrder === "asc" ? setSortOrder("desc") : setSortOrder("asc"));
+                console.log("sortOrder", sortOrder);
               }}
-            >
-              User <ArrowUpDown className="inline" />
+              />
             </TableHead>
 
             <TableHead
               className="font-bold cursor-pointer"
-              onClick={() => {
-                setSortKey("action");
-                setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-              }}
             >
-              Action <ArrowUpDown className="inline" />
+              Action 
+              <ArrowUpDown 
+                className="inline" 
+                onClick={() => {
+                  setSortKey("action");
+                  (sortOrder === "asc" ? setSortOrder("desc") : setSortOrder("asc"));
+                }}
+                />
             </TableHead>
 
-            <TableHead
-              className="font-bold cursor-pointer"
-              onClick={() => {
-                setSortKey("box");
-                setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-              }}
-            >
-              Box <ArrowUpDown className="inline" />
+            <TableHead className="font-bold cursor-pointer">
+              Box 
+              <ArrowUpDown 
+                className="inline" 
+                onClick={() => {
+                  setSortKey("box_name");
+                  console.log("sortKey", sortKey);
+                  (sortOrder === "asc" ? setSortOrder("desc") : setSortOrder("asc"));
+                  console.log("sortOrder", sortOrder);              }}/>
             </TableHead>
 
-            <TableHead
-              className="font-bold cursor-pointer"
-              onClick={() => {
-                setSortKey("time");
-                setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-              }}
-            >
-              Time <ArrowUpDown className="inline" />
+            <TableHead className="font-bold cursor-pointer">
+              Time 
+              <ArrowUpDown className="inline" onClick={() => {
+                  setSortKey("moved_at");
+                  (sortOrder === "asc" ? setSortOrder("desc") : setSortOrder("asc"));
+              }}/>
             </TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody> 
           {filteredData.length > 0 ? (
             filteredData.map((entry, index) => (
               <TableRow key={index} className="border">
                 <TableCell className="text-blue-500">
-                  <span className="hover:underline cursor-pointer">
+                  <span
+                    onClick={() => {
+                      navigate(`/admin/users/${entry.moved_by_user_id}`);
+                    }}
+                    className="hover:underline cursor-pointer"
+                  >
                     {entry.moved_by_email}
                   </span>
                 </TableCell>
                 <TableCell>{entry.note}</TableCell>
                 <TableCell className="text-blue-500 underline">
+                <span
+                  onClick={() => {
+                    // TODO: Navigate to box popup
+                    navigate(`/admin/inventory`);
+                  }}
+                  className="hover:underline cursor-pointer">
                   {entry.box_name}
+                </span>
                 </TableCell>
                 <TableCell>
                   {entry.moved_at
