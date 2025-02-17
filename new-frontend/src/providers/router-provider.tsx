@@ -14,6 +14,7 @@ import SearchForBoxByIdPage from "@/features/search-box-by-id";
 import SearchForItem from "@/features/search-for-item";
 import ActivityLog from "@/features/admin-dashboard/tabs/activity-log";
 import UserInfo from "@/features/user-info";
+import SizeManagementPage from "@/features/admin-dashboard/tabs/size-management";
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
@@ -92,6 +93,8 @@ const router = createBrowserRouter([
         path: "categories",
         element: <CategoryManagement />,
       },
+      {path: "size-management",
+      element: <SizeManagementPage />},
       {
         path: "activity-log",
         element: <ActivityLog />,
