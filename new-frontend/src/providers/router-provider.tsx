@@ -9,8 +9,8 @@ import CategoryManagement from "@/features/admin-dashboard/tabs/category-managem
 import LocationManagement from "@/features/admin-dashboard/tabs/location-management";
 import UserManagement from "@/features/admin-dashboard/tabs/user-management";
 import UnauthorizedPage from "@/features/auth/unauthorized";
-import SearchForBoxByIdPage from "@/features/search-box-by-id";
-import SearchForItem from "@/features/search-for-item";
+// import SearchForBoxByIdPage from "@/features/search-box-by-id";
+// import SearchForItem from "@/features/search-for-item";
 import ActivityLog from "@/features/admin-dashboard/tabs/activity-log";
 import UserInfo from "@/features/user-info";
 

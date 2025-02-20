@@ -1,6 +1,4 @@
 import {
-  PackageMinus,
-  PackageOpen,
   PackagePlus,
   PackageSearch,
 } from "lucide-react";
@@ -14,21 +12,10 @@ const VolunteerDashboard = () => {
       bgColor: "bg-green-500",
       hoverColor: "hover:bg-green-600",
     },
-    {
-      icon: PackageMinus,
-      title: "Move Box",
-      bgColor: "bg-blue-500",
-      hoverColor: "hover:bg-blue-600",
-    },
-    {
-      icon: PackageOpen,
-      title: "Open / Move Box Upstairs",
-      bgColor: "bg-purple-500",
-      hoverColor: "hover:bg-purple-600",
-    },
+
     {
       icon: PackagePlus,
-      title: "Create box",
+      title: "Create a box",
       bgColor: "bg-red-500",
       hoverColor: "hover:bg-red-600",
     },

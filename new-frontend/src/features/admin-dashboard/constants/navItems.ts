@@ -1,4 +1,4 @@
-import { FolderTree, Tags, LayoutDashboard, Users } from "lucide-react";
+import { FolderTree, Tags, LayoutDashboard, Users, PackagePlus, PackageSearch, Shirt, Ruler, Logs } from "lucide-react";
 import { NavItem } from "../types";
 
 export const navItems: NavItem[] = [
@@ -11,20 +11,26 @@ export const navItems: NavItem[] = [
   {
     title: "Inventory",
     href: "/admin/inventory",
-    icon: Tags,
-    description: "View your inventory",
+    icon: Shirt,
+    description: "View your inventory items",
   },
   {
     title: "Box lookup",
-    href: "/admin/inventory",
-    icon: FolderTree,
-    description: "Manage inventory items",
+    href: "/admin/box-lookup",
+    icon: PackageSearch,
+    description: "Search for boxes or items in boxes",
   },
   {
     title: "Create boxes",
-    href: "/admin/categories",
-    icon: Tags,
+    href: "/admin/create-boxes",
+    icon: PackagePlus,
     description: "Create boxes or add items to existing boxes",
+  },
+  {
+    title: "Activity Log",
+    href: "/admin/activity-log",
+    icon: Logs,
+    description: "View activity log",
   },
   {
     title: "Manage staff",
@@ -47,14 +53,8 @@ export const navItems: NavItem[] = [
   {
     title: "Size Management",
     href: "/admin/sizes",
-    icon: Tags,
+    icon: Ruler,
     description: "Define and organize sizes",
-  },
-  {
-    title: "Activity Log",
-    href: "/admin/activity-log",
-    icon: LayoutDashboard,
-    description: "View activity log",
   }
 
 ];
