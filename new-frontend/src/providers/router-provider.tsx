@@ -18,6 +18,7 @@ import SizeManagement from "@/features/admin-dashboard/tabs/size-management";
 import Inventory from "@/features/admin-dashboard/tabs/inventory";
 import CreateBoxes from "@/features/admin-dashboard/tabs/create-boxes";
 import BoxLookup from "@/features/admin-dashboard/tabs/box-lookup";
+import Donations from "@/features/admin-dashboard/tabs/donations";
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
@@ -111,6 +112,10 @@ const router = createBrowserRouter([
       {
         path: "create-boxes",
         element: <CreateBoxes />,
+      },
+      {
+        path: "donations",
+        element: <Donations />,
       }
     ],
   },

@@ -1,4 +1,4 @@
-import { FolderTree, Tags, LayoutDashboard, Users, PackagePlus, PackageSearch, Shirt, Ruler, FileClock, MapPin } from "lucide-react";
+import { FolderTree, Tags, LayoutDashboard, Users, PackagePlus, PackageSearch, Shirt, Ruler, FileClock, MapPin, HandHeart } from "lucide-react";
 import { NavItem } from "../types";
 
 export const navItems: NavItem[] = [
@@ -24,13 +24,19 @@ export const navItems: NavItem[] = [
     title: "Create boxes",
     href: "/admin/create-boxes",
     icon: PackagePlus,
-    description: "Create boxes or add items to existing boxes",
+    description: "Create or add items to existing boxes",
   },
   {
     title: "Activity Log",
     href: "/admin/activity-log",
     icon: FileClock,
     description: "View activity log",
+  },
+  {
+    title: "Donations",
+    href: "/admin/donations",
+    icon: HandHeart,
+    description: "View past donations",
   },
   {
     title: "Manage staff",
