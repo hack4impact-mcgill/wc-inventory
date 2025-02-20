@@ -10,7 +10,7 @@ const VolunteerDashboard = () => {
   const tiles = [
     {
       icon: PackageSearch,
-      title: "Search for Items",
+      title: "Search for items",
       bgColor: "bg-green-500",
       hoverColor: "hover:bg-green-600",
     },
@@ -28,7 +28,7 @@ const VolunteerDashboard = () => {
     },
     {
       icon: PackagePlus,
-      title: "Add New Box",
+      title: "Create box",
       bgColor: "bg-red-500",
       hoverColor: "hover:bg-red-600",
     },

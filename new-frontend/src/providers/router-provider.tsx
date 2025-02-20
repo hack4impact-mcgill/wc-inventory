@@ -8,12 +8,16 @@ import VolunteerDashboard from "@/features/volunteer-dashboard";
 import CategoryManagement from "@/features/admin-dashboard/tabs/category-management";
 import LocationManagement from "@/features/admin-dashboard/tabs/location-management";
 import UserManagement from "@/features/admin-dashboard/tabs/user-management";
-import InventoryManagement from "@/features/admin-dashboard/tabs/inventory-management";
 import UnauthorizedPage from "@/features/auth/unauthorized";
 import SearchForBoxByIdPage from "@/features/search-box-by-id";
 import SearchForItem from "@/features/search-for-item";
 import ActivityLog from "@/features/admin-dashboard/tabs/activity-log";
 import UserInfo from "@/features/user-info";
+
+import SizeManagement from "@/features/admin-dashboard/tabs/size-management";
+import Inventory from "@/features/admin-dashboard/tabs/inventory";
+import CreateBoxes from "@/features/admin-dashboard/tabs/create-boxes";
+import BoxLookup from "@/features/admin-dashboard/tabs/box-lookup";
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
@@ -73,7 +77,7 @@ const router = createBrowserRouter([
       },
       {
         path: "inventory",
-        element: <InventoryManagement />,
+        element: <Inventory />,
       },
       {
         path: "users",
@@ -95,25 +99,37 @@ const router = createBrowserRouter([
       {
         path: "activity-log",
         element: <ActivityLog />,
+      },
+      {
+        path: "sizes",
+        element: <SizeManagement />,
+      },
+      {
+        path: "box-lookup",
+        element: <BoxLookup />,
+      },
+      {
+        path: "create-boxes",
+        element: <CreateBoxes />,
       }
     ],
   },
-  {
-    path: "searchforbox",
-    element: (
-      <VolunteerWrapper>
-        <SearchForBoxByIdPage />
-      </VolunteerWrapper>
-    ),
-  },
-  {
-    path: "search-for-item",
-    element: (
-      <VolunteerWrapper>
-        <SearchForItem />
-      </VolunteerWrapper>
-    ),
-  },
+  // {
+  //   path: "searchforbox",
+  //   element: (
+  //     <VolunteerWrapper>
+  //       <SearchForBoxByIdPage />
+  //     </VolunteerWrapper>
+  //   ),
+  // },
+  // {
+  //   path: "search-for-item",
+  //   element: (
+  //     <VolunteerWrapper>
+  //       <SearchForItem />
+  //     </VolunteerWrapper>
+  //   ),
+  // },
   {
     path: "/login",
     element: <LoginPage />,

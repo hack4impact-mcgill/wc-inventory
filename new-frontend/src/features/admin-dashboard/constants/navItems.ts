@@ -9,13 +9,25 @@ export const navItems: NavItem[] = [
     description: "Overview component",
   },
   {
-    title: "Inventory Management",
+    title: "Inventory",
+    href: "/admin/inventory",
+    icon: Tags,
+    description: "View your inventory",
+  },
+  {
+    title: "Box lookup",
     href: "/admin/inventory",
     icon: FolderTree,
     description: "Manage inventory items",
   },
   {
-    title: "User Management",
+    title: "Create boxes",
+    href: "/admin/categories",
+    icon: Tags,
+    description: "Create boxes or add items to existing boxes",
+  },
+  {
+    title: "Manage staff",
     href: "/admin/users",
     icon: Users,
     description: "Manage users and permissions",
@@ -33,9 +45,16 @@ export const navItems: NavItem[] = [
     description: "Define and organize categories",
   },
   {
+    title: "Size Management",
+    href: "/admin/sizes",
+    icon: Tags,
+    description: "Define and organize sizes",
+  },
+  {
     title: "Activity Log",
     href: "/admin/activity-log",
     icon: LayoutDashboard,
     description: "View activity log",
   }
+
 ];

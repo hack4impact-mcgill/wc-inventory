@@ -51,8 +51,8 @@ const InventoryDashboard = () => {
   const filteredCategories = React.useMemo(() => {
     return searchTerm
       ? availableCategories.filter((cat) =>
-          cat.name.toLowerCase().includes(searchTerm.toLowerCase()),
-        )
+        cat.name.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
       : [];
   }, [searchTerm]);
 
@@ -165,7 +165,7 @@ const InventoryDashboard = () => {
   );
 };
 
-const InventoryManagement = () => {
+const BoxLookup = () => {
   return (
     <>
       <InventoryDashboard />
@@ -173,4 +173,4 @@ const InventoryManagement = () => {
   );
 };
 
-export default InventoryManagement;
+export default BoxLookup;
