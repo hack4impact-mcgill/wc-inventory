@@ -3,15 +3,19 @@ import {
   PackageSearch,
 } from "lucide-react";
 import DashboardTile from "./components/dashboard-tile";
-// import { Outlet } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+
 
 const VolunteerDashboard = () => {
+  const navigate = useNavigate();
+
   const tiles = [
     {
       icon: PackageSearch,
       title: "Box Lookup",
       bgColor: "bg-green-500",
       hoverColor: "hover:bg-green-600",
+      onClick: () => navigate("/box-lookup"), // Navigate to shared BoxLookup page
     },
 
     {
@@ -32,11 +36,10 @@ const VolunteerDashboard = () => {
             title={tile.title}
             bgColor={tile.bgColor}
             hoverColor={tile.hoverColor}
+            onClick={tile.onClick} // Navigation handler
           />
         ))}
       </div>
-      {/* Ensure nested routes like "/box-lookup" get rendered */}
-      {/* <Outlet /> */}
     </div>
   );
 };

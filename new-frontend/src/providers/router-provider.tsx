@@ -63,12 +63,6 @@ const router = createBrowserRouter([
         <VolunteerDashboard />
       </VolunteerWrapper>
     ),
-    children: [
-      {
-        path: "box-lookup",
-        element: <BoxLookup />,
-      }
-    ]
   },
   {
     path: "/admin",
@@ -152,6 +146,15 @@ const router = createBrowserRouter([
   {
     path: "*",
     element: <Navigate to="/" replace />,
+  },
+  {
+    //so both admin and volunteer can access box-lookup page
+    path: "/box-lookup",
+    element: (
+      <AuthWrapper> {/* Protect the route so only logged-in users can access */}
+        <BoxLookup />
+      </AuthWrapper>
+    ),
   },
 ]);
 
