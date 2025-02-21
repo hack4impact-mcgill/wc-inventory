@@ -3,12 +3,13 @@ import {
   PackageSearch,
 } from "lucide-react";
 import DashboardTile from "./components/dashboard-tile";
+// import { Outlet } from "react-router-dom";
 
 const VolunteerDashboard = () => {
   const tiles = [
     {
       icon: PackageSearch,
-      title: "Search for items",
+      title: "Box Lookup",
       bgColor: "bg-green-500",
       hoverColor: "hover:bg-green-600",
     },
@@ -34,6 +35,8 @@ const VolunteerDashboard = () => {
           />
         ))}
       </div>
+      {/* Ensure nested routes like "/box-lookup" get rendered */}
+      {/* <Outlet /> */}
     </div>
   );
 };

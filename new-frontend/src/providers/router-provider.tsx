@@ -63,6 +63,12 @@ const router = createBrowserRouter([
         <VolunteerDashboard />
       </VolunteerWrapper>
     ),
+    children: [
+      {
+        path: "box-lookup",
+        element: <BoxLookup />,
+      }
+    ]
   },
   {
     path: "/admin",
