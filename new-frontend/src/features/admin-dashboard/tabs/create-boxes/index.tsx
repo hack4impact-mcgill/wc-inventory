@@ -2,7 +2,8 @@ const CreateBoxes = () => {
 
     return (
         <>
-            <h1>Where admin can bulk create boxes or add items to existing ones</h1>
+            <h1>WCINV-96 Noah</h1>
+            <text>Where admin can bulk create boxes or add items to existing ones</text>
         </>
     )
 
