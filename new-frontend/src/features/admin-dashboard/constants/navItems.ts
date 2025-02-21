@@ -1,4 +1,4 @@
-import { FolderTree, Tags, LayoutDashboard, Users, PackagePlus, PackageSearch, Shirt, Ruler, FileClock, MapPin, HandHeart } from "lucide-react";
+import { Tags, LayoutDashboard, Users, PackagePlus, PackageSearch, Shirt, Ruler, FileClock, MapPin, HandHeart } from "lucide-react";
 import { NavItem } from "../types";
 
 export const navItems: NavItem[] = [
@@ -39,12 +39,6 @@ export const navItems: NavItem[] = [
     description: "View past donations",
   },
   {
-    title: "Manage staff",
-    href: "/admin/users",
-    icon: Users,
-    description: "Manage users and permissions",
-  },
-  {
     title: "Location Management",
     href: "/admin/locations",
     icon: MapPin,
@@ -61,6 +55,13 @@ export const navItems: NavItem[] = [
     href: "/admin/sizes",
     icon: Ruler,
     description: "Define and organize sizes",
+  },
+
+  {
+    title: "Manage staff",
+    href: "/admin/users",
+    icon: Users,
+    description: "Manage users and permissions",
   }
 
 ];
