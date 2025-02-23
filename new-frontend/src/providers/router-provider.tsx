@@ -14,6 +14,7 @@ import SearchForBoxByIdPage from "@/features/search-box-by-id";
 import SearchForItem from "@/features/search-for-item";
 import ActivityLog from "@/features/admin-dashboard/tabs/activity-log";
 import UserInfo from "@/features/user-info";
+import AddBox from "@/features/add-box";
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
@@ -121,6 +122,15 @@ const router = createBrowserRouter([
   {
     path: "/unauthorized",
     element: <UnauthorizedPage />,
+  },
+  {
+    path: "/create", 
+    element: (
+      <VolunteerWrapper>
+        <AddBox/>
+      </VolunteerWrapper>
+    ),
+
   },
   {
     path: "*",
