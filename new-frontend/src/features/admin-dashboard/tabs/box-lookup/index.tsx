@@ -30,7 +30,7 @@ interface Box {
   contents: BoxItem[];
 }
 
-const InventoryDashboard = () => {
+const BoxLookup = () => {
   const [selectedBoxIds, setSelectedBoxIds] = React.useState<string[]>([]);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [category, setCategory] = React.useState("all");
@@ -258,4 +258,4 @@ const InventoryDashboard = () => {
   );
 };
 
-export default InventoryDashboard;
+export default BoxLookup;
