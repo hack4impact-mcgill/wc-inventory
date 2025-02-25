@@ -1,34 +1,26 @@
 import {
-  PackageMinus,
-  PackageOpen,
   PackagePlus,
   PackageSearch,
 } from "lucide-react";
 import DashboardTile from "./components/dashboard-tile";
+import { useNavigate } from "react-router-dom";
+
 
 const VolunteerDashboard = () => {
+  const navigate = useNavigate();
+
   const tiles = [
     {
       icon: PackageSearch,
-      title: "Search for Items",
+      title: "Box Lookup",
       bgColor: "bg-green-500",
       hoverColor: "hover:bg-green-600",
+      onClick: () => navigate("/box-lookup"), // Navigate to shared BoxLookup page
     },
-    {
-      icon: PackageMinus,
-      title: "Move Box",
-      bgColor: "bg-blue-500",
-      hoverColor: "hover:bg-blue-600",
-    },
-    {
-      icon: PackageOpen,
-      title: "Open / Move Box Upstairs",
-      bgColor: "bg-purple-500",
-      hoverColor: "hover:bg-purple-600",
-    },
+
     {
       icon: PackagePlus,
-      title: "Add New Box",
+      title: "Create a box",
       bgColor: "bg-red-500",
       hoverColor: "hover:bg-red-600",
     },
@@ -44,6 +36,7 @@ const VolunteerDashboard = () => {
             title={tile.title}
             bgColor={tile.bgColor}
             hoverColor={tile.hoverColor}
+            onClick={tile.onClick} // Navigation handler
           />
         ))}
       </div>
