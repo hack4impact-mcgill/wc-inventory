@@ -1,13 +1,13 @@
 
 const ActivityLog = () => {
-    
-    
+
+
     return (
         <>
-            <h1>asdf Log</h1>
+            <h1>WCINV-71 Leticia</h1>
+            <text>Where admin can view log of all actions made (donations, moves, removals)</text>
         </>
     )
-
 
 };
 
