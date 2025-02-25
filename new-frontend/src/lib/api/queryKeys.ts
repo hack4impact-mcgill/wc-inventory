@@ -17,4 +17,8 @@ export const queryKeys = {
         all: ['users'] as const,
         detail: (userId: string) => [...queryKeys.users.all, userId] as const,
     },
+    sizes:{
+        all:['sizes'] as const,
+        detail: (sizeId: string) => [...queryKeys.sizes.all, sizeId] as const
+    }
 };

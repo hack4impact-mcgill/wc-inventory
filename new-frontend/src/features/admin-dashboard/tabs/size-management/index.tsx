@@ -1,29 +1,14 @@
-import { supabase } from "@/lib/supabaseClient";
-import { Size } from "@/types/sizes";
-import { useQuery } from "@tanstack/react-query";
 
-const SizeManagement = () => {
+// src/features/tabs/size-management/index.tsx
 
-  const { data } = useQuery({
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("sizes")
-        .select()
-      if (error) throw new Error(error.message);
+export { default as SizeManagement } from "./SizeManagement";
+export { SizeTable } from "./components/size-table";
 
-      return data as Size[];
-    },
-    queryKey: ["sizes"]
-  })
-  console.log(data);
 
-  return (
-    <>
-      <h1>WCINV-87 Tech leads</h1>
-      <text>Where admin can manage sizes available for each category</text>
-    </>
-  )
+// This file serves as the main entry point for the size management feature
 
+const SizeManagementPage = () => {
+  return <SizeManagement />;
 };
 
-export default SizeManagement;
+export default SizeManagementPage;
