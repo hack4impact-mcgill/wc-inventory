@@ -27,6 +27,7 @@ const ActivityLogTable = ({
   const [sortKey, setSortKey] = useState<SortKeyOption>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
+  // Sorting based on toggle
   useEffect(() => {
 
     if (!sortKey) {

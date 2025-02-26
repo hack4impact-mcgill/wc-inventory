@@ -14,33 +14,19 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 type ActionTypes = "allActions" | "Donated" | "Moved" | "Retired" | "Other";
 
+
 interface SearchBarProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
+  startDate: Date;
+  setStartDate: (value: Date) => void;
+  endDate: Date;
+  setEndDate: (value: Date) => void;
+  action: ActionTypes;
+  setAction: (value: ActionTypes) => void;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ searchTerm, onSearchChange }) => {
-  // Default date values
-  const defaultStartDate = new Date("2000-01-01");
-  const defaultEndDate = new Date("2100-12-31");
-
-  const [startDate, setStartDate] = useState<Date>(defaultStartDate);
-  const [endDate, setEndDate] = useState<Date>(defaultEndDate);
-  const [action, setAction] = useState<ActionTypes>("allActions");
-
-  // Testing
-  useEffect(() => {
-    console.log("Action state changed:", action);
-  }, [action]);
-
-  useEffect(() => {
-    console.log("Start date changed:", startDate);
-  }, [startDate]);
-
-  useEffect(() => {
-    console.log("End date changed:", endDate);
-  }, [endDate]);
-
+const SearchBar: React.FC<SearchBarProps> = ({ searchTerm, onSearchChange, startDate, setStartDate, endDate, setEndDate, action, setAction }) => {
   return (
     <div className="flex items-center justify-between w-full mb-4">
       {/* Search Input */}
