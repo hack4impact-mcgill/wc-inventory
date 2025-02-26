@@ -13,7 +13,6 @@ import UnauthorizedPage from "@/features/auth/unauthorized";
 // import SearchForItem from "@/features/search-for-item";
 import ActivityLog from "@/features/admin-dashboard/tabs/activity-log";
 import UserInfo from "@/features/user-info";
-import SizeManagementPage from "@/features/admin-dashboard/tabs/size-management";
 
 import SizeManagement from "@/features/admin-dashboard/tabs/size-management";
 import Inventory from "@/features/admin-dashboard/tabs/inventory";
@@ -98,8 +97,6 @@ const router = createBrowserRouter([
         path: "categories",
         element: <CategoryManagement />,
       },
-      {path: "size-management",
-      element: <SizeManagementPage />},
       {
         path: "activity-log",
         element: <ActivityLog />,
