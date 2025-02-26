@@ -68,7 +68,7 @@ export default function UserManagement() {
 
         <UserTable
           users={filteredUsers || []}
-          onUserClick={(id) => navigate(`/admin/users/${id}`)}
+          onUserClick={(email) => navigate(`/admin/users/${email}`)}
         />
 
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>

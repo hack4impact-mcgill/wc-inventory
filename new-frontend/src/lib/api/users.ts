@@ -4,44 +4,57 @@ import { supabase } from "../supabaseClient";
 import { cryptoUtils } from "@/lib/crypto";
 
 export const userApi = {
-    getUsers: async () => {
-      const { data, error } = await supabase
-        .from("user_view")
-        .select()
-        .order('created_at', { ascending: false });
-      
-      if (error) throw new Error(error.message);
-      return data as UserView[];
-    },
+  getUsers: async () => {
+    const { data, error } = await supabase
+      .from("user_view")
+      .select()
+      .order("created_at", { ascending: false });
 
-    getUser: async (userId: string) => {
-      const { data, error } = await supabase
-        .from("user_view")
-        .select()
-        .eq("id", userId)
-        .single();
-      
-      if (error) throw new Error(error.message);
-      return data as UserView;
-    },
-  
-    createUser: async (userData: UserFormData): Promise<{ user: UserFormData; message: string }> => {
-      const encrypted = cryptoUtils.encrypt(userData.password);
+    if (error) throw new Error(error.message);
+    return data as UserView[];
+  },
 
-      // TODO - Permissions Check
-      const { data, error } = await supabase.functions.invoke('create-user', {
-        body: {
-          email: userData.email,
-          password: encrypted,
-          role: userData.role,
-          name: userData.name,
-        }
-      });
-      if (error) {
-        throw new Error(error.message);
-      }
-      
-      // `data` should contain { user, message }
-      return data;
+  getUser: async (userId: string) => {
+    const { data, error } = await supabase
+      .from("user_view")
+      .select()
+      .eq("id", userId)
+      .single();
+
+    if (error) throw new Error(error.message);
+    return data as UserView;
+  },
+
+  getUserByEmail: async (userEmail: string) => {
+    const { data, error } = await supabase
+      .from("user_view")
+      .select()
+      .eq("email", userEmail)
+      .single();
+
+    if (error) throw new Error(error.message);
+    return data as UserView;
+  },
+
+  createUser: async (
+    userData: UserFormData,
+  ): Promise<{ user: UserFormData; message: string }> => {
+    const encrypted = cryptoUtils.encrypt(userData.password);
+
+    // TODO - Permissions Check
+    const { data, error } = await supabase.functions.invoke("create-user", {
+      body: {
+        email: userData.email,
+        password: encrypted,
+        role: userData.role,
+        name: userData.name,
+      },
+    });
+    if (error) {
+      throw new Error(error.message);
     }
+
+    // `data` should contain { user, message }
+    return data;
+  },
 };
