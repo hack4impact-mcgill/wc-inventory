@@ -1,6 +1,5 @@
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,21 +11,18 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
-type ActionTypes = "allActions" | "Donated" | "Moved" | "Retired" | "Other";
+type ActionTypes = "allActions" | "Donated" | "Moved" | "Retired";
 
 
 interface SearchBarProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  startDate: Date;
   setStartDate: (value: Date) => void;
-  endDate: Date;
   setEndDate: (value: Date) => void;
-  action: ActionTypes;
   setAction: (value: ActionTypes) => void;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ searchTerm, onSearchChange, startDate, setStartDate, endDate, setEndDate, action, setAction }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ searchTerm, onSearchChange, setStartDate, setEndDate, setAction }) => {
   return (
     <div className="flex items-center justify-between w-full mb-4">
       {/* Search Input */}
@@ -63,9 +59,6 @@ const SearchBar: React.FC<SearchBarProps> = ({ searchTerm, onSearchChange, start
           <DropdownMenuItem onClick={() => setAction("Retired")}>
             Retired
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setAction("Other")}>
-            Other
-          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -84,7 +77,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ searchTerm, onSearchChange, start
             label="End Date"
             onChange={(newDate) => {
               if (newDate) {
-                setEndDate(newDate.toDate());
+                setEndDate(newDate.add(1, 'day').toDate());
               }
             }}
           />
