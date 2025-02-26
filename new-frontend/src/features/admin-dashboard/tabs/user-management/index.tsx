@@ -16,26 +16,29 @@ import { UserFormData } from "./types";
 import { useUsers } from "./hooks/use-users";
 
 export default function UserManagement() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { users, isLoading, error, createUser, isCreating } = useUsers();
 
-  const filteredUsers = users?.filter(user =>
-    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = users?.filter(
+    (user) =>
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleCreateUser = async (data: UserFormData) => {
     try {
       await createUser(data);
-      toast({ title: 'Success', description: 'User created successfully' });
+      toast({ title: "Success", description: "User created successfully" });
       setIsModalOpen(false);
     } catch (error) {
       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to create user'
+        variant: "destructive",
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to create user",
       });
     }
   };
@@ -45,7 +48,11 @@ export default function UserManagement() {
   }
 
   if (error) {
-    return <div>Error: {error instanceof Error ? error.message : 'Unknown error'}</div>;
+    return (
+      <div>
+        Error: {error instanceof Error ? error.message : "Unknown error"}
+      </div>
+    );
   }
 
   return (
@@ -80,4 +87,3 @@ export default function UserManagement() {
     </Card>
   );
 }
-
