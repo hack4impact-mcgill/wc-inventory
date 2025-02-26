@@ -36,6 +36,7 @@ const ActivityLog = () => {
       </div>
     </>
   );
+
 };
 
 export default ActivityLog;

@@ -1,4 +1,4 @@
-import { FolderTree, Tags, LayoutDashboard, Users } from "lucide-react";
+import { Tags, LayoutDashboard, Users, PackagePlus, PackageSearch, Shirt, Ruler, FileClock, MapPin, HandHeart } from "lucide-react";
 import { NavItem } from "../types";
 
 export const navItems: NavItem[] = [
@@ -9,22 +9,40 @@ export const navItems: NavItem[] = [
     description: "Overview component",
   },
   {
-    title: "Inventory Management",
+    title: "Inventory",
     href: "/admin/inventory",
-    icon: FolderTree,
-    description: "Manage inventory items",
+    icon: Shirt,
+    description: "View your inventory items",
   },
   {
-    title: "User Management",
-    href: "/admin/users",
-    icon: Users,
-    description: "Manage users and permissions",
+    title: "Box lookup",
+    href: "/admin/box-lookup",
+    icon: PackageSearch,
+    description: "Search for boxes or items in boxes",
+  },
+  {
+    title: "Create boxes",
+    href: "/admin/create-boxes",
+    icon: PackagePlus,
+    description: "Create or add items to existing boxes",
+  },
+  {
+    title: "Activity Log",
+    href: "/admin/activity-log",
+    icon: FileClock,
+    description: "View activity log",
+  },
+  {
+    title: "Donations",
+    href: "/admin/donations",
+    icon: HandHeart,
+    description: "View past donations",
   },
   {
     title: "Location Management",
     href: "/admin/locations",
-    icon: FolderTree,
-    description: "Organize and manage locations",
+    icon: MapPin,
+    description: "Define and organize locations",
   },
   {
     title: "Category Management",
@@ -33,9 +51,17 @@ export const navItems: NavItem[] = [
     description: "Define and organize categories",
   },
   {
-    title: "Activity Log",
-    href: "/admin/activity-log",
-    icon: LayoutDashboard,
-    description: "View activity log",
+    title: "Size Management",
+    href: "/admin/sizes",
+    icon: Ruler,
+    description: "Define and organize sizes",
+  },
+
+  {
+    title: "Manage staff",
+    href: "/admin/users",
+    icon: Users,
+    description: "Manage users and permissions",
   }
+
 ];
