@@ -39,6 +39,13 @@ export type Database = {
             foreignKeyName: "box_contents_box_id_fkey"
             columns: ["box_id"]
             isOneToOne: false
+            referencedRelation: "box_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "box_contents_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
             referencedRelation: "boxes"
             referencedColumns: ["box_id"]
           },
@@ -118,6 +125,13 @@ export type Database = {
             foreignKeyName: "box_movements_box_id_fkey"
             columns: ["box_id"]
             isOneToOne: false
+            referencedRelation: "box_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "box_movements_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
             referencedRelation: "boxes"
             referencedColumns: ["box_id"]
           },
@@ -158,6 +172,13 @@ export type Database = {
           tag_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "box_tags_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "box_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "box_tags_box_id_fkey"
             columns: ["box_id"]
@@ -275,24 +296,6 @@ export type Database = {
             referencedColumns: ["location_id"]
           },
         ]
-      }
-      role_permissions: {
-        Row: {
-          id: number
-          permission: Database["public"]["Enums"]["app_permission"]
-          role: Database["public"]["Enums"]["app_role"]
-        }
-        Insert: {
-          id?: number
-          permission: Database["public"]["Enums"]["app_permission"]
-          role: Database["public"]["Enums"]["app_role"]
-        }
-        Update: {
-          id?: number
-          permission?: Database["public"]["Enums"]["app_permission"]
-          role?: Database["public"]["Enums"]["app_role"]
-        }
-        Relationships: []
       }
       sizes: {
         Row: {
@@ -429,10 +432,28 @@ export type Database = {
             foreignKeyName: "box_movements_box_id_fkey"
             columns: ["box_id"]
             isOneToOne: false
+            referencedRelation: "box_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "box_movements_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
             referencedRelation: "boxes"
             referencedColumns: ["box_id"]
           },
         ]
+      }
+      box_view: {
+        Row: {
+          contents: Json | null
+          createdAt: string | null
+          id: string | null
+          location: string | null
+          name: string | null
+          updatedAt: string | null
+        }
+        Relationships: []
       }
       user_view: {
         Row: {
