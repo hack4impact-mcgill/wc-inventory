@@ -1,6 +1,6 @@
 import { fetchLocations, fetchCategories } from "@/lib/api";
 import { queryKeys } from "@/lib/api/queryKeys";
-import { sizesApi, sizesApiKeys } from "@/lib/api/sizes";
+import { sizeApi, sizeApiKeys } from "@/lib/api/sizes";
 import { supabase } from "@/lib/supabaseClient";
 import { useQuery } from "@tanstack/react-query";
 
@@ -17,8 +17,8 @@ export function useAddBoxQueries() {
   });
 
   const { data: sizes } = useQuery({
-    queryFn: sizesApi.getAll,
-    queryKey: sizesApiKeys.all
+    queryFn: sizeApi.getSizes,
+    queryKey: sizeApiKeys.all
   })
 
   const { data: boxCount } = useQuery({
