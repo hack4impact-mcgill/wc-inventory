@@ -44,16 +44,18 @@ const SizeManagement = () => {
 
     const [filter, setFilter] = useState("");
     const [categoryFilter, setCategoryFilter] = useState<string | undefined>();
+    const [regionFilter, setRegionFilter] = useState<string | undefined>();
+    const [sortBy, setSortBy] = useState<"updated" | "asc" | "desc">("updated");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [selectedSize, setSelectedSize] = useState<Size | null>(null);
+    const [selectedSize, setSelectedSize] = useState<Size | undefined>(undefined);
     const [updateConfirmation, setUpdateConfirmation] = useState<{
         show: boolean;
-        size: Size | null;
+        size: Size | undefined;
         newData: any;
         usageCount: number;
     }>({
         show: false,
-        size: null,
+        size: undefined,
         newData: null,
         usageCount: 0
     });
@@ -89,6 +91,10 @@ const SizeManagement = () => {
     const handleDelete = async (id: string) => {
         try {
             await deleteMutation.mutateAsync(id);
+            toast({
+                title: "Success",
+                description: "Size deleted successfully",
+            });
         } catch (error: any) {
             toast({
                 title: "Error",
@@ -100,7 +106,7 @@ const SizeManagement = () => {
 
     const handleClose = () => {
         setIsDialogOpen(false);
-        setSelectedSize(null);
+        setSelectedSize(undefined);
     };
 
     const handleEdit = (size: Size) => {
@@ -120,14 +126,115 @@ const SizeManagement = () => {
                 console.error('Error updating size:', error);
             }
         }
-        setUpdateConfirmation({ show: false, size: null, newData: null, usageCount: 0 });
+        setUpdateConfirmation({ show: false, size: undefined, newData: null, usageCount: 0 });
     };
 
-    const filteredSizes = sizes.filter(size =>
-        size.name.toLowerCase().includes(filter.toLowerCase()) ||
-        size.category.toLowerCase().includes(filter.toLowerCase()) ||
-        size.region.toLowerCase().includes(filter.toLowerCase()) ||
-        size.gender.toLowerCase().includes(filter.toLowerCase())
+    // Helper function to get size weight for sorting
+    const getSizeWeight = (size: string): number => {
+        const sizeStr = size.toUpperCase();
+        
+        // Handle numerical sizes
+        if (!isNaN(Number(sizeStr))) {
+            return Number(sizeStr) + 1000; // Put numerical sizes after letter sizes
+        }
+
+        // Base weights for standard sizes
+        const baseWeights: { [key: string]: number } = {
+            'XXS': 100,
+            'XS': 200,
+            'S': 300,
+            'M': 400,
+            'L': 500,
+            'XL': 600,
+            'XXL': 700
+        };
+
+        // Check if the size exists in baseWeights
+        if (baseWeights[sizeStr]) {
+            return baseWeights[sizeStr];
+        }
+
+        // Handle sizes with multiple X's
+        if (sizeStr.includes('S')) {
+            const xCount = (sizeStr.match(/X/g) || []).length;
+            if (xCount > 2) {
+                // For sizes like XXXS, XXXXS, etc.
+                return 100 - ((xCount - 2) * 50); // Makes XXXS=50, XXXXS=0, etc.
+            }
+        } else if (sizeStr.includes('L')) {
+            const xCount = (sizeStr.match(/X/g) || []).length;
+            if (xCount > 2) {
+                // For sizes like XXXL, XXXXL, etc.
+                return 700 + ((xCount - 2) * 50); // Makes XXXL=750, XXXXL=800, etc.
+            }
+        }
+
+        // For any other format, use string comparison weight
+        return 1500; // Put unknown formats at the end
+    };
+
+    const sortSizes = (sizesToSort: Size[]) => {
+        return [...sizesToSort].sort((a, b) => {
+            switch (sortBy) {
+                case "asc":
+                    // Sort by numerical value if both sizes have it
+                    if (a.numerical_value !== null && b.numerical_value !== null) {
+                        return a.numerical_value - b.numerical_value;
+                    }
+                    // Get weights for non-numerical sizes
+                    const weightA = getSizeWeight(a.name);
+                    const weightB = getSizeWeight(b.name);
+                    
+                    // If both have weights, use them
+                    if (weightA && weightB) {
+                        return weightA - weightB;
+                    }
+                    // If only one has numerical value, put non-numerical last
+                    if (a.numerical_value === null && b.numerical_value !== null) return 1;
+                    if (a.numerical_value !== null && b.numerical_value === null) return -1;
+                    // If neither has numerical value or weights, sort by name
+                    return a.name.localeCompare(b.name);
+                case "desc":
+                    // Sort by numerical value if both sizes have it
+                    if (a.numerical_value !== null && b.numerical_value !== null) {
+                        return b.numerical_value - a.numerical_value;
+                    }
+                    // Get weights for non-numerical sizes
+                    const weightADesc = getSizeWeight(a.name);
+                    const weightBDesc = getSizeWeight(b.name);
+                    
+                    // If both have weights, use them
+                    if (weightADesc && weightBDesc) {
+                        return weightBDesc - weightADesc;
+                    }
+                    // If only one has numerical value, put non-numerical last
+                    if (a.numerical_value === null && b.numerical_value !== null) return 1;
+                    if (a.numerical_value !== null && b.numerical_value === null) return -1;
+                    // If neither has numerical value or weights, sort by name in reverse
+                    return b.name.localeCompare(a.name);
+                case "updated":
+                default:
+                    // Sort by updated_at date
+                    const aDate = a.updated_at ? new Date(a.updated_at) : new Date(0);
+                    const bDate = b.updated_at ? new Date(b.updated_at) : new Date(0);
+                    return bDate.getTime() - aDate.getTime();
+            }
+        });
+    };
+
+    const filteredSizes = sortSizes(
+        sizes.filter(size => {
+            const matchesSearch = 
+                size.name.toLowerCase().includes(filter.toLowerCase()) ||
+                size.category.toLowerCase().includes(filter.toLowerCase()) ||
+                size.region.toLowerCase().includes(filter.toLowerCase()) ||
+                size.gender.toLowerCase().includes(filter.toLowerCase());
+            
+            const matchesCategory = !categoryFilter || size.category === categoryFilter;
+            const matchesRegion = !regionFilter || size.region === regionFilter;
+            
+            return matchesSearch && matchesCategory && matchesRegion;
+        })
     );
 
     if (isLoading) return <div>Loading...</div>;
@@ -168,6 +275,52 @@ const SizeManagement = () => {
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline">
+                                        {regionFilter || "All Regions"}
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuItem onClick={() => setRegionFilter(undefined)}>
+                                        All Regions
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setRegionFilter("US")}>
+                                        US
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setRegionFilter("EU")}>
+                                        EU
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setRegionFilter("UK")}>
+                                        UK
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setRegionFilter("INT")}>
+                                        International
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline">
+                                        Sort By: {
+                                            sortBy === "updated" ? "Last Updated" :
+                                            sortBy === "asc" ? "Smallest to Largest" :
+                                            "Largest to Smallest"
+                                        }
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuItem onClick={() => setSortBy("updated")}>
+                                        Last Updated
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setSortBy("asc")}>
+                                        Smallest to Largest
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setSortBy("desc")}>
+                                        Largest to Smallest
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                         <Button onClick={() => setIsDialogOpen(true)}>
                             <Plus className="mr-2 h-4 w-4" />
@@ -197,7 +350,7 @@ const SizeManagement = () => {
                         </DialogDescription>
                     </DialogHeader>
                     <SizeForm
-                        initialData={selectedSize!}
+                        initialData={selectedSize}
                         onSubmit={handleSubmit}
                         isLoading={createMutation.isPending || updateMutation.isPending}
                         onClose={handleClose}
@@ -209,7 +362,7 @@ const SizeManagement = () => {
                 open={updateConfirmation.show}
                 onOpenChange={(open) => !open && setUpdateConfirmation({
                     show: false,
-                    size: null,
+                    size: undefined,
                     newData: null,
                     usageCount: 0
                 })}

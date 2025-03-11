@@ -11,6 +11,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import {
+    Form,
     FormControl,
     FormDescription,
     FormField,
@@ -37,7 +38,7 @@ const formSchema = z.object({
 
 export interface SizeFormProps {
     onSubmit: (values: SizeFormData) => Promise<void>;
-    initialData: Size;
+    initialData?: Size;
     isLoading: boolean;
     onClose: () => void;
 }
@@ -51,12 +52,12 @@ const SizeForm: FC<SizeFormProps> = ({
     const form = useForm<FormData>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: initialData.name || "",
-            category: (initialData.category as SizeCategoryEnum) || "Adult",
-            region: (initialData.region as SizeRegionEnum) || "US",
-            gender: (initialData.gender as GenderEnum) || "Unisex",
-            is_numerical: initialData.is_numerical || false,
-            numerical_value: initialData.numerical_value || null,
+            name: initialData?.name || "",
+            category: (initialData?.category as SizeCategoryEnum) || "Adult",
+            region: (initialData?.region as SizeRegionEnum) || "US",
+            gender: (initialData?.gender as GenderEnum) || "Unisex",
+            is_numerical: initialData?.is_numerical || false,
+            numerical_value: initialData?.numerical_value || null,
         },
     });
 
@@ -89,183 +90,181 @@ const SizeForm: FC<SizeFormProps> = ({
 
 
     return (
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            <div className="space-y-6">
-                <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Size Name</FormLabel>
-                            <FormControl>
-                                <Input
-                                    placeholder="Enter size name (e.g., XL, 42, 10)"
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                    name={field.name}
-                                    onBlur={field.onBlur}
-                                    ref={field.ref}
-                                />
-                            </FormControl>
-                            <FormMessage/>
-                        </FormItem>
-                    )}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                <div className="space-y-6">
                     <FormField
                         control={form.control}
-                        name="category"
-                        render={({field}) => (
-                            <FormItem>
-                                <FormLabel>Category</FormLabel>
-                                <Select
-                                    onValueChange={field.onChange}
-                                    defaultValue={field.value}
-                                >
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select category"/>
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="Adult">Adult</SelectItem>
-                                        <SelectItem value="Kid">Kid</SelectItem>
-                                        <SelectItem value="Shoe">Shoe</SelectItem>
-                                        <SelectItem value="Other">Other</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name="region"
+                        name="name"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Region</FormLabel>
-                                <Select
-                                    onValueChange={field.onChange}
-                                    defaultValue={field.value}
-                                >
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select region" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="US">US</SelectItem>
-                                        <SelectItem value="EU">EU</SelectItem>
-                                        <SelectItem value="UK">UK</SelectItem>
-                                        <SelectItem value="INT">International</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                </div>
-
-                <FormField
-                    control={form.control}
-                    name="gender"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Gender</FormLabel>
-                            <Select
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                            >
-                                <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select gender" />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    <SelectItem value="Male">Male</SelectItem>
-                                    <SelectItem value="Female">Female</SelectItem>
-                                    <SelectItem value="Kids">Kids</SelectItem>
-                                    <SelectItem value="Unisex">Unisex</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                <FormField
-                    control={form.control}
-                    name="is_numerical"
-                    render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                            <FormControl>
-                                <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                />
-                            </FormControl>
-                            <div className="space-y-1 leading-none">
-                                <FormLabel>
-                                    Numerical Size
-                                </FormLabel>
-                                <FormDescription>
-                                    Check if this size can be represented as a number (e.g., shoe sizes)
-                                </FormDescription>
-                            </div>
-                        </FormItem>
-                    )}
-                />
-
-                {isNumerical && (
-                    <FormField
-                        control={form.control}
-                        name="numerical_value"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Numerical Value</FormLabel>
+                                <FormLabel>Size Name</FormLabel>
                                 <FormControl>
                                     <Input
-                                        type="number"
-                                        step="0.5"
-                                        value={field.value ?? ""}
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            field.onChange(value ? parseFloat(value) : null);
-                                        }}
-                                        name={field.name}
-                                        onBlur={field.onBlur}
-                                        ref={field.ref}
+                                        placeholder="Enter size name (e.g., XL, 42, 10)"
+                                        {...field}
                                     />
                                 </FormControl>
-                                <FormDescription>
-                                    The numerical representation of this size (e.g., 42 for EU shoe size)
-                                </FormDescription>
+                                <FormMessage/>
+                            </FormItem>
+                        )}
+                    />
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                            control={form.control}
+                            name="category"
+                            render={({field}) => (
+                                <FormItem>
+                                    <FormLabel>Category</FormLabel>
+                                    <Select
+                                        onValueChange={field.onChange}
+                                        defaultValue={field.value}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select category"/>
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="Adult">Adult</SelectItem>
+                                            <SelectItem value="Kid">Kid</SelectItem>
+                                            <SelectItem value="Shoe">Shoe</SelectItem>
+                                            <SelectItem value="Other">Other</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="region"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Region</FormLabel>
+                                    <Select
+                                        onValueChange={field.onChange}
+                                        defaultValue={field.value}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select region" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="US">US</SelectItem>
+                                            <SelectItem value="EU">EU</SelectItem>
+                                            <SelectItem value="UK">UK</SelectItem>
+                                            <SelectItem value="INT">International</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
+                    <FormField
+                        control={form.control}
+                        name="gender"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Gender</FormLabel>
+                                <Select
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                >
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select gender" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="Male">Male</SelectItem>
+                                        <SelectItem value="Female">Female</SelectItem>
+                                        <SelectItem value="Kids">Kids</SelectItem>
+                                        <SelectItem value="Unisex">Unisex</SelectItem>
+                                    </SelectContent>
+                                </Select>
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
-                )}
-            </div>
 
-            <div className="flex justify-end space-x-4">
-                <Button
-                    type="button"
-                    variant="outline"
-                    onClick={onClose}
-                    disabled={isLoading}
-                >
-                    Cancel
-                </Button>
-                <Button
-                    type="submit"
-                    disabled={isLoading}
-                >
-                    {initialData ? 'Update' : 'Create'} Size
-                </Button>
-            </div>
-        </form>
+                    <FormField
+                        control={form.control}
+                        name="is_numerical"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                <FormControl>
+                                    <Checkbox
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                    />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                    <FormLabel>
+                                        Numerical Size
+                                    </FormLabel>
+                                    <FormDescription>
+                                        Check if this size can be represented as a number (e.g., shoe sizes)
+                                    </FormDescription>
+                                </div>
+                            </FormItem>
+                        )}
+                    />
+
+                    {isNumerical && (
+                        <FormField
+                            control={form.control}
+                            name="numerical_value"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Numerical Value</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type="number"
+                                            step="0.5"
+                                            value={field.value ?? ""}
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+                                                field.onChange(value ? parseFloat(value) : null);
+                                            }}
+                                            name={field.name}
+                                            onBlur={field.onBlur}
+                                            ref={field.ref}
+                                        />
+                                    </FormControl>
+                                    <FormDescription>
+                                        The numerical representation of this size (e.g., 42 for EU shoe size)
+                                    </FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    )}
+                </div>
+
+                <div className="flex justify-end space-x-4">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={onClose}
+                        disabled={isLoading}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        type="submit"
+                        disabled={isLoading}
+                    >
+                        {initialData ? 'Update' : 'Create'} Size
+                    </Button>
+                </div>
+            </form>
+        </Form>
     );
 };
 
