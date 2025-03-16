@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -10,17 +10,91 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import SearchFilters from "@/features/admin-dashboard/components/SearchFilters";
 import BoxDetails from "@/features/admin-dashboard/components/BoxDetails";
+import { useQueryClient } from "@tanstack/react-query";
+import { Box } from "@/types/box";
+import { Location } from "@/types/location";
+
+// Mock data with correct case for type and gender
+const mockBoxes = [
+  {
+    id: "25",
+    name: "25",
+    location: "Aisle 2 > Side B > Row 1",
+    createdAt: "2024-01-20T11:30:00",
+    updatedAt: "2024-01-22T09:45:00",
+    contents: [
+      {
+        type: 'T-shirt',
+        gender: 'Men',
+        size: 'XL',
+        quantity: 5
+      },
+      {
+        type: 'Pants',
+        gender: 'Women',
+        size: 'XS',
+        quantity: 3
+      }
+    ]
+  },
+  {
+    id: "32",
+    name: "32",
+    location: "Winter inventory room",
+    createdAt: "2024-01-21T11:30:00",
+    updatedAt: "2024-01-23T09:45:00",
+    contents: [
+      {
+        type: 'T-shirt',
+        gender: 'Men',
+        size: 'XL',
+        quantity: 3
+      },
+      {
+        type: 'Pants',
+        gender: 'Women',
+        size: 'XS',
+        quantity: 1
+      }
+    ]
+  }
+];
+
+// Simple mock locations data
+const mockLocations = [
+  { id: "1", name: "Main warehouse", parentId: null, level: 0 },
+  { id: "2", name: "Zone A", parentId: "1", level: 1 },
+  { id: "3", name: "Zone B", parentId: "1", level: 1 },
+  { id: "4", name: "Shelf A1", parentId: "2", level: 2 },
+  { id: "5", name: "Shelf B1", parentId: "3", level: 2 },
+  { id: "6", name: "Donated", parentId: null, level: 0 }
+];
 
 // Use the exact same interface as in BoxDetails
+// TODO: this is defined in BoxDetails.tsx, should we define this somewhere else and import it?
 interface BoxItem {
   type: 'T-shirt' | 'Pants';
   gender: 'Men' | 'Women';
   size: string;
   quantity: number;
 }
-
+// TODO: check if this should be defined here or should be imported from dummyDatabase.ts
 interface Box {
   id: string;
   name: string;
@@ -29,71 +103,52 @@ interface Box {
   updatedAt: string;
   contents: BoxItem[];
 }
+// TODO: check if this should be defined here or should be imported from dummyDatabase.ts
+interface Location {
+  id: string;
+  name: string;
+  parentId: string | null;
+  level: number;
+}
+
+// type BoxView = Database["public"]["Views"][""];
 
 const InventoryDashboard = () => {
-  const [selectedBoxIds, setSelectedBoxIds] = React.useState<string[]>([]);
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const [category, setCategory] = React.useState("all");
-  const [size, setSize] = React.useState("all");
-  const [gender, setGender] = React.useState("all");
+  // TODO: use the queryClient to fetch the data instead of using mock data
+  const queryClient = useQueryClient();
+  const [selectedBoxIds, setSelectedBoxIds] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [category, setCategory] = useState("all");
+  const [size, setSize] = useState("all");
+  const [gender, setGender] = useState("all");
 
-  // Mock data with correct case for type and gender
-  const boxes: Box[] = [
-    {
-      id: "25",
-      name: "25",
-      location: "Aisle 2 > Side B > Row 1",
-      createdAt: "2024-01-20T11:30:00",
-      updatedAt: "2024-01-22T09:45:00",
-      contents: [
-        {
-          type: 'T-shirt',
-          gender: 'Men',
-          size: 'XL',
-          quantity: 5
-        },
-        {
-          type: 'Pants',
-          gender: 'Women',
-          size: 'XS',
-          quantity: 3
-        }
-      ]
-    },
-    {
-      id: "32",
-      name: "32",
-      location: "Winter inventory room",
-      createdAt: "2024-01-21T11:30:00",
-      updatedAt: "2024-01-23T09:45:00",
-      contents: [
-        {
-          type: 'T-shirt',
-          gender: 'Men',
-          size: 'XL',
-          quantity: 3
-        },
-        {
-          type: 'Pants',
-          gender: 'Women',
-          size: 'XS',
-          quantity: 1
-        }
-      ]
-    }
-  ];
+  // States for dialogs
+  const [isDonateDialogOpen, setIsDonateDialogOpen] = useState(false);
+  const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
+
+  // States for location selection in Move dialog
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+
+  // State to track boxes (start with mock data)
+  const [boxes, setBoxes] = useState<Box[]>(mockBoxes);
 
   // Filter boxes based on search term and filters
   const filteredBoxes = React.useMemo(() => {
     return boxes.filter(box => {
       // Filter by search term (box name)
-      if (searchTerm && !box.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+      if (searchTerm && !box.name?.toLowerCase().includes(searchTerm.toLowerCase())) {
         return false;
       }
 
       // Filter by contents
       if (category !== 'all' || size !== 'all' || gender !== 'all') {
+        if (!box.contents || !Array.isArray(box.contents) || box.contents.length === 0) {
+          return false;
+        }
+
         return box.contents.some(item => {
+          if (!item) return false;
+
           // Filter by category (item type)
           if (category !== 'all' && item.type !== (category === 'tshirts' ? 'T-shirt' : 'Pants')) {
             return false;
@@ -117,9 +172,11 @@ const InventoryDashboard = () => {
     });
   }, [boxes, searchTerm, category, size, gender]);
 
+  // Box selection handler
   const handleBoxSelect = (boxId: string) => {
     setSelectedBoxIds(prev => {
       const isSelected = prev.includes(boxId);
+
       if (isSelected) {
         return prev.filter(id => id !== boxId);
       } else {
@@ -128,20 +185,112 @@ const InventoryDashboard = () => {
     });
   };
 
+  const isBoxSelected = (boxId: string) => {
+    return selectedBoxIds.includes(boxId);
+  };
+
   const handleSelectAll = () => {
+    if (filteredBoxes.length === 0) return;
+
     if (selectedBoxIds.length === filteredBoxes.length) {
       setSelectedBoxIds([]);
     } else {
-      setSelectedBoxIds(filteredBoxes.map(box => box.id));
+      const allBoxIds = filteredBoxes.map(box => String(box.id));
+      setSelectedBoxIds(allBoxIds);
     }
   };
 
+  // Donation handlers
+  const handleDonateClick = () => {
+    if (selectedBoxIds.length > 0) {
+      setIsDonateDialogOpen(true);
+    }
+  };
+
+  const handleConfirmDonation = () => {
+    if (selectedBoxIds.length === 0) return;
+
+    // Update boxes with the new location
+    setBoxes(prevBoxes =>
+      prevBoxes.map(box =>
+        selectedBoxIds.includes(box.id)
+          ? { ...box, location: "Donated" }
+          : box
+      )
+    );
+
+    setSelectedBoxIds([]);
+    setIsDonateDialogOpen(false);
+  };
+
+  // Move handlers
+  const handleMoveClick = () => {
+    if (selectedBoxIds.length > 0) {
+      setSelectedLocations([]);
+      setIsMoveDialogOpen(true);
+    }
+  };
+
+  const handleLocationSelect = (locationId: string, level: number) => {
+    const newSelections = [...selectedLocations.slice(0, level), locationId];
+    setSelectedLocations(newSelections);
+  };
+
+  const handleConfirmMove = () => {
+    if (selectedLocations.length === 0 || selectedBoxIds.length === 0) return;
+
+    // Get the full location path
+    const locationPath = getLocationPath(selectedLocations);
+
+    // Update boxes with the new location
+    setBoxes(prevBoxes =>
+      prevBoxes.map(box =>
+        selectedBoxIds.includes(box.id)
+          ? { ...box, location: locationPath }
+          : box
+      )
+    );
+
+    setSelectedBoxIds([]);
+    setIsMoveDialogOpen(false);
+  };
+
+  // Helper to get location path from IDs
+  const getLocationPath = (locationIds: string[]) => {
+    return locationIds
+      .map(id => {
+        const location = mockLocations.find(loc => loc.id === id);
+        return location ? location.name : '';
+      })
+      .filter(Boolean)
+      .join(' > ');
+  };
+
+  // Get available locations for a specific level
+  const getLocationsForLevel = (level: number): Location[] => {
+    if (level === 0) {
+      return mockLocations.filter(loc => loc.level === 0);
+    }
+
+    const parentId = selectedLocations[level - 1];
+    return mockLocations.filter(loc => loc.parentId === parentId && loc.level === level);
+  };
+
+  // Safely calculate quantity from box contents
+  const calculateTotalQuantity = (box: Box) => {
+    if (!box.contents || !Array.isArray(box.contents)) {
+      return 0;
+    }
+    return box.contents.reduce((sum, item) => sum + (item?.quantity || 0), 0);
+  };
+
+  // Get content for selected boxes
   const getSelectedBoxesContent = () => {
     if (selectedBoxIds.length === 0) return null;
 
-    const selectedBoxes = boxes.filter(box => selectedBoxIds.includes(box.id));
+    const selectedBoxes = boxes.filter(box => selectedBoxIds.includes(String(box.id)));
 
-    if (selectedBoxIds.length === 1) {
+    if (selectedBoxIds.length === 1 && selectedBoxes.length === 1) {
       // Single box view
       const box = selectedBoxes[0];
       return (
@@ -150,20 +299,22 @@ const InventoryDashboard = () => {
           location={box.location}
           createdAt={box.createdAt}
           updatedAt={box.updatedAt}
-          contents={box.contents}
+          contents={box.contents || []}
         />
       );
-    } else {
+    } else if (selectedBoxes.length > 0) {
       // Multiple boxes view - sum up contents
       const combinedContents: { [key: string]: BoxItem } = {};
 
       selectedBoxes.forEach(box => {
-        box.contents.forEach(item => {
+        (box.contents || []).forEach(item => {
+          if (!item) return;
+
           const key = `${item.type}-${item.gender}-${item.size}`;
           if (!combinedContents[key]) {
             combinedContents[key] = { ...item, quantity: 0 };
           }
-          combinedContents[key].quantity += item.quantity;
+          combinedContents[key].quantity += item.quantity || 0;
         });
       });
 
@@ -178,15 +329,32 @@ const InventoryDashboard = () => {
         />
       );
     }
+
+    return null;
   };
 
   const actionButtons = (
     <div className="flex gap-4">
       <Button variant="outline">Print label</Button>
-      <Button variant="outline">Move</Button>
-      <Button variant="outline">Donate</Button>
+      <Button
+        variant="outline"
+        onClick={handleMoveClick}
+        disabled={selectedBoxIds.length === 0}
+      >
+        Move
+      </Button>
+      <Button
+        variant="outline"
+        onClick={handleDonateClick}
+        disabled={selectedBoxIds.length === 0}
+      >
+        Donate
+      </Button>
     </div>
   );
+
+  // Calculate the number of boxes being donated
+  const donationCount = selectedBoxIds.length;
 
   return (
     <div className="p-6">
@@ -196,7 +364,7 @@ const InventoryDashboard = () => {
         </div>
       </div>
 
-      <div className="flex gap-6">
+      <div className="flex gap-6 flex-col md:flex-row">
         <div className="flex-1">
           <SearchFilters
             onSearch={setSearchTerm}
@@ -222,38 +390,141 @@ const InventoryDashboard = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredBoxes.map((box) => (
-                  <TableRow key={box.id}>
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedBoxIds.includes(box.id)}
-                        onCheckedChange={() => handleBoxSelect(box.id)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <button
-                        onClick={() => handleBoxSelect(box.id)}
-                        className="font-medium hover:underline"
-                      >
-                        Box {box.name}
-                      </button>
-                    </TableCell>
-                    <TableCell>{box.location}</TableCell>
-                    <TableCell>
-                      Qty: {box.contents.reduce((sum, item) => sum + item.quantity, 0)}
+                {filteredBoxes.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-4">
+                      No boxes found
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  filteredBoxes.map((box) => {
+                    const boxIdString = String(box.id);
+                    const isSelected = isBoxSelected(boxIdString);
+
+                    return (
+                      <TableRow
+                        key={boxIdString}
+                        className={isSelected ? "bg-muted/50" : ""}
+                      >
+                        <TableCell>
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={() => handleBoxSelect(boxIdString)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <button
+                            onClick={() => handleBoxSelect(boxIdString)}
+                            className="font-medium hover:underline"
+                          >
+                            Box {box.name}
+                          </button>
+                        </TableCell>
+                        <TableCell>{box.location || "No location"}</TableCell>
+                        <TableCell>
+                          Qty: {calculateTotalQuantity(box)}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
               </TableBody>
             </Table>
           </Card>
         </div>
 
         {/* Right panel for box details */}
-        <div className="w-96">
+        <div className="w-full md:w-96">
           {getSelectedBoxesContent()}
         </div>
       </div>
+
+      {/* Donation Confirmation Dialog */}
+      <Dialog open={isDonateDialogOpen} onOpenChange={setIsDonateDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm donation of {donationCount} {donationCount === 1 ? 'box' : 'boxes'}?</DialogTitle>
+          </DialogHeader>
+          <DialogFooter className="flex justify-between sm:justify-between">
+            <Button variant="outline" onClick={() => setIsDonateDialogOpen(false)}>
+              ❌ Cancel
+            </Button>
+            <Button onClick={handleConfirmDonation}>
+              ✅ Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Move Location Dialog */}
+      <Dialog open={isMoveDialogOpen} onOpenChange={setIsMoveDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Destination location</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            {/* Level 0 locations */}
+            <Select
+              value={selectedLocations[0]}
+              onValueChange={(value) => handleLocationSelect(value, 0)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select location" />
+              </SelectTrigger>
+              <SelectContent>
+                {getLocationsForLevel(0).map(location => (
+                  <SelectItem key={`level0-${location.id}`} value={location.id}>
+                    {location.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Level 1 locations (if level 0 is selected) */}
+            {selectedLocations[0] && getLocationsForLevel(1).length > 0 && (
+              <Select
+                value={selectedLocations[1]}
+                onValueChange={(value) => handleLocationSelect(value, 1)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select sub-location" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getLocationsForLevel(1).map(location => (
+                    <SelectItem key={`level1-${location.id}`} value={location.id}>
+                      {location.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+            {/* Level 2 locations (if level 1 is selected) */}
+            {selectedLocations[1] && getLocationsForLevel(2).length > 0 && (
+              <Select
+                value={selectedLocations[2]}
+                onValueChange={(value) => handleLocationSelect(value, 2)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select sub-location" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getLocationsForLevel(2).map(location => (
+                    <SelectItem key={`level2-${location.id}`} value={location.id}>
+                      {location.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+          <DialogFooter className="mt-4">
+            <Button onClick={handleConfirmMove} disabled={selectedLocations.length === 0}>
+              ✅ Done
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
