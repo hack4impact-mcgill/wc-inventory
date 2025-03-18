@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TShirt, Pants, Dress, Sneaker, Package } from "@phosphor-icons/react";
+import { Package } from "@phosphor-icons/react";
 import { buildLocationTree } from "./utils";
 import { BoxContent, InsertBoxContent } from "@/types/boxContent";
 import { GenderEnum } from "@/types/enums";
@@ -35,7 +35,7 @@ export interface LocationNode {
 const AddBox = () => {
   const [items, setItems] = useState<BoxContent[]>([]);
   const [categoryId, setCategoryId] = useState<string>("");
-  const [sizeId, setSizeId] = useState<string>(""); // Now using the size id!
+  const [sizeId, setSizeId] = useState<string>("");
   const [gender, setGender] = useState<GenderEnum | "">("");
   const [quantity, setQuantity] = useState<number>(1);
   const [location, setLocation] = useState<BoxLocation>({
@@ -44,12 +44,25 @@ const AddBox = () => {
     aisle: "",
     row: "",
   });
+  const [nextBoxId, setNextBoxId] = useState<number | null>(null);
 
-  const { locations, categories, sizes, boxCount } = useAddBoxQueries()
+  const { locations, categories, sizes, boxCount } = useAddBoxQueries();
+  
+  // Set the next box ID when component loads or box count changes
+  useEffect(() => {
+    if (boxCount !== undefined) {
+      setNextBoxId(boxCount + 1);
+    }
+  }, [boxCount]);
 
   const locationTree = locations
     ? buildLocationTree(locations.map((loc) => ({ ...loc, children: [] })))
     : [];
+
+  // Filter out any parent categories (like "Clothings")
+  const leafCategories = categories?.filter(category => 
+    !categories.some(c => c.parent_id === category.category_id)
+  );
 
   const saveBoxMutation = useSaveBox({
     items,
@@ -62,6 +75,10 @@ const AddBox = () => {
       setGender("");
       setQuantity(1);
       setLocation({ room: "", level: "", aisle: "", row: "" });
+      // Update the next box ID after saving
+      if (nextBoxId !== null) {
+        setNextBoxId(nextBoxId + 1);
+      }
     },
   });
 
@@ -91,6 +108,7 @@ const AddBox = () => {
         if (found) return found;
       }
       return "";
+
     };
     return findNodeName(locationTree);
   };
@@ -113,30 +131,22 @@ const AddBox = () => {
   const getItemIcon = (categoryId: string) => {
     const category = categories?.find((cat) => cat.category_id === categoryId);
     if (!category) return <Package weight="duotone" size={20} />;
-
-    switch (category.name.toLowerCase()) {
-      case "shirt":
-      case "tshirt":
-      case "t-shirt":
-      case "top":
-        return <TShirt weight="duotone" size={20} />;
-      case "pants":
-      case "jeans":
-      case "trousers":
-        return <Pants weight="duotone" size={20} />;
-      case "dress":
-      case "skirt":
-        return <Dress weight="duotone" size={20} />;
-      case "jacket":
-      case "coat":
-      case "sweater":
-        return <TShirt weight="duotone" size={20} />;
-      case "shoes":
-      case "sneakers":
-        return <Sneaker weight="duotone" size={20} />;
-      default:
-        return <Package weight="duotone" size={20} />;
+    
+    // Use icon from category data
+    if (category.icon) {
+      try {
+        // Dynamic import of icon from @phosphor-icons/react based on category.icon value
+        const IconComponent = require('@phosphor-icons/react')[category.icon];
+        if (IconComponent) {
+          return <IconComponent weight="duotone" size={20} />;
+        }
+      } catch (error) {
+        console.error("Icon not found:", category.icon);
+      }
     }
+    
+    // Fallback to Package icon
+    return <Package weight="duotone" size={20} />;
   };
 
   const locationDisplay = (
@@ -237,7 +247,7 @@ const AddBox = () => {
           <CardContent className="p-6 h-full">
             <div className="space-y-2 mb-6">
               <h2 className="text-2xl font-bold">
-                Box {boxCount ? String(boxCount).padStart(3, "0") : "XXX"}
+                Box {nextBoxId !== null ? nextBoxId : "XXX"}
               </h2>
               <div className="space-y-1">
                 {locationDisplay}
@@ -267,7 +277,8 @@ const AddBox = () => {
                     </p>
                   </div>
                 </div>
-              ))}            </div>
+              ))}            
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -280,7 +291,7 @@ const AddBox = () => {
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
-                {categories?.map((category) => (
+                {leafCategories?.map((category) => (
                   <SelectItem
                     key={category.category_id}
                     value={category.category_id}
