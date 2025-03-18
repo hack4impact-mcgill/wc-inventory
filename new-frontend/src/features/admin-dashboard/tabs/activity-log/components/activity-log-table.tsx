@@ -12,7 +12,7 @@ import { BoxMovementView } from "@/types/activity-log";
 import { format, set } from "date-fns";
 import { useNavigate } from "react-router-dom";
 
-type SortKeyOption = "moved_by_email" | "box_name" | "moved_at" | "action" | null;
+type SortKeyOption = "moved_by_email" | "box_name" | "moved_at" | null;
 
 interface ActivityLogTableProps {
   filteredData: BoxMovementView[];
@@ -27,7 +27,7 @@ const ActivityLogTable = ({
   const [sortKey, setSortKey] = useState<SortKeyOption>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  // Sorting based on toggle
+  // Sorting method for the toggle, sorts descending or asceding. 
   useEffect(() => {
 
     if (!sortKey) {
@@ -40,9 +40,6 @@ const ActivityLogTable = ({
       switch (sortKey) {
         case "moved_by_email":
           result = a.moved_by_email!.localeCompare(b.moved_by_email!);
-          break;
-        case "action":
-          result = a.note!.localeCompare(b.note!);
           break;
         case "box_name":
           result = a.box_name!.localeCompare(b.box_name!);
@@ -85,14 +82,7 @@ const ActivityLogTable = ({
             <TableHead
               className="font-bold cursor-pointer"
             >
-              Action 
-              <ArrowUpDown 
-                className="inline" 
-                onClick={() => {
-                  setSortKey("action");
-                  (sortOrder === "asc" ? setSortOrder("desc") : setSortOrder("asc"));
-                }}
-                />
+            Action 
             </TableHead>
 
             <TableHead className="font-bold cursor-pointer">
@@ -129,7 +119,7 @@ const ActivityLogTable = ({
                     {entry.moved_by_email}
                   </span>
                 </TableCell>
-                <TableCell>{entry.note}</TableCell>
+                <TableCell>{entry.action}</TableCell>
                 <TableCell className="text-blue-500 underline">
                 <span
                   onClick={() => {
