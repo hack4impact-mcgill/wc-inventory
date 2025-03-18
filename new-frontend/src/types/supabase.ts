@@ -16,7 +16,7 @@ export type Database = {
           category_id: string
           gender: Database["public"]["Enums"]["gender_enum"]
           quantity: number
-          size: Database["public"]["Enums"]["size_enum"]
+          size_id: string | null
         }
         Insert: {
           box_content_id?: string
@@ -24,7 +24,7 @@ export type Database = {
           category_id: string
           gender: Database["public"]["Enums"]["gender_enum"]
           quantity?: number
-          size: Database["public"]["Enums"]["size_enum"]
+          size_id?: string | null
         }
         Update: {
           box_content_id?: string
@@ -32,9 +32,16 @@ export type Database = {
           category_id?: string
           gender?: Database["public"]["Enums"]["gender_enum"]
           quantity?: number
-          size?: Database["public"]["Enums"]["size_enum"]
+          size_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "box_contents_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "box_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "box_contents_box_id_fkey"
             columns: ["box_id"]
@@ -49,10 +56,42 @@ export type Database = {
             referencedRelation: "categories"
             referencedColumns: ["category_id"]
           },
+          {
+            foreignKeyName: "box_contents_size_id_fkey"
+            columns: ["size_id"]
+            isOneToOne: false
+            referencedRelation: "sizes"
+            referencedColumns: ["size_id"]
+          },
         ]
+      }
+      box_contents_backup: {
+        Row: {
+          box_content_id: string | null
+          box_id: string | null
+          category_id: string | null
+          gender: Database["public"]["Enums"]["gender_enum"] | null
+          quantity: number | null
+        }
+        Insert: {
+          box_content_id?: string | null
+          box_id?: string | null
+          category_id?: string | null
+          gender?: Database["public"]["Enums"]["gender_enum"] | null
+          quantity?: number | null
+        }
+        Update: {
+          box_content_id?: string | null
+          box_id?: string | null
+          category_id?: string | null
+          gender?: Database["public"]["Enums"]["gender_enum"] | null
+          quantity?: number | null
+        }
+        Relationships: []
       }
       box_movements: {
         Row: {
+          action: Database["public"]["Enums"]["box_movement_action"]
           box_id: string | null
           box_movement_id: string
           from_location_id: string | null
@@ -62,6 +101,7 @@ export type Database = {
           to_location_id: string | null
         }
         Insert: {
+          action?: Database["public"]["Enums"]["box_movement_action"]
           box_id?: string | null
           box_movement_id?: string
           from_location_id?: string | null
@@ -71,6 +111,7 @@ export type Database = {
           to_location_id?: string | null
         }
         Update: {
+          action?: Database["public"]["Enums"]["box_movement_action"]
           box_id?: string | null
           box_movement_id?: string
           from_location_id?: string | null
@@ -80,6 +121,13 @@ export type Database = {
           to_location_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "box_movements_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "box_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "box_movements_box_id_fkey"
             columns: ["box_id"]
@@ -124,6 +172,13 @@ export type Database = {
           tag_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "box_tags_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "box_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "box_tags_box_id_fkey"
             columns: ["box_id"]
@@ -242,21 +297,39 @@ export type Database = {
           },
         ]
       }
-      role_permissions: {
+      sizes: {
         Row: {
-          id: number
-          permission: Database["public"]["Enums"]["app_permission"]
-          role: Database["public"]["Enums"]["app_role"]
+          category: Database["public"]["Enums"]["size_category_enum"]
+          created_at: string | null
+          gender: Database["public"]["Enums"]["gender_enum"]
+          is_numerical: boolean | null
+          name: string
+          numerical_value: number | null
+          region: Database["public"]["Enums"]["size_region_enum"]
+          size_id: string
+          updated_at: string | null
         }
         Insert: {
-          id?: number
-          permission: Database["public"]["Enums"]["app_permission"]
-          role: Database["public"]["Enums"]["app_role"]
+          category: Database["public"]["Enums"]["size_category_enum"]
+          created_at?: string | null
+          gender: Database["public"]["Enums"]["gender_enum"]
+          is_numerical?: boolean | null
+          name: string
+          numerical_value?: number | null
+          region: Database["public"]["Enums"]["size_region_enum"]
+          size_id?: string
+          updated_at?: string | null
         }
         Update: {
-          id?: number
-          permission?: Database["public"]["Enums"]["app_permission"]
-          role?: Database["public"]["Enums"]["app_role"]
+          category?: Database["public"]["Enums"]["size_category_enum"]
+          created_at?: string | null
+          gender?: Database["public"]["Enums"]["gender_enum"]
+          is_numerical?: boolean | null
+          name?: string
+          numerical_value?: number | null
+          region?: Database["public"]["Enums"]["size_region_enum"]
+          size_id?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -343,6 +416,7 @@ export type Database = {
     Views: {
       box_movements_view: {
         Row: {
+          action: Database["public"]["Enums"]["box_movement_action"] | null
           box_id: string | null
           box_movement_id: string | null
           box_name: string | null
@@ -358,10 +432,28 @@ export type Database = {
             foreignKeyName: "box_movements_box_id_fkey"
             columns: ["box_id"]
             isOneToOne: false
+            referencedRelation: "box_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "box_movements_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
             referencedRelation: "boxes"
             referencedColumns: ["box_id"]
           },
         ]
+      }
+      box_view: {
+        Row: {
+          contents: Json | null
+          createdAt: string | null
+          id: string | null
+          location: string | null
+          name: string | null
+          updatedAt: string | null
+        }
+        Relationships: []
       }
       user_view: {
         Row: {
@@ -459,6 +551,7 @@ export type Database = {
     Enums: {
       app_permission: "users.create" | "users.edit" | "users.delete"
       app_role: "admin" | "volunteer"
+      box_movement_action: "Donated" | "Moved" | "Retired" | "Other"
       box_status_enum: "Active" | "Donated" | "Archived"
       gender_enum: "Male" | "Female" | "Unisex" | "Kids"
       icon_name_enum:
@@ -474,7 +567,8 @@ export type Database = {
         | "Cloud"
         | "Smile"
       movement_type_enum: "Create" | "Move" | "Donate" | "Archive"
-      size_enum: "XXS" | "XS" | "S" | "M" | "L" | "XL" | "XXL" | "XXXL"
+      size_category_enum: "Adult" | "Kid" | "Shoe" | "Other"
+      size_region_enum: "US" | "EU" | "UK" | "INT"
       user_role: "admin" | "volunteer"
       user_role_enum: "Volunteer" | "Admin"
     }

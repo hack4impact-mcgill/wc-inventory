@@ -145,7 +145,7 @@ const CategoryForm: FC<CategoryFormProps> = ({ categories, onSubmit, initialData
 
 
                 <div className="grid gap-2 relative">
-                    <label htmlFor="parent" className="text-gray-700 font-medium">Parent Category:</label>
+                    <label htmlFor="parent" className="text-gray-700 font-medium">Parent Category (Optional):</label>
                     <Input
                         id="parent"
                         value={parentSearch}
