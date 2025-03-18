@@ -85,6 +85,13 @@ const ActivityLogTable = ({
             Action 
             </TableHead>
 
+            <TableHead
+              className="font-bold cursor-pointer"
+            >
+            Note 
+            </TableHead>
+
+
             <TableHead className="font-bold cursor-pointer">
               Box 
               <ArrowUpDown 
@@ -120,6 +127,7 @@ const ActivityLogTable = ({
                   </span>
                 </TableCell>
                 <TableCell>{entry.action}</TableCell>
+                <TableCell>{entry.note}</TableCell>
                 <TableCell className="text-blue-500 underline">
                 <span
                   onClick={() => {
