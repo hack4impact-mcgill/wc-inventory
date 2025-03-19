@@ -1,3 +1,4 @@
+// src/features/admin-dashboard/tabs/location-management/hooks/use-locations.ts
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { locationApi } from "@/lib/api/locations";
 import { queryKeys } from "@/lib/api/queryKeys";
@@ -32,7 +33,7 @@ export function useLocations() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: LocationUpdate }) =>
-      locationApi.updateLocation({id, data}),
+      locationApi.updateLocation({ id, data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.locations.all });
       toast({

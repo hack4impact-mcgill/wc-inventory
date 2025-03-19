@@ -1,3 +1,4 @@
+// src/features/admin-dashboard/tabs/box-lookup/index.tsx
 import React from "react";
 import {
   Table,
@@ -10,11 +11,28 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import SearchFilters from "@/features/admin-dashboard/components/SearchFilters";
 import BoxDetails from "@/features/admin-dashboard/components/BoxDetails";
-import { supabase } from "@/lib/supabaseClient";
-import { BoxItem, BoxView } from "@/types/box";
+import { BoxItem } from "@/types/box";
+import { boxApi } from "@/lib/api/boxes";
+import { LocalLocation } from "@/lib/api/locations";
+import { useLocations } from "@/features/admin-dashboard/tabs/location-management/hooks/use-locations.ts"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from 'react-hot-toast';
 
 // Define filter state interface
 interface FilterState {
@@ -33,17 +51,80 @@ const BoxLookup: React.FC = () => {
     gender: "all"
   });
 
-  // Use React Query to fetch data
-  const { data: boxes = [], isLoading, isError, error } = useQuery<BoxView[]>({
+  // Dialog states
+  const [isDonateDialogOpen, setIsDonateDialogOpen] = React.useState(false);
+  const [isMoveDialogOpen, setIsMoveDialogOpen] = React.useState(false);
+
+  // Location selection states
+  const [selectedLocations, setSelectedLocations] = React.useState<string[]>([]);
+  const [locationsByParent, setLocationsByParent] = React.useState<Record<string | null, LocalLocation[]>>({});
+
+  const queryClient = useQueryClient();
+
+  // Use React Query to fetch boxes data
+  const { data: boxes = [], isLoading: isLoadingBoxes, isError: isBoxesError, error: boxesError } = useQuery({
     queryKey: ['boxes'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('box_view').select('*');
+    queryFn: async () => boxApi.getBoxes(),
+  });
 
-      if (error) {
-        throw new Error(error.message);
-      }
+  // With this:
+  const { locations, isLoading: isLoadingLocations } = useLocations();
 
-      return data as BoxView[];
+  // And modify the useEffect to handle the typing properly:
+  React.useEffect(() => {
+    if (locations && locations.length > 0) {
+      // Organize locations by parent
+      const locByParent: Record<string, LocalLocation[]> = {};
+
+      // Initialize the null parent entry with empty string key
+      locByParent[''] = [];
+
+      locations.forEach(loc => {
+        const parentId = loc.parent_id || '';
+        if (!locByParent[parentId]) {
+          locByParent[parentId] = [];
+        }
+        // Type assertion to convert Location to LocalLocation
+        locByParent[parentId].push(loc as unknown as LocalLocation);
+      });
+
+      // Update the state (you'll need to modify getLocationsForLevel accordingly)
+      setLocationsByParent(locByParent);
+    }
+  }, [locations]);
+  // Mutations for box operations
+  const donateBoxesMutation = useMutation({
+    mutationFn: (boxIds: string[]) => boxApi.donateBoxes(boxIds),
+    onSuccess: () => {
+      toast.success(`${selectedBoxIds.length} ${selectedBoxIds.length === 1 ? 'box' : 'boxes'} donated successfully.`);
+      queryClient.invalidateQueries({ queryKey: ['boxes'] });
+      setSelectedBoxIds([]);
+      setIsDonateDialogOpen(false);
+    },
+    onError: (error) => {
+      toast.error(`Failed to donate boxes: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  });
+
+  const moveBoxesMutation = useMutation({
+    mutationFn: ({ boxIds, locationId }: { boxIds: string[], locationId: string }) =>
+      boxApi.moveBoxes(boxIds, locationId),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: `${selectedBoxIds.length} ${selectedBoxIds.length === 1 ? 'box' : 'boxes'} moved successfully.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['boxes'] });
+      setSelectedBoxIds([]);
+      setIsMoveDialogOpen(false);
+      setSelectedLocations([]);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to move boxes: ${error instanceof Error ? error.message : String(error)}`,
+        variant: "destructive",
+      });
     }
   });
 
@@ -171,18 +252,95 @@ const BoxLookup: React.FC = () => {
     }
   };
 
+  // Location selection handlers
+  const getLocationsForLevel = (level: number): LocalLocation[] => {
+    if (level === 0) {
+      return locationsByParent[''] || [];
+    }
+
+    const parentId = selectedLocations[level - 1];
+    if (!parentId) return [];
+
+    return locationsByParent[parentId] || [];
+  };
+
+  const handleLocationSelect = (locationId: string, level: number) => {
+    // When selecting a location at a level, clear all subsequent levels
+    const newSelectedLocations = [...selectedLocations.slice(0, level), locationId];
+    setSelectedLocations(newSelectedLocations);
+  };
+
+  // Dialog handlers
+  const handleDonateClick = () => {
+    if (selectedBoxIds.length === 0) {
+      toast({
+        title: "No boxes selected",
+        description: "Please select at least one box to donate.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsDonateDialogOpen(true);
+  };
+
+  const handleMoveClick = () => {
+    if (selectedBoxIds.length === 0) {
+      toast({
+        title: "No boxes selected",
+        description: "Please select at least one box to move.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsMoveDialogOpen(true);
+  };
+
+  const handleConfirmDonation = () => {
+    donateBoxesMutation.mutate(selectedBoxIds);
+  };
+
+  const handleConfirmMove = () => {
+    // Get the most specific selected location (the last non-empty one)
+    const targetLocationId = selectedLocations.filter(Boolean).pop();
+    if (!targetLocationId) {
+      toast({
+        title: "No location selected",
+        description: "Please select a destination location.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    moveBoxesMutation.mutate({
+      boxIds: selectedBoxIds,
+      locationId: targetLocationId
+    });
+  };
+
   // Action buttons for selected boxes
   const actionButtons = (
     <div className="flex gap-4">
       <Button variant="outline">Print label</Button>
-      <Button variant="outline">Move</Button>
-      <Button variant="outline">Donate</Button>
+      <Button
+        variant="outline"
+        onClick={handleMoveClick}
+        disabled={selectedBoxIds.length === 0}
+      >
+        Move
+      </Button>
+      <Button
+        variant="outline"
+        onClick={handleDonateClick}
+        disabled={selectedBoxIds.length === 0}
+      >
+        Donate
+      </Button>
     </div>
   );
 
   // Handle loading and error states
-  if (isLoading) return <div className="p-6">Loading inventory data...</div>;
-  if (isError) return <div className="p-6 text-red-500">Error loading inventory: {error?.message}</div>;
+  if (isLoadingBoxes) return <div className="p-6">Loading inventory data...</div>;
+  if (isBoxesError) return <div className="p-6 text-red-500">Error loading inventory: {boxesError?.message}</div>;
 
   return (
     <div className="p-6">
@@ -230,7 +388,7 @@ const BoxLookup: React.FC = () => {
                         />
                       </TableCell>
                       <TableCell className="font-medium">
-                        Box {box.name}
+                        {box.name}
                       </TableCell>
                       <TableCell>{box.location || "—"}</TableCell>
                       <TableCell>
@@ -255,6 +413,107 @@ const BoxLookup: React.FC = () => {
           {getSelectedBoxesContent()}
         </div>
       </div>
+
+      {/* Donation Confirmation Dialog */}
+      <Dialog open={isDonateDialogOpen} onOpenChange={setIsDonateDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm donation of {selectedBoxIds.length} {selectedBoxIds.length === 1 ? 'box' : 'boxes'}?</DialogTitle>
+          </DialogHeader>
+          <DialogFooter className="flex justify-between sm:justify-between">
+            <Button variant="outline" onClick={() => setIsDonateDialogOpen(false)}>
+              ❌ Cancel
+            </Button>
+            <Button onClick={handleConfirmDonation} disabled={donateBoxesMutation.isPending}>
+              {donateBoxesMutation.isPending ? "Processing..." : "✅ Confirm"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Move Location Dialog */}
+      <Dialog open={isMoveDialogOpen} onOpenChange={setIsMoveDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Destination location</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            {/* Level 0 locations */}
+            <Select
+              value={selectedLocations[0]}
+              onValueChange={(value) => handleLocationSelect(value, 0)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select location" />
+              </SelectTrigger>
+              <SelectContent>
+                {isLoadingLocations ? (
+                  <SelectItem value="loading" disabled>Loading locations...</SelectItem>
+                ) : (
+                  getLocationsForLevel(0).map(location => (
+                    <SelectItem key={`level0-${location.id}`} value={location.id}>
+                      {location.name}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+
+            {/* Level 1 locations (if level 0 is selected) */}
+            {selectedLocations[0] && getLocationsForLevel(1).length > 0 && (
+              <Select
+                value={selectedLocations[1]}
+                onValueChange={(value) => handleLocationSelect(value, 1)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select sub-location" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getLocationsForLevel(1).map(location => (
+                    <SelectItem key={`level1-${location.id}`} value={location.id}>
+                      {location.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+            {/* Level 2 locations (if level 1 is selected) */}
+            {selectedLocations[1] && getLocationsForLevel(2).length > 0 && (
+              <Select
+                value={selectedLocations[2]}
+                onValueChange={(value) => handleLocationSelect(value, 2)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select sub-location" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getLocationsForLevel(2).map(location => (
+                    <SelectItem key={`level2-${location.id}`} value={location.id}>
+                      {location.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+          <DialogFooter className="mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsMoveDialogOpen(false)}
+              className="mr-auto"
+            >
+              ❌ Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmMove}
+              disabled={selectedLocations.filter(Boolean).length === 0 || moveBoxesMutation.isPending}
+            >
+              {moveBoxesMutation.isPending ? "Processing..." : "✅ Done"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
