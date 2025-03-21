@@ -82,11 +82,11 @@ const router = createBrowserRouter([
       },
       {
         path: "users",
-        element: <UserManagement />
+        element: <UserManagement />,
       },
       {
-        path: "users/:id",
-        element: <UserInfo />
+        path: "users/:email",
+        element: <UserInfo />,
       },
 
       {
@@ -120,7 +120,7 @@ const router = createBrowserRouter([
       // {
       //   path: "donations",
       //   element: <Donations />,
-      // }
+      // },
     ],
   },
   // {
@@ -164,7 +164,9 @@ const router = createBrowserRouter([
     //so both admin and volunteer can access box-lookup page
     path: "/box-lookup",
     element: (
-      <AuthWrapper> {/* Protect the route so only logged-in users can access */}
+      <AuthWrapper>
+        {" "}
+        {/* Protect the route so only logged-in users can access */}
         <BoxLookup />
       </AuthWrapper>
     ),
