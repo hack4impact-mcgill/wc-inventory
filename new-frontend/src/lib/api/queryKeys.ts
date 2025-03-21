@@ -17,4 +17,7 @@ export const queryKeys = {
     all: ["users"] as const,
     detail: (userId: string) => [...queryKeys.users.all, userId] as const, //we get user by email in user-table.jsx, so probably wanna change this
   },
+  sizes: {
+    all: ["sizes"] as const,
+  },
 };
