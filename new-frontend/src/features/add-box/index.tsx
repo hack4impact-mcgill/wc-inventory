@@ -1,5 +1,7 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -7,64 +9,187 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { TShirt, Pants, Dress, Sneaker, Package } from "@phosphor-icons/react";
-import { buildLocationTree } from "./utils";
-import { BoxContent, InsertBoxContent } from "@/types/boxContent";
-import { GenderEnum } from "@/types/enums";
-import { useSaveBox } from "./hooks/useCreateBox";
+import { Package, MapPin, PencilSimple, Trash, X } from "@phosphor-icons/react";
 import { useAddBoxQueries } from "./hooks/useAddBoxQueries";
-
-interface BoxLocation {
-  room: string;
-  level: string;
-  aisle: string;
-  row: string;
-}
-
-export interface LocationNode {
-  location_id: string;
-  name: string;
-  description: string | null;
-  level: number | null;
-  parent_id: string | null;
-  children: LocationNode[];
-}
+import { useSaveBox } from "./hooks/useCreateBox";
+import { GenderEnum } from "@/types/enums";
+import { BoxContent, InsertBoxContent } from "@/types/boxContent";
+import { buildLocationTree } from "./utils";
+import { LocationNode } from "./index";
+import { useToast } from "@/hooks/use-toast";
+import { getCategoryIcon } from "@/types/icons";
 
 const AddBox = () => {
+  // Add toast for notifications
+  const { toast } = useToast();
+  
+  // Maintain all existing state variables
   const [items, setItems] = useState<BoxContent[]>([]);
   const [categoryId, setCategoryId] = useState<string>("");
-  const [sizeId, setSizeId] = useState<string>(""); // Now using the size id!
+  const [sizeId, setSizeId] = useState<string>("");
   const [gender, setGender] = useState<GenderEnum | "">("");
   const [quantity, setQuantity] = useState<number>(1);
-  const [location, setLocation] = useState<BoxLocation>({
+  const [location, setLocation] = useState<{
+    room: string;
+    level: string;
+    aisle: string;
+    row: string;
+  }>({
     room: "",
     level: "",
     aisle: "",
     row: "",
   });
+  const [nextBoxId, setNextBoxId] = useState<number | null>(null);
+  const [showLocationModal, setShowLocationModal] = useState<boolean>(false);
+  const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  
+  // Add state for sidebar visibility
+  const [showSidebar, setShowSidebar] = useState<boolean>(false);
 
-  const { locations, categories, sizes, boxCount } = useAddBoxQueries()
+  // Use existing queries
+  const { locations, categories, sizes, boxCount } = useAddBoxQueries();
+  
+  // Reset all state to default values
+  const resetForm = () => {
+    setItems([]);
+    setCategoryId("");
+    setSizeId("");
+    setGender("");
+    setQuantity(1);
+    setLocation({
+      room: "",
+      level: "",
+      aisle: "",
+      row: "",
+    });
+    setShowLocationModal(false);
+    setEditingItemIndex(null);
+    setIsEditing(false);
+    setShowSidebar(false);
+  };
+  
+  // Set the next box ID when component loads or box count changes
+  useEffect(() => {
+    if (boxCount !== undefined) {
+      setNextBoxId(boxCount + 1);
+    }
+  }, [boxCount]);
+
+  // Additional effect to populate form fields when editing an item
+  useEffect(() => {
+    if (editingItemIndex !== null && editingItemIndex >= 0 && editingItemIndex < items.length) {
+      const itemToEdit = items[editingItemIndex];
+      setCategoryId(itemToEdit.category_id);
+      setSizeId(itemToEdit.size_id);
+      setGender(itemToEdit.gender);
+      setQuantity(itemToEdit.quantity);
+      setIsEditing(true);
+    } else {
+      // Reset form when not editing
+      if (isEditing) {
+        setCategoryId("");
+        setSizeId("");
+        setGender("");
+        setQuantity(1);
+        setIsEditing(false);
+      }
+    }
+  }, [editingItemIndex, items]);
 
   const locationTree = locations
     ? buildLocationTree(locations.map((loc) => ({ ...loc, children: [] })))
     : [];
 
+  // Filter out any parent categories
+  const leafCategories = categories?.filter(category => 
+    !categories.some(c => c.parent_id === category.category_id)
+  );
+
+  // Define saveBox mutation with callbacks
   const saveBoxMutation = useSaveBox({
     items,
     boxCount,
     location,
     onAddSuccess: () => {
-      setItems([]);
-      setCategoryId("");
-      setSizeId("");
-      setGender("");
-      setQuantity(1);
-      setLocation({ room: "", level: "", aisle: "", row: "" });
+      // Show success notification
+      toast({
+        title: "Box Created Successfully",
+        description: "Box has been created and saved to inventory.",
+      });
+      
+      // Reset the form
+      resetForm();
+      
+      // Update the next box ID after saving
+      if (nextBoxId !== null) {
+        setNextBoxId(nextBoxId + 1);
+      }
     },
   });
 
+  // Handle box creation
+  const handleCreateBox = () => {
+    // Validate we have items to save
+    if (items.length === 0) {
+      toast({
+        title: "Box is empty",
+        description: "Please add at least one item to the box.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate we have a location
+    if (!location.room) {
+      toast({
+        title: "Location is required",
+        description: "Please select a location for the box.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Call the mutation function to save the box
+    saveBoxMutation.mutate();
+  };
+
+  // New function to get formatted location path
+  const getLocationPath = () => {
+    if (!location.room) return "";
+    
+    const path = [];
+    if (location.room) {
+      const roomNode = locationTree.find(node => node.location_id === location.room);
+      if (roomNode) path.push(roomNode.name);
+    }
+    
+    if (location.level) {
+      const levelNodes = locationTree.find(node => node.location_id === location.room)?.children || [];
+      const levelNode = levelNodes.find(node => node.location_id === location.level);
+      if (levelNode) path.push(levelNode.name);
+    }
+    
+    if (location.aisle) {
+      const aisleNodes = locationTree.find(node => node.location_id === location.room)?.children
+        .find(node => node.location_id === location.level)?.children || [];
+      const aisleNode = aisleNodes.find(node => node.location_id === location.aisle);
+      if (aisleNode) path.push(aisleNode.name);
+    }
+    
+    if (location.row) {
+      const rowNodes = locationTree.find(node => node.location_id === location.room)?.children
+        .find(node => node.location_id === location.level)?.children
+        .find(node => node.location_id === location.aisle)?.children || [];
+      const rowNode = rowNodes.find(node => node.location_id === location.row);
+      if (rowNode) path.push(rowNode.name);
+    }
+    
+    return path.join(" > ");
+  };
+
+  // Update add item functionality to support editing
   const handleAdd = () => {
     if (!categoryId || !sizeId || !gender) return;
 
@@ -76,82 +201,59 @@ const AddBox = () => {
       box_id: "",
     };
 
-    setItems([...items, newItem]);
+    if (isEditing && editingItemIndex !== null) {
+      // Update existing item
+      const updatedItems = [...items];
+      updatedItems[editingItemIndex] = newItem;
+      setItems(updatedItems);
+      setEditingItemIndex(null);
+    } else {
+      // Add new item
+      setItems([...items, newItem]);
+    }
+    
+    // Reset form
     setCategoryId("");
     setSizeId("");
     setGender("");
     setQuantity(1);
+    setIsEditing(false);
   };
 
-  const getLocationName = (locationId: string): string => {
-    const findNodeName = (nodes: LocationNode[]): string => {
-      for (const node of nodes) {
-        if (node.location_id === locationId) return node.name;
-        const found = findNodeName(node.children);
-        if (found) return found;
-      }
-      return "";
-    };
-    return findNodeName(locationTree);
-  };
-
-  const findChildren = (parentId: string | null): LocationNode[] => {
-    if (!locationTree.length) return [];
-    if (!parentId) return locationTree;
-
-    const findNode = (nodes: LocationNode[]): LocationNode | null => {
-      for (const node of nodes) {
-        if (node.location_id === parentId) return node;
-        const found = findNode(node.children);
-        if (found) return found;
-      }
-      return null;
-    };
-    return findNode(locationTree)?.children || [];
-  };
-
-  const getItemIcon = (categoryId: string) => {
-    const category = categories?.find((cat) => cat.category_id === categoryId);
-    if (!category) return <Package weight="duotone" size={20} />;
-
-    switch (category.name.toLowerCase()) {
-      case "shirt":
-      case "tshirt":
-      case "t-shirt":
-      case "top":
-        return <TShirt weight="duotone" size={20} />;
-      case "pants":
-      case "jeans":
-      case "trousers":
-        return <Pants weight="duotone" size={20} />;
-      case "dress":
-      case "skirt":
-        return <Dress weight="duotone" size={20} />;
-      case "jacket":
-      case "coat":
-      case "sweater":
-        return <TShirt weight="duotone" size={20} />;
-      case "shoes":
-      case "sneakers":
-        return <Sneaker weight="duotone" size={20} />;
-      default:
-        return <Package weight="duotone" size={20} />;
+  // New function to handle item deletion
+  const handleDeleteItem = () => {
+    if (editingItemIndex !== null) {
+      const updatedItems = items.filter((_, index) => index !== editingItemIndex);
+      setItems(updatedItems);
+      setEditingItemIndex(null);
+      setCategoryId("");
+      setSizeId("");
+      setGender("");
+      setQuantity(1);
+      setIsEditing(false);
     }
   };
 
-  const locationDisplay = (
-    <p className="text-sm">
-      Location: {location.room && getLocationName(location.room)}
-      {location.level && `, ${getLocationName(location.level)}`}
-      {location.aisle && `, ${getLocationName(location.aisle)}`}
-      {location.row && `, ${getLocationName(location.row)}`}
-    </p>
-  );
+  // Function to handle clicking on an item to edit
+  const handleEditItem = (index: number) => {
+    setEditingItemIndex(index);
+  };
 
-  const levelSelectorCard = (
-    <Card className="shadow-sm">
+  // Function to cancel editing
+  const handleCancelEdit = () => {
+    setEditingItemIndex(null);
+    setCategoryId("");
+    setSizeId("");
+    setGender("");
+    setQuantity(1);
+    setIsEditing(false);
+  };
+
+  // Location selection component
+  const LocationSelector = () => (
+    <Card className="shadow-sm mt-4">
       <CardContent className="p-6 space-y-4">
-        <p className="font-semibold ">Location</p>
+        <p className="font-semibold">Location</p>
         {findChildren(null).length > 0 && (
           <Select
             value={location.room}
@@ -226,127 +328,270 @@ const AddBox = () => {
             </SelectContent>
           </Select>
         )}
+        <Button 
+          className="w-full"
+          onClick={() => setShowLocationModal(false)}
+        >
+          Save Location
+        </Button>
       </CardContent>
     </Card>
   );
 
+  // Find children nodes function (keep existing functionality)
+  const findChildren = (parentId: string | null): LocationNode[] => {
+    if (!locationTree.length) return [];
+    if (!parentId) return locationTree;
+
+    const findNode = (nodes: LocationNode[]): LocationNode | null => {
+      for (const node of nodes) {
+        if (node.location_id === parentId) return node;
+        const found = findNode(node.children);
+        if (found) return found;
+      }
+      return null;
+    };
+    return findNode(locationTree)?.children || [];
+  };
+
+  // New function to open sidebar when clicking empty area
+  const handleOpenSidebar = () => {
+    if (items.length === 0) {
+      setShowSidebar(true);
+      setCategoryId("");
+      setSizeId("");
+      setGender("");
+      setQuantity(1);
+      setIsEditing(false);
+    }
+  };
+
+  // Get icon component for a category
+  const getCategoryIconComponent = (categoryId: string) => {
+    const category = categories?.find(c => c.category_id === categoryId);
+    if (!category || !category.icon) {
+      // Default to Package if no category is found or no icon specified
+      return <Package size={20} />;
+    }
+    
+    // Get the icon component using the utility function
+    const IconComponent = getCategoryIcon(category.icon);
+    return <IconComponent size={20} />;
+  };
+
   return (
-    <div className="flex min-h-[calc(100svh-8rem)] w-full">
-      <div className="flex-1 p-6">
-        <Card className="h-full">
-          <CardContent className="p-6 h-full">
-            <div className="space-y-2 mb-6">
-              <h2 className="text-2xl font-bold">
-                Box {boxCount ? String(boxCount).padStart(3, "0") : "XXX"}
-              </h2>
-              <div className="space-y-1">
-                {locationDisplay}
-                <p className="text-sm">Contents:</p>
+    <div className="flex min-h-screen bg-white">
+      <div className="flex-1 p-4 flex">
+        <div className={`flex-1 ${showSidebar ? 'mr-4' : ''}`}>
+          <Card className="shadow-sm h-full">
+            <CardContent className="p-6">
+              <h2 className="text-2xl font-bold mb-6">Creating Box {nextBoxId || "456"}</h2>
+              
+              <div className="bg-gray-50 p-4 rounded-md mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <MapPin size={24} />
+                    <span className="font-medium">Location</span>
+                  </div>
+                  <button onClick={() => setShowLocationModal(!showLocationModal)}>
+                    <PencilSimple size={20} />
+                  </button>
+                </div>
+                
+                <div className="text-gray-700">
+                  {getLocationPath() || "Select a location"}
+                </div>
+              </div>
+              
+              {showLocationModal && <LocationSelector />}
+              
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Package size={24} />
+                  <span className="font-medium">Items</span>
+                </div>
+                
+                <div 
+                  className="border-2 border-dashed border-blue-200 bg-blue-50 rounded-lg p-6 min-h-[calc(100vh-300px)] relative flex"
+                  onClick={items.length === 0 ? handleOpenSidebar : undefined}
+                >
+                  {items.length === 0 ? (
+                    <div className="text-center text-blue-500 cursor-pointer flex flex-col absolute inset-0 items-center justify-center">
+                      <div className="flex justify-center mb-2">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                      <p>Click to add items in the box</p>
+                    </div>
+                  ) : (
+                    <div className="w-full self-start">
+                      {items.map((item, index) => {
+                        const category = categories?.find(c => c.category_id === item.category_id);
+                        const IconComponent = category?.icon ? getCategoryIcon(category.icon) : Package;
+                        
+                        return (
+                          <div 
+                            key={index} 
+                            className={`p-3 bg-white rounded shadow mb-2 w-full cursor-pointer hover:bg-gray-50 transition-colors ${editingItemIndex === index ? 'ring-2 ring-blue-400' : ''}`}
+                            onClick={() => handleEditItem(index)}
+                          >
+                            <div className="flex justify-between items-center">
+                              <div className="flex items-center gap-3">
+                                <div className="text-gray-500">
+                                  <IconComponent size={20} />
+                                </div>
+                                <div>
+                                  <p className="font-medium">
+                                    {category?.name}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    {sizes?.find(s => s.size_id === item.size_id)?.name} • {item.gender}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-gray-500 font-medium">x{item.quantity}</div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      
+                      {/* Add a "Add more items" button */}
+                      {!showSidebar && items.length > 0 && (
+                        <Button
+                          className="mt-4 w-full bg-blue-50 border-dashed border-blue-200 border-2 text-blue-500 hover:bg-blue-100"
+                          onClick={() => setShowSidebar(true)}
+                        >
+                          + Add more items
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Create box button */}
+                {!showSidebar && items.length > 0 && (
+                  <Button
+                    className="w-full mt-4 bg-gray-200 hover:bg-gray-300 text-gray-800 flex justify-center items-center gap-2"
+                    onClick={handleCreateBox}
+                    disabled={items.length === 0 || saveBoxMutation.isPending}
+                  >
+                    <Package size={20} />
+                    <span>{saveBoxMutation.isPending ? "Creating..." : "Create box"}</span>
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        
+        {showSidebar && (
+          <div className="w-80 bg-white rounded-lg shadow-sm p-4 border relative">
+            <button 
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+              onClick={() => setShowSidebar(false)}
+            >
+              <X size={20} />
+            </button>
+            
+            <div className="mb-6 mt-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium">
+                  {isEditing ? 'Edit item' : 'Add items'}
+                </h3>
+                {isEditing && (
+                  <button
+                    className="text-red-500 hover:text-red-700 transition-colors"
+                    onClick={handleDeleteItem}
+                    aria-label="Delete item"
+                  >
+                    <Trash size={20} />
+                  </button>
+                )}
+              </div>
+              
+              <div className="space-y-4">
+                <Select value={categoryId} onValueChange={setCategoryId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {leafCategories?.map((category) => (
+                      <SelectItem 
+                        key={category.category_id} 
+                        value={category.category_id}
+                      >
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                <Select value={gender} onValueChange={(val) => setGender(val as GenderEnum)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {["Male", "Female", "Unisex", "Kids"].map((g) => (
+                      <SelectItem key={g} value={g}>
+                        {g}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                <Select value={sizeId} onValueChange={setSizeId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Size" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sizes?.map((size) => (
+                      <SelectItem key={size.size_id} value={size.size_id}>
+                        {size.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={quantity}
+                    onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
+                  />
+                </div>
+                
+                <div className="flex gap-2">
+                  {isEditing && (
+                    <Button 
+                      className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800"
+                      onClick={handleCancelEdit}
+                    >
+                      Cancel
+                    </Button>
+                  )}
+                  <Button 
+                    className={`${isEditing ? 'flex-1' : 'w-full'} bg-blue-600 hover:bg-blue-700`}
+                    onClick={handleAdd}
+                    disabled={!categoryId || !sizeId || !gender}
+                  >
+                    {isEditing ? 'Update' : 'Add item'}
+                  </Button>
+                </div>
               </div>
             </div>
-            <div className="w-full h-[calc(100%-100px)] border-2 border-dashed border-gray-200 rounded-lg p-4 overflow-auto">
-              {items.map((item, index) => (
-                <div
-                  key={index}
-                  className="mb-2 p-2 bg-gray-50 rounded flex items-center space-x-3 hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex-shrink-0 text-gray-500">
-                    {getItemIcon(item.category_id)}
-                  </div>
-                  <div className="flex-grow">
-                    <div className="flex justify-between items-center">
-                      <p className="text-sm font-medium">
-                        {categories?.find((cat) => cat.category_id === item.category_id)?.name}
-                      </p>
-                      <span className="text-sm text-gray-500 font-medium">
-                        x{item.quantity}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-500">
-                      {sizes?.find((s) => s.size_id === item.size_id)?.name} • {item.gender}
-                    </p>
-                  </div>
-                </div>
-              ))}            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="w-96 border-l bg-white p-6 space-y-6">
-        <Card className="shadow-sm">
-          <CardContent className="p-6 space-y-4">
-            <Select value={categoryId} onValueChange={setCategoryId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories?.map((category) => (
-                  <SelectItem
-                    key={category.category_id}
-                    value={category.category_id}
-                  >
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={sizeId} onValueChange={setSizeId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Size" />
-              </SelectTrigger>
-              <SelectContent>
-                {sizes?.map((size) => (
-                  <SelectItem key={size.size_id} value={size.size_id}>
-                    {size.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={gender} onValueChange={(val) => setGender(val as GenderEnum)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Gender" />
-              </SelectTrigger>
-              <SelectContent>
-                {["Male", "Female", "Unisex", "Kids"].map((gender) => (
-                  <SelectItem key={gender} value={gender}>
-                    {gender}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <div className="flex items-center gap-2">
-              <span className="text-sm">Quantity:</span>
-              <Input
-                type="number"
-                className="w-24"
-                min={1}
-                value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
-              />
-            </div>
-
+            
             <Button
-              className="w-full"
-              onClick={handleAdd}
-              disabled={!categoryId || !sizeId || !gender}
+              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 flex justify-center items-center gap-2 mb-4"
+              onClick={handleCreateBox}
+              disabled={items.length === 0 || saveBoxMutation.isPending}
             >
-              Add
+              <span>{saveBoxMutation.isPending ? "Creating..." : "Create box"}</span>
             </Button>
-          </CardContent>
-        </Card>
-
-        {levelSelectorCard}
-
-        <Button
-          className="w-full"
-          onClick={() => saveBoxMutation.mutate()}
-          disabled={items.length === 0 || saveBoxMutation.isPending}
-        >
-          {saveBoxMutation.isPending ? "Saving..." : "Done (Prints label)"}
-        </Button>
+          </div>
+        )}
       </div>
     </div>
   );

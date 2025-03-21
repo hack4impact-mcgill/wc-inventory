@@ -23,6 +23,7 @@ const VolunteerDashboard = () => {
       title: "Create a box",
       bgColor: "bg-red-500",
       hoverColor: "hover:bg-red-600",
+      onClick: () => navigate("/create"), // Navigate to shared CreateBox page
     },
   ];
 
