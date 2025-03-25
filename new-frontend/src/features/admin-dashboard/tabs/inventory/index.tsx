@@ -1,79 +1,109 @@
-import React, { useState } from 'react'; 
-import './Inventory.css'; 
-
-
-
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { useState } from "react";
+import { useInventory } from "../../hooks/useInventory";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 const Inventory = () => {
-    const [items, setItems] = useState([
-        { id: 1, category: 'Adult Accessories', item: 'Hat', current: 5156, refills: 382, regular: 96, irregular: 478, total: 1514 },
-        { id: 2, category: 'Adult Accessories', item: 'Scarf', current: 1152, refills: 22, regular: 367, irregular: 87, total: 454 },
-        { id: 3, category: 'Male Coats', item: 'XXS', current: 7, refills: 10, regular: 3, irregular: 0, total: 3 }
-    ]);
+  const { data: inventory, isLoading, error } = useInventory();
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
+    new Set(),
+  );
 
+  const toggleCategory = (categoryId: string) => {
+    setExpandedCategories((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(categoryId)) {
+        newSet.delete(categoryId);
+      } else {
+        newSet.add(categoryId);
+      }
+      return newSet;
+    });
+  };
 
-    const exportToCsv = () => { 
-        const headers = "Items,Current Inventory,Refills,Regular Winter,Irregular,Total\n";
-        const rows = items.map(item =>
-        `${item.category} - ${item.item},${item.current},${item.refills},${item.regular},${item.irregular},${item.total}`
-        ).join("\n");
+  const exportToCsv = () => {
+    if (!inventory) return;
 
-        // Combine headers and rows into a single CSV string
-        const csvContent = `data:text/csv;charset=utf-8,${headers + rows}`;
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "inventory.csv");
-        document.body.appendChild(link); // Required for browsers like Firefox
-        link.click(); // This will trigger the download of the "inventory.csv" file.
-        document.body.removeChild(link);
+    const headers = "Category,Total Quantity\n";
+    const rows = inventory
+      .map((item) => `${item.category_name},${item.total_quantity}`)
+      .join("\n");
 
-    }
+    const csvContent = `data:text/csv;charset=utf-8,${headers + rows}`;
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "inventory.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
-    const handleDonate = async (boxId, userId) => { 
-        // Assuming you'll add the correct API calls here.
-        console.log("Donate functionality to be implemented.");
-    }
+  if (isLoading) return <div>Loading inventory...</div>;
+  if (error) {
+    return <div>Error loading inventory: {(error as Error).message}</div>;
+  }
 
-    
-    
-    return (
-        <div className="container">
-             <h1 className="header">Inventory as of ___ /___ /___</h1>
-            <div className="actions">
-                <button className="button" onClick={exportToCsv}>Export to CSV</button>
-                <button className="button donate" onClick={() => handleDonate(someBoxId, someUserId)}>Donate</button>
-            </div>
-            <table className="inventory-table"> 
-                <thead> 
-                     <tr> 
-                        <th rowSpan={2}>Items</th>
-                        <th rowSpan={2}>Current Inventory</th>
-                        <th rowSpan={2}>Refills</th>
-                        <th colSpan={3}>Distributions</th>
-                </tr>
-                <tr>
-                    <th>Regular Winter </th>
-                    <th>Irregular </th>
-                    <th>Total </th>
-                </tr>
-            </thead>
-            <tbody> 
-                {items.map(item => (
-                    <tr key={item.id}>
-                        <td>{`${item.category} - ${item.item}`}</td>
-                            <td>{item.current}</td>
-                            <td>{item.refills}</td>
-                            <td>{item.regular}</td>
-                            <td>{item.irregular}</td>
-                            <td>{item.total}</td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
-        </div>
-    );
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">
+        Inventory as of {new Date().toLocaleDateString()}
+      </h1>
+      <div className="flex gap-4 mb-6">
+        <Button onClick={exportToCsv}>Export to CSV</Button>
+      </div>
+
+      <Card className="mt-6 overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="font-bold">Category</TableHead>
+              <TableHead className="font-bold">Total Quantity</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {inventory?.map((item) => (
+              <>
+                <TableRow
+                  key={item.category_id}
+                  className="cursor-pointer hover:bg-gray-100"
+                  onClick={() => toggleCategory(item.category_id)}
+                >
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {expandedCategories.has(item.category_id)
+                        ? <ChevronDown size={16} />
+                        : <ChevronRight size={16} />}
+                      {item.category_name}
+                    </div>
+                  </TableCell>
+                  <TableCell>{item.total_quantity}</TableCell>
+                </TableRow>
+                {expandedCategories.has(item.category_id) &&
+                  item.sizes.map((size) => (
+                    <TableRow
+                      key={`${item.category_id}-${size.size_id || "no-size"}`}
+                    >
+                      <TableCell className="pl-8">{size.size_name}</TableCell>
+                      <TableCell>{size.quantity}</TableCell>
+                    </TableRow>
+                  ))}
+              </>
+            ))}
+          </TableBody>
+        </Table>
+      </Card>
+    </div>
+  );
 };
 
 export default Inventory;
-
