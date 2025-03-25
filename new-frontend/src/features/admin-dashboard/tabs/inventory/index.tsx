@@ -11,11 +11,26 @@ import { useState } from "react";
 import { useInventory } from "../../hooks/useInventory";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useBoxDetails } from "../../hooks/useBoxDetails";
+import BoxDetailsSlideOver from "./components/BoxDetailsSlideOver";
 
 const Inventory = () => {
   const { data: inventory, isLoading, error } = useInventory();
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set(),
+  );
+
+  const [selectedItem, setSelectedItem] = useState<
+    {
+      categoryId: string;
+      categoryName: string;
+      sizeId: string | null;
+      sizeName: string | null;
+    } | null
+  >(null);
+  const { data: boxDetails, isLoading: boxDetailsLoading } = useBoxDetails(
+    selectedItem?.categoryId || "",
+    selectedItem?.sizeId || null,
   );
 
   const toggleCategory = (categoryId: string) => {
@@ -28,6 +43,14 @@ const Inventory = () => {
       }
       return newSet;
     });
+  };
+  const handleSizeClick = (
+    categoryId: string,
+    categoryName: string,
+    sizeId: string | null,
+    sizeName: string | null,
+  ) => {
+    setSelectedItem({ categoryId, categoryName, sizeId, sizeName });
   };
 
   const exportToCsv = () => {
@@ -92,6 +115,14 @@ const Inventory = () => {
                   item.sizes.map((size) => (
                     <TableRow
                       key={`${item.category_id}-${size.size_id || "no-size"}`}
+                      className="cursor-pointer hover:bg-gray-100"
+                      onClick={() =>
+                        handleSizeClick(
+                          item.category_id,
+                          item.category_name,
+                          size.size_id,
+                          size.size_name,
+                        )}
                     >
                       <TableCell className="pl-8">{size.size_name}</TableCell>
                       <TableCell>{size.quantity}</TableCell>
@@ -102,6 +133,15 @@ const Inventory = () => {
           </TableBody>
         </Table>
       </Card>
+
+      <BoxDetailsSlideOver
+        isOpen={!!selectedItem}
+        onClose={() => setSelectedItem(null)}
+        categoryName={selectedItem?.categoryName || ""}
+        sizeName={selectedItem?.sizeName || null}
+        boxDetails={boxDetails}
+        isLoading={boxDetailsLoading}
+      />
     </div>
   );
 };
