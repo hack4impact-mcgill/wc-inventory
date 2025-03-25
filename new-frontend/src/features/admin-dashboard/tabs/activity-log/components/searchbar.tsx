@@ -7,12 +7,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 type ActionTypes = "allActions" | "Donated" | "Moved" | "Retired";
-
 
 interface SearchBarProps {
   searchTerm: string;
@@ -22,51 +21,99 @@ interface SearchBarProps {
   setAction: (value: ActionTypes) => void;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ searchTerm, onSearchChange, setStartDate, setEndDate, setAction }) => {
+const SearchBar: React.FC<SearchBarProps> = ({
+  searchTerm,
+  onSearchChange,
+  setStartDate,
+  setEndDate,
+  setAction,
+}) => {
   return (
-    <div className="flex items-center justify-between w-full mb-4">
+    <div className="pb-11 flex flex-row justify-between">
       {/* Search Input */}
-      <div className="relative z-50">
-        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search by box name..."
-          value={searchTerm}
-          onChange={(e) => {
-            onSearchChange(e.target.value);
-            console.log("Search term changed:", e.target.value);
-          }}
-          className="pl-8 w-[300px]"
-        />
-      </div>
+      <div className="flex flex-row gap-2">
+        <div className="relative">
+          <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by box name..."
+            value={searchTerm}
+            className="rounded-md pl-3 w-60 h-[40px] py-2 px-4 text-sm font-light texborder focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus:border-gray-300 shadow-none"
+            onChange={(e) => {
+              onSearchChange(e.target.value);
+            }}
+          />
+        </div>
 
-      {/* Action Dropdown */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline"className="h-9 w-[300px] rounded-md border border-neutral-200 bg-transparent text-sm"> 
-            All actions 
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem onClick={() => setAction("allActions")}>
-            All actions (default)
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setAction("Donated")}>
-            Donated
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setAction("Moved")}>
-            Moved
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setAction("Retired")}>
-            Retired
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              className="rounded-md pl-3 w-60 h-[40px] py-2 px-4 text-sm font-light border focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus:border-gray-300 bg-transparent shadow-none"
+            >
+              All actions
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => setAction("allActions")}>
+              All actions (default)
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setAction("Donated")}>
+              Donated
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setAction("Moved")}>
+              Moved
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setAction("Retired")}>
+              Retired
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
 
       {/* Date Range Filter */}
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <div className="flex flex-row space-x-2">
+        <div className="flex flex-row gap-3 pl-52">
           <DatePicker
-            label="Start Date"
+            label=""
+            slotProps={{
+              textField: {
+                placeholder: "Start Date",
+                InputProps: {
+                  sx: {
+                    height: "40px",
+                    pl: "5px",
+                    backgroundColor: "transparent",
+                  },
+                },
+                sx: {
+                  width: "15rem",
+                  height: "40px",
+                  borderRadius: "0.3rem",
+                  border: "1px solid #e0e0e0",
+                  backgroundColor: "white",
+
+                  // 💡 Style the input text when NOT focused and when focused
+                  "& .MuiInputBase-input": {
+                    color: "#000", // Make the input text black
+                    fontWeight: 300,
+                    fontSize: "0.875rem",
+                  },
+
+                  // 💡 Style the placeholder text
+                  "& .MuiInputBase-input::placeholder": {
+                    color: "#000", // Force black placeholder
+                    opacity: 1, // Required to make the color show
+                  },
+
+                  "& .MuiOutlinedInput-root": {
+                    height: "40px",
+                    "& fieldset": { border: "none" },
+                    "&:hover fieldset": { border: "none" },
+                    "&.Mui-focused fieldset": { border: "none" },
+                  },
+                },
+              },
+            }}
             onChange={(newDate) => {
               if (newDate) {
                 setStartDate(newDate.toDate());
@@ -74,10 +121,49 @@ const SearchBar: React.FC<SearchBarProps> = ({ searchTerm, onSearchChange, setSt
             }}
           />
           <DatePicker
-            label="End Date"
+            label=""
+            slotProps={{
+              textField: {
+                placeholder: "End Date",
+                InputProps: {
+                  sx: {
+                    height: "40px",
+                    pl: "5px",
+                    backgroundColor: "transparent",
+                  },
+                },
+                sx: {
+                  width: "15rem",
+                  height: "40px",
+                  borderRadius: "0.3rem",
+                  border: "1px solid #e0e0e0",
+                  backgroundColor: "white",
+
+                  // 💡 Style the input text when NOT focused and when focused
+                  "& .MuiInputBase-input": {
+                    color: "#000", // Make the input text black
+                    fontWeight: 300,
+                    fontSize: "0.875rem",
+                  },
+
+                  // 💡 Style the placeholder text
+                  "& .MuiInputBase-input::placeholder": {
+                    color: "#000", // Force black placeholder
+                    opacity: 1, // Required to make the color show
+                  },
+
+                  "& .MuiOutlinedInput-root": {
+                    height: "40px",
+                    "& fieldset": { border: "none" },
+                    "&:hover fieldset": { border: "none" },
+                    "&.Mui-focused fieldset": { border: "none" },
+                  },
+                },
+              },
+            }}
             onChange={(newDate) => {
               if (newDate) {
-                setEndDate(newDate.add(1, 'day').toDate());
+                setEndDate(newDate.toDate());
               }
             }}
           />

@@ -64,10 +64,10 @@ const ActivityLogTable = ({
 
   return (
     <div>
-      <Table className="border-collapse w-full">
+      <Table className="border-separate border-spacing-0 w-full">
         <TableHeader>
-          <TableRow>
-            <TableHead className="font-bold cursor-pointer">
+          <TableRow className="bg-gray-100">
+            <TableHead className="font-bold cursor-pointer border-[0.5px] border-gray-300 rounded-tl-md">
               User <ArrowUpDown 
               className="inline"
               onClick={() => {
@@ -80,19 +80,19 @@ const ActivityLogTable = ({
             </TableHead>
 
             <TableHead
-              className="font-bold cursor-pointer"
+              className="font-bold cursor-pointer border-[0.5px] border-gray-300"
             >
             Action 
             </TableHead>
 
             <TableHead
-              className="font-bold cursor-pointer"
+              className="font-bold cursor-pointer border-[0.5px] border-gray-300"
             >
             Note 
             </TableHead>
 
 
-            <TableHead className="font-bold cursor-pointer">
+            <TableHead className="font-bold cursor-pointer border-[0.5px] border-gray-300">
               Box 
               <ArrowUpDown 
                 className="inline" 
@@ -103,7 +103,7 @@ const ActivityLogTable = ({
                   console.log("sortOrder", sortOrder);              }}/>
             </TableHead>
 
-            <TableHead className="font-bold cursor-pointer">
+            <TableHead className="font-bold cursor-pointer border-[0.5px] border-gray-300 rounded-tr-md">
               Time 
               <ArrowUpDown className="inline" onClick={() => {
                   setSortKey("moved_at");
@@ -115,8 +115,10 @@ const ActivityLogTable = ({
         <TableBody> 
           {filteredData.length > 0 ? (
             filteredData.map((entry, index) => (
-              <TableRow key={index} className="border">
-                <TableCell className="text-blue-500">
+              <TableRow key={index} className="border-[0.5px]">
+                <TableCell className={`text-blue-500 border-[0.5px] border-gray-300 hover:underline cursor-pointer ${
+                      index === filteredData.length - 1 ? "rounded-bl-md" : ""
+                    }`}>
                   <span
                     onClick={() => {
                       navigate(`/admin/users/${entry.moved_by_user_id}`);
@@ -126,9 +128,9 @@ const ActivityLogTable = ({
                     {entry.moved_by_email}
                   </span>
                 </TableCell>
-                <TableCell>{entry.action}</TableCell>
-                <TableCell>{entry.note}</TableCell>
-                <TableCell className="text-blue-500 underline">
+                <TableCell className="border-[0.5px] border-gray-300">{entry.action}</TableCell>
+                <TableCell className="border-[0.5px] border-gray-300">{entry.note}</TableCell>
+                <TableCell className="text-blue-500 underline border-[0.5px] border-gray-300">
                 <span
                   onClick={() => {
                     // TODO: Navigate to box popup
@@ -138,7 +140,9 @@ const ActivityLogTable = ({
                   {entry.box_name}
                 </span>
                 </TableCell>
-                <TableCell>
+                <TableCell className={`text-blue-500 border-[0.5px] border-gray-300 hover:underline cursor-pointer ${
+                      index === filteredData.length - 1 ? "rounded-br-md" : ""
+                    }`}>
                   {entry.moved_at
                     ? format(new Date(entry.moved_at), "MMM dd, yyyy, hh:mm a")
                     : "N/A"}
@@ -147,7 +151,7 @@ const ActivityLogTable = ({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={4} className="text-center py-4">
+              <TableCell colSpan={4} className="text-center py-4 border-[0.5px] border-gray-300">
                 No results found.
               </TableCell>
             </TableRow>

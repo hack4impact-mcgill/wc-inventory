@@ -53,9 +53,11 @@ const ActivityLog = () => {
   console.log(filteredLogs as BoxMovementView[]);
   return (
     <>
-      <div className="p-6 gap-y-2">
-        <h1 className="text-xl font-bold mb-4">Activity Log</h1>
-        <div className="flex flex-row">
+      <div className="p-16 gap-y-2 bg-white px-20 ">
+        <h1 className="text-gray-900 font-poppins text-[28px] font-semibold leading-normal tracking-[-0.144px] pb-8">
+          Activity Log
+        </h1>
+        <div>
           <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} 
           setStartDate={setStartDate} setEndDate={setEndDate} setAction={setAction}/>
         </div>
