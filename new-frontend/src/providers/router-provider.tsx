@@ -13,7 +13,8 @@ import UnauthorizedPage from "@/features/auth/unauthorized";
 // import SearchForItem from "@/features/search-for-item";
 import ActivityLog from "@/features/admin-dashboard/tabs/activity-log";
 import UserInfo from "@/features/user-info";
-
+import AddBox from "@/features/add-box";
+import SizeManagementPage from "@/features/admin-dashboard/tabs/size-management";
 import SizeManagement from "@/features/admin-dashboard/tabs/size-management";
 import Inventory from "@/features/admin-dashboard/tabs/inventory";
 import CreateBoxes from "@/features/admin-dashboard/tabs/create-boxes";
@@ -97,6 +98,8 @@ const router = createBrowserRouter([
         path: "categories",
         element: <CategoryManagement />,
       },
+      {path: "size-management",
+      element: <SizeManagementPage />},
       {
         path: "activity-log",
         element: <ActivityLog />,
@@ -142,6 +145,15 @@ const router = createBrowserRouter([
   {
     path: "/unauthorized",
     element: <UnauthorizedPage />,
+  },
+  {
+    path: "/create", 
+    element: (
+      <VolunteerWrapper>
+        <AddBox/>
+      </VolunteerWrapper>
+    ),
+
   },
   {
     path: "*",
