@@ -13,24 +13,30 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useBoxDetails } from "../../hooks/useBoxDetails";
 import BoxDetailsSlideOver from "./components/BoxDetailsSlideOver";
+import { GenderEnum } from "@/types/enums";
 
 const Inventory = () => {
   const { data: inventory, isLoading, error } = useInventory();
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set(),
   );
-
+  const [expandedGenders, setExpandedGenders] = useState<Set<string>>(
+    new Set(),
+  );
   const [selectedItem, setSelectedItem] = useState<
     {
       categoryId: string;
       categoryName: string;
       sizeId: string | null;
       sizeName: string | null;
+      gender: GenderEnum | null;
     } | null
   >(null);
+
   const { data: boxDetails, isLoading: boxDetailsLoading } = useBoxDetails(
     selectedItem?.categoryId || "",
     selectedItem?.sizeId || null,
+    selectedItem?.gender || null,
   );
 
   const toggleCategory = (categoryId: string) => {
@@ -44,16 +50,30 @@ const Inventory = () => {
       return newSet;
     });
   };
+  const toggleGender = (categoryId: string, gender: string) => {
+    const key = `${categoryId}-${gender}`;
+    setExpandedGenders((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(key)) {
+        newSet.delete(key);
+      } else {
+        newSet.add(key);
+      }
+      return newSet;
+    });
+  };
   const handleSizeClick = (
     categoryId: string,
     categoryName: string,
     sizeId: string | null,
     sizeName: string | null,
+    gender: GenderEnum | null,
   ) => {
-    setSelectedItem({ categoryId, categoryName, sizeId, sizeName });
+    setSelectedItem({ categoryId, categoryName, sizeId, sizeName, gender });
   };
 
   const exportToCsv = () => {
+    //TODO: Discuss Formatting of CSV
     if (!inventory) return;
 
     const headers = "Category,Total Quantity\n";
@@ -77,10 +97,13 @@ const Inventory = () => {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">
-        Inventory as of {new Date().toLocaleDateString()}
-      </h1>
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Inventory Management</h1>
+        </div>
+      </div>
+
       <div className="flex gap-4 mb-6">
         <Button onClick={exportToCsv}>Export to CSV</Button>
       </div>
@@ -112,21 +135,56 @@ const Inventory = () => {
                   <TableCell>{item.total_quantity}</TableCell>
                 </TableRow>
                 {expandedCategories.has(item.category_id) &&
-                  item.sizes.map((size) => (
-                    <TableRow
-                      key={`${item.category_id}-${size.size_id || "no-size"}`}
-                      className="cursor-pointer hover:bg-gray-100"
-                      onClick={() =>
-                        handleSizeClick(
-                          item.category_id,
-                          item.category_name,
-                          size.size_id,
-                          size.size_name,
-                        )}
-                    >
-                      <TableCell className="pl-8">{size.size_name}</TableCell>
-                      <TableCell>{size.quantity}</TableCell>
-                    </TableRow>
+                  item.genders.map((genderItem) => (
+                    <>
+                      <TableRow
+                        key={`${item.category_id}-${genderItem.gender}`}
+                        className="cursor-pointer hover:bg-gray-100"
+                        onClick={() =>
+                          toggleGender(item.category_id, genderItem.gender)}
+                      >
+                        <TableCell className="pl-8">
+                          <div className="flex items-center gap-2">
+                            {expandedGenders.has(
+                                `${item.category_id}-${genderItem.gender}`,
+                              )
+                              ? <ChevronDown size={16} />
+                              : <ChevronRight size={16} />}
+                            {genderItem.gender}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {genderItem.sizes.reduce(
+                            (sum, size) => sum + size.quantity,
+                            0,
+                          )}
+                        </TableCell>
+                      </TableRow>
+                      {expandedGenders.has(
+                        `${item.category_id}-${genderItem.gender}`,
+                      ) &&
+                        genderItem.sizes.map((size) => (
+                          <TableRow
+                            key={`${item.category_id}-${genderItem.gender}-${
+                              size.size_id || "no-size"
+                            }`}
+                            className="cursor-pointer hover:bg-gray-100"
+                            onClick={() =>
+                              handleSizeClick(
+                                item.category_id,
+                                item.category_name,
+                                size.size_id,
+                                size.size_name,
+                                size.gender,
+                              )}
+                          >
+                            <TableCell className="pl-12">
+                              {size.size_name}
+                            </TableCell>
+                            <TableCell>{size.quantity}</TableCell>
+                          </TableRow>
+                        ))}
+                    </>
                   ))}
               </>
             ))}

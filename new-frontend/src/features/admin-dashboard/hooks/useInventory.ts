@@ -1,15 +1,53 @@
 import { supabase } from "@/lib/supabaseClient";
+import { GenderEnum } from "@/types/enums";
 import { useQuery } from "@tanstack/react-query";
 
-interface InventoryItem {
+interface RawBoxContent {
+  category_id: string;
+  quantity: number;
+  gender: string;
+  size_id: string | null;
+  categories: { name: string };
+  sizes: { name: string } | null;
+}
+
+interface SizeItem {
+  size_id: string | null;
+  size_name: string | null;
+  quantity: number;
+  gender: GenderEnum | null;
+}
+
+interface GenderItem {
+  gender: string;
+  sizes: SizeItem[];
+}
+
+export interface InventoryItem {
   category_id: string;
   category_name: string;
   total_quantity: number;
-  sizes: {
-    size_id: string | null;
-    size_name: string | null;
-    quantity: number;
-  }[];
+  genders: GenderItem[];
+}
+
+// Define intermediate aggregation types
+interface SizeAggregation {
+  size_id: string | null;
+  size_name: string | null;
+  quantity: number;
+  gender: GenderEnum | null;
+}
+
+interface GenderAggregation {
+  gender: string;
+  sizes: Record<string, SizeAggregation>;
+}
+
+interface CategoryAggregation {
+  category_id: string;
+  category_name: string;
+  total_quantity: number;
+  genders: Record<string, GenderAggregation>;
 }
 
 const fetchInventory = async (): Promise<InventoryItem[]> => {
@@ -18,71 +56,78 @@ const fetchInventory = async (): Promise<InventoryItem[]> => {
     .select(`
       category_id,
       quantity,
+      gender,
       size_id,
       categories (name),
       sizes (name)
     `)
-    .returns<
-      {
-        category_id: string;
-        quantity: number;
-        size_id: string | null;
-        categories: { name: string };
-        sizes: { name: string } | null;
-      }[]
-    >();
+    .returns<RawBoxContent[]>();
 
   if (error) throw new Error(error.message);
+  if (!data) return [];
 
-  // Aggregate data by category
-  const aggregatedData = data.reduce((acc, item) => {
-    const categoryId = item.category_id;
-    const categoryName = item.categories.name;
-    const sizeId = item.size_id;
-    const sizeName = item.sizes?.name || "No Size";
-    const quantity = item.quantity;
+  const aggregatedData = data.reduce(
+    (acc: Record<string, CategoryAggregation>, item: RawBoxContent) => {
+      const categoryId = item.category_id;
+      const categoryName = item.categories.name;
+      const gender = item.gender;
+      const sizeId = item.size_id || "no-size"; // Handle null size_id
+      const sizeName = item.sizes?.name || "No Size";
+      const quantity = item.quantity;
 
-    if (!acc[categoryId]) {
-      acc[categoryId] = {
-        category_id: categoryId,
-        category_name: categoryName,
-        total_quantity: 0,
-        sizes: {},
-      };
-    }
+      // Initialize category if it doesn't exist
+      if (!acc[categoryId]) {
+        acc[categoryId] = {
+          category_id: categoryId,
+          category_name: categoryName,
+          total_quantity: 0,
+          genders: {},
+        };
+      }
 
-    acc[categoryId].total_quantity += quantity;
+      // Update total quantity
+      acc[categoryId].total_quantity += quantity;
 
-    if (!acc[categoryId].sizes[sizeId || "no-size"]) {
-      acc[categoryId].sizes[sizeId || "no-size"] = {
-        size_id: sizeId,
-        size_name: sizeName,
-        quantity: 0,
-      };
-    }
+      // Initialize gender if it doesn't exist
+      if (!acc[categoryId].genders[gender]) {
+        acc[categoryId].genders[gender] = {
+          gender,
+          sizes: {},
+        };
+      }
 
-    acc[categoryId].sizes[sizeId || "no-size"].quantity += quantity;
+      // Initialize size if it doesn't exist
+      if (!acc[categoryId].genders[gender].sizes[sizeId]) {
+        acc[categoryId].genders[gender].sizes[sizeId] = {
+          size_id: item.size_id, // Keep original null value
+          size_name: sizeName,
+          quantity: 0,
+          gender: gender as GenderEnum,
+        };
+      }
 
-    return acc;
-  }, {} as Record<string, {
-    category_id: string;
-    category_name: string;
-    total_quantity: number;
-    sizes: Record<
-      string,
-      { size_id: string | null; size_name: string | null; quantity: number }
-    >;
-  }>);
+      // Update quantity
+      acc[categoryId].genders[gender].sizes[sizeId].quantity += quantity;
 
-  // Convert to array format
-  return Object.values(aggregatedData).map((item) => ({
-    ...item,
-    sizes: Object.values(item.sizes),
+      return acc;
+    },
+    {},
+  );
+
+  // Transform aggregated data into final format
+  return Object.values(aggregatedData).map((item: CategoryAggregation) => ({
+    category_id: item.category_id,
+    category_name: item.category_name,
+    total_quantity: item.total_quantity,
+    genders: Object.values(item.genders).map((gender: GenderAggregation) => ({
+      gender: gender.gender,
+      sizes: Object.values(gender.sizes),
+    })),
   }));
 };
 
 export const useInventory = () => {
-  return useQuery({
+  return useQuery<InventoryItem[], Error>({
     queryKey: ["inventory"],
     queryFn: fetchInventory,
   });
