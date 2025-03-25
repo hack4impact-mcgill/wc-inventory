@@ -17,6 +17,7 @@ import { GenderEnum } from "@/types/enums";
 
 const Inventory = () => {
   const { data: inventory, isLoading, error } = useInventory();
+  console.log(inventory);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set(),
   );
@@ -146,8 +147,8 @@ const Inventory = () => {
                         <TableCell className="pl-8">
                           <div className="flex items-center gap-2">
                             {expandedGenders.has(
-                                `${item.category_id}-${genderItem.gender}`,
-                              )
+                              `${item.category_id}-${genderItem.gender}`,
+                            )
                               ? <ChevronDown size={16} />
                               : <ChevronRight size={16} />}
                             {genderItem.gender}
@@ -165,9 +166,8 @@ const Inventory = () => {
                       ) &&
                         genderItem.sizes.map((size) => (
                           <TableRow
-                            key={`${item.category_id}-${genderItem.gender}-${
-                              size.size_id || "no-size"
-                            }`}
+                            key={`${item.category_id}-${genderItem.gender}-${size.size_id || "no-size"
+                              }`}
                             className="cursor-pointer hover:bg-gray-100"
                             onClick={() =>
                               handleSizeClick(

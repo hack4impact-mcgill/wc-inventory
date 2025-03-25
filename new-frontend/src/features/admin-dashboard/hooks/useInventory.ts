@@ -63,6 +63,7 @@ const fetchInventory = async (): Promise<InventoryItem[]> => {
     `)
     .returns<RawBoxContent[]>();
 
+  console.log(data);
   if (error) throw new Error(error.message);
   if (!data) return [];
 
