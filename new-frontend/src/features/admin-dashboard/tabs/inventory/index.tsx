@@ -30,21 +30,20 @@ const Inventory = () => {
 
     }
 
+    const handleDonate = async (boxId, userId) => { 
+        // Assuming you'll add the correct API calls here.
+        console.log("Donate functionality to be implemented.");
+    }
+
     
     
     return (
-        <div>
-             <h1> Inventory as of ___ /___ /___ </h1> 
-             <button onClick={exportToCsv} 
-             style={{
-                float: "right",
-                margin: "10px",
-                border: "2px solid black", // Adding a solid black border
-                padding: "8px 10px", // Optional: Adding some padding to make the button larger
-                cursor: "pointer" // Optional: Changes the cursor to a pointer on hover
-              }}
-              > Export 
-              </button>
+        <div className="container">
+             <h1 className="header">Inventory as of ___ /___ /___</h1>
+            <div className="actions">
+                <button className="button" onClick={exportToCsv}>Export to CSV</button>
+                <button className="button donate" onClick={() => handleDonate(someBoxId, someUserId)}>Donate</button>
+            </div>
             <table className="inventory-table"> 
                 <thead> 
                      <tr> 
