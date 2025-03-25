@@ -67,9 +67,9 @@ const ActivityLogTable = ({
       <Table className="border-separate border-spacing-0 w-full">
         <TableHeader>
           <TableRow className="bg-gray-100">
-            <TableHead className="font-bold cursor-pointer border-[0.5px] border-gray-300 rounded-tl-md">
+            <TableHead className="font-poppins font-normal text-black p-4 cursor-pointer border-[0.5px] border-gray-300 rounded-tl">
               User <ArrowUpDown 
-              className="inline"
+              className="inline pl-1"
               onClick={() => {
                 setSortKey("moved_by_email");
                 console.log("sortKey", sortKey);
@@ -80,22 +80,22 @@ const ActivityLogTable = ({
             </TableHead>
 
             <TableHead
-              className="font-bold cursor-pointer border-[0.5px] border-gray-300"
+              className="font-poppins font-normal text-black p-4 cursor-pointer border-[0.5px] border-gray-300"
             >
             Action 
             </TableHead>
 
             <TableHead
-              className="font-bold cursor-pointer border-[0.5px] border-gray-300"
+              className="font-poppins font-normal text-black p-4 cursor-pointer border-[0.5px] border-gray-300"
             >
             Note 
             </TableHead>
 
 
-            <TableHead className="font-bold cursor-pointer border-[0.5px] border-gray-300">
+            <TableHead className="font-poppins font-normal text-black p-4 cursor-pointer border-[0.5px] border-gray-300">
               Box 
               <ArrowUpDown 
-                className="inline" 
+                className="inline pl-1" 
                 onClick={() => {
                   setSortKey("box_name");
                   console.log("sortKey", sortKey);
@@ -103,9 +103,9 @@ const ActivityLogTable = ({
                   console.log("sortOrder", sortOrder);              }}/>
             </TableHead>
 
-            <TableHead className="font-bold cursor-pointer border-[0.5px] border-gray-300 rounded-tr-md">
+            <TableHead className="font-poppins font-normal text-black p-4 cursor-pointer border-[0.5px] border-gray-300 rounded-tr-md">
               Time 
-              <ArrowUpDown className="inline" onClick={() => {
+              <ArrowUpDown className="inline pl-1" onClick={() => {
                   setSortKey("moved_at");
                   (sortOrder === "asc" ? setSortOrder("desc") : setSortOrder("asc"));
               }}/>
@@ -116,31 +116,31 @@ const ActivityLogTable = ({
           {filteredData.length > 0 ? (
             filteredData.map((entry, index) => (
               <TableRow key={index} className="border-[0.5px]">
-                <TableCell className={`text-blue-500 border-[0.5px] border-gray-300 hover:underline cursor-pointer ${
+                <TableCell className={`text-[#00559B] border-[0.5px] border-gray-300 p-4 hover:underline cursor-pointer ${
                       index === filteredData.length - 1 ? "rounded-bl-md" : ""
                     }`}>
                   <span
                     onClick={() => {
                       navigate(`/admin/users/${entry.moved_by_user_id}`);
                     }}
-                    className="hover:underline cursor-pointer"
+                    className="hover:underline cursor-pointer underline"
                   >
                     {entry.moved_by_email}
                   </span>
                 </TableCell>
-                <TableCell className="border-[0.5px] border-gray-300">{entry.action}</TableCell>
-                <TableCell className="border-[0.5px] border-gray-300">{entry.note}</TableCell>
-                <TableCell className="text-blue-500 underline border-[0.5px] border-gray-300">
+                <TableCell className="text-gray-500 border-[0.5px] border-gray-300 p-4">{entry.action}</TableCell>
+                <TableCell className="text-gray-500 border-[0.5px] border-gray-300 p-4">{entry.note}</TableCell>
+                <TableCell className="text-[#00559B] underline border-[0.5px] border-gray-300 p-4">
                 <span
                   onClick={() => {
                     // TODO: Navigate to box popup
-                    navigate(`/admin/inventory`);
+                    navigate(`/admin/box-lookup/`);
                   }}
                   className="hover:underline cursor-pointer">
                   {entry.box_name}
                 </span>
                 </TableCell>
-                <TableCell className={`text-blue-500 border-[0.5px] border-gray-300 hover:underline cursor-pointer ${
+                <TableCell className={`text-gray-500 border-[0.5px] border-gray-300 p-4${
                       index === filteredData.length - 1 ? "rounded-br-md" : ""
                     }`}>
                   {entry.moved_at
@@ -151,7 +151,7 @@ const ActivityLogTable = ({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={4} className="text-center py-4 border-[0.5px] border-gray-300">
+              <TableCell colSpan={4} className="text-center py-4 border-[0.5px] border-gray-300 p-4 font-poppins font-normal ">
                 No results found.
               </TableCell>
             </TableRow>

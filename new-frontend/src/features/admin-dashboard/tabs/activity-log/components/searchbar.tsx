@@ -33,11 +33,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
       {/* Search Input */}
       <div className="flex flex-row gap-2">
         <div className="relative">
-          <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 text-muted-foreground" />
+          <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 text-muted-foreground " />
           <Input
             placeholder="Search by box name..."
             value={searchTerm}
-            className="rounded-md pl-3 w-60 h-[40px] py-2 px-4 text-sm font-light texborder focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus:border-gray-300 shadow-none"
+            className="rounded-md pl-3 w-60 h-[40px] p-4 font-poppins font-normal texborder focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus:border-gray-300 shadow-none"
             onChange={(e) => {
               onSearchChange(e.target.value);
             }}
@@ -48,7 +48,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="rounded-md pl-3 w-60 h-[40px] py-2 px-4 text-sm font-light border focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus:border-gray-300 bg-transparent shadow-none"
+              className="rounded-md pl-3 w-60 h-[40px] p-4 font-poppins font-normal border focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus:border-gray-300 bg-transparent shadow-none"
             >
               All actions
             </Button>
@@ -95,8 +95,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
                   // 💡 Style the input text when NOT focused and when focused
                   "& .MuiInputBase-input": {
                     color: "#000", // Make the input text black
-                    fontWeight: 300,
+                    fontWeight: 400,
                     fontSize: "0.875rem",
+                    fontFamily: "Poppins",
                   },
 
                   // 💡 Style the placeholder text
@@ -142,8 +143,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
                   // 💡 Style the input text when NOT focused and when focused
                   "& .MuiInputBase-input": {
                     color: "#000", // Make the input text black
-                    fontWeight: 300,
+                    fontWeight: 400,
                     fontSize: "0.875rem",
+                    fontFamily: "Poppins",
                   },
 
                   // 💡 Style the placeholder text

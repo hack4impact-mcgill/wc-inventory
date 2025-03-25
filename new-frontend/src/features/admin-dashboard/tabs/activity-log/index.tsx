@@ -53,8 +53,10 @@ const ActivityLog = () => {
   console.log(filteredLogs as BoxMovementView[]);
   return (
     <>
-      <div className="p-16 gap-y-2 bg-white px-20 ">
-        <h1 className="text-gray-900 font-poppins text-[28px] font-semibold leading-normal tracking-[-0.144px] pb-8">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    </link>
+      <div className="p-16 gap-y-2 bg-white px-20 font-poppins">
+        <h1 className="text-gray-900 text-[28px] font-semibold leading-normal tracking-[-0.144px] pb-8">
           Activity Log
         </h1>
         <div>
