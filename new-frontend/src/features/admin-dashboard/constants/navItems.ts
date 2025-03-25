@@ -1,4 +1,4 @@
-import { Tags, LayoutDashboard, Users, PackagePlus, PackageSearch, Shirt, Ruler, FileClock, MapPin } from "lucide-react";
+import { Tags, LayoutDashboard, Users, PackagePlus, PackageSearch, Shirt, Ruler, FileClock, MapPin, HandHeart } from "lucide-react";
 import { NavItem } from "../types";
 
 export const navItems: NavItem[] = [
@@ -32,12 +32,12 @@ export const navItems: NavItem[] = [
     icon: FileClock,
     description: "View activity log",
   },
-  // {
-  //   title: "Donations",
-  //   href: "/admin/donations",
-  //   icon: HandHeart,
-  //   description: "View past donations",
-  // },
+  {
+    title: "Donations",
+    href: "/admin/donations",
+    icon: HandHeart,
+    description: "View past donations",
+  },
   {
     title: "Location Management",
     href: "/admin/locations",

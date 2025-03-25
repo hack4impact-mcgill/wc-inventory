@@ -230,7 +230,7 @@ const BoxLookup: React.FC = () => {
                         />
                       </TableCell>
                       <TableCell className="font-medium">
-                        {box.name}
+                        Box {box.name}
                       </TableCell>
                       <TableCell>{box.location || "—"}</TableCell>
                       <TableCell>
