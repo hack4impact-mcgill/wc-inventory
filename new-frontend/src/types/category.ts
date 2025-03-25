@@ -8,4 +8,5 @@ export type CategoryInsert = CategoryTable["Insert"];
 
 export type CategoryUpdate = CategoryTable["Update"];
 
-export type CategoryFormData = Omit<Category, "category_id">; // type used for form submission
+export type CategoryFormData = Omit<Category, "category_id">;
+
