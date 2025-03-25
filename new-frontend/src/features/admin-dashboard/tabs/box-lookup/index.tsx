@@ -409,16 +409,38 @@ const BoxLookup: React.FC = () => {
     
     // Add JS to generate barcodes for each box
     selectedBoxes.forEach((box, index) => {
+      // Convert created date to Unix timestamp with milliseconds
+      const createdTimestamp = box.createdAt ? 
+        new Date(box.createdAt).getTime() : 
+        Date.now();
+      
+      // Use the timestamp as the barcode value
       printWindow.document.write(`
         try {
-          JsBarcode("#barcode-${index}", "${box.id}", {
-            format: "CODE128",
+          JsBarcode("#barcode-${index}", "${createdTimestamp}", {
+            format: "ITF", // Use ITF format for integer-only barcodes
             width: 2,
             height: 50,
-            displayValue: false
+            displayValue: true,
+            fontSize: 12,
+            margin: 10,
+            textMargin: 5
           });
         } catch (e) {
-          console.error("Error generating barcode for box ${box.id}:", e);
+          // If ITF fails, fall back to CODE128
+          try {
+            console.warn("Could not use ITF format for timestamp ${createdTimestamp}, falling back to CODE128");
+            JsBarcode("#barcode-${index}", "${createdTimestamp}", {
+              format: "CODE128",
+              width: 2,
+              height: 50,
+              displayValue: true,
+              fontSize: 12,
+              margin: 10
+            });
+          } catch (e2) {
+            console.error("Error generating barcode for timestamp ${createdTimestamp}:", e2);
+          }
         }
       `);
     });
@@ -428,7 +450,7 @@ const BoxLookup: React.FC = () => {
             // Use a longer timeout to make sure all barcodes render correctly
             setTimeout(function() {
               window.print();
-            }, 1000);
+            }, 1200);
           };
         </script>
       </body>
