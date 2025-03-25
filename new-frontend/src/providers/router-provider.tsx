@@ -19,7 +19,6 @@ import SizeManagement from "@/features/admin-dashboard/tabs/size-management";
 import Inventory from "@/features/admin-dashboard/tabs/inventory";
 import CreateBoxes from "@/features/admin-dashboard/tabs/create-boxes";
 import BoxLookup from "@/features/admin-dashboard/tabs/box-lookup";
-import Donations from "@/features/admin-dashboard/tabs/donations";
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
@@ -83,11 +82,11 @@ const router = createBrowserRouter([
       },
       {
         path: "users",
-        element: <UserManagement />
+        element: <UserManagement />,
       },
       {
-        path: "users/:id",
-        element: <UserInfo />
+        path: "users/:email",
+        element: <UserInfo />,
       },
 
       {
@@ -98,8 +97,10 @@ const router = createBrowserRouter([
         path: "categories",
         element: <CategoryManagement />,
       },
-      {path: "size-management",
-      element: <SizeManagementPage />},
+      {
+        path: "size-management",
+        element: <SizeManagementPage />
+      },
       {
         path: "activity-log",
         element: <ActivityLog />,
@@ -116,10 +117,10 @@ const router = createBrowserRouter([
         path: "create-boxes",
         element: <CreateBoxes />,
       },
-      {
-        path: "donations",
-        element: <Donations />,
-      }
+      // {
+      //   path: "donations",
+      //   element: <Donations />,
+      // },
     ],
   },
   // {
@@ -147,10 +148,10 @@ const router = createBrowserRouter([
     element: <UnauthorizedPage />,
   },
   {
-    path: "/create", 
+    path: "/create",
     element: (
       <VolunteerWrapper>
-        <AddBox/>
+        <AddBox />
       </VolunteerWrapper>
     ),
 
@@ -163,7 +164,9 @@ const router = createBrowserRouter([
     //so both admin and volunteer can access box-lookup page
     path: "/box-lookup",
     element: (
-      <AuthWrapper> {/* Protect the route so only logged-in users can access */}
+      <AuthWrapper>
+        {" "}
+        {/* Protect the route so only logged-in users can access */}
         <BoxLookup />
       </AuthWrapper>
     ),
