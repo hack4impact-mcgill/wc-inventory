@@ -32,28 +32,30 @@ const BoxLookup: React.FC = () => {
     searchTerm: "",
     category: "all",
     size: "all",
-    gender: "all"
+    gender: "all",
   });
 
-  // Use React Query to fetch data
   const { data: boxes = [], isLoading, isError, error } = useQuery<BoxView[]>({
-    queryKey: ['boxes'],
+    queryKey: ["boxes"],
     queryFn: async () => {
-      const { data, error } = await supabase.from('box_view').select('*');
+      const { data, error } = await supabase.from("box_view").select("*");
 
       if (error) {
         throw new Error(error.message);
       }
 
       return data as BoxView[];
-    }
+    },
   });
 
   // Filter boxes based on search term and filters - memoized for performance
   const filteredBoxes = React.useMemo(() => {
-    return boxes.filter(box => {
+    return boxes.filter((box) => {
       // Filter by search term (box name)
-      if (filters.searchTerm && !box.name.toLowerCase().includes(filters.searchTerm.toLowerCase())) {
+      if (
+        filters.searchTerm &&
+        !box.name.toLowerCase().includes(filters.searchTerm.toLowerCase())
+      ) {
         return false;
       }
 
@@ -63,13 +65,16 @@ const BoxLookup: React.FC = () => {
       }
 
       // Filter by contents
-      if (filters.category !== 'all' || filters.size !== 'all' || filters.gender !== 'all') {
-        return box.contents.some(item => {
+      if (
+        filters.category !== "all" || filters.size !== "all" ||
+        filters.gender !== "all"
+      ) {
+        return box.contents.some((item) => {
           // Filter by category (item type)
-          if (filters.category !== 'all') {
+          if (filters.category !== "all") {
             const categoryMapping: Record<string, string> = {
-              'tshirts': 'T-shirt',
-              'pants': 'Pants'
+              "tshirts": "T-shirt",
+              "pants": "Pants",
             };
             if (item.type !== categoryMapping[filters.category]) {
               return false;
@@ -77,17 +82,19 @@ const BoxLookup: React.FC = () => {
           }
 
           // Filter by size
-          if (filters.size !== 'all' && item.size !== filters.size.toUpperCase()) {
+          if (
+            filters.size !== "all" && item.size !== filters.size.toUpperCase()
+          ) {
             return false;
           }
 
           // Filter by gender
-          if (filters.gender !== 'all') {
+          if (filters.gender !== "all") {
             const genderMapping: Record<string, string> = {
-              'male': 'Men',
-              'female': 'Women',
-              'kids': 'Kids',
-              'unisex': 'Unisex'
+              "male": "Men",
+              "female": "Women",
+              "kids": "Kids",
+              "unisex": "Unisex",
             };
             if (item.gender !== genderMapping[filters.gender]) {
               return false;
@@ -104,19 +111,17 @@ const BoxLookup: React.FC = () => {
 
   // Handle filter changes
   const handleFilterChange = (filterType: keyof FilterState, value: string) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [filterType]: value
+      [filterType]: value,
     }));
   };
 
   // Handle box selection logic
   const handleBoxSelect = (boxId: string) => {
-    setSelectedBoxIds(prev => {
+    setSelectedBoxIds((prev) => {
       const isSelected = prev.includes(boxId);
-      return isSelected
-        ? prev.filter(id => id !== boxId)
-        : [...prev, boxId];
+      return isSelected ? prev.filter((id) => id !== boxId) : [...prev, boxId];
     });
   };
 
@@ -124,7 +129,7 @@ const BoxLookup: React.FC = () => {
     setSelectedBoxIds(
       selectedBoxIds.length === filteredBoxes.length
         ? []
-        : filteredBoxes.map(box => box.id)
+        : filteredBoxes.map((box) => box.id),
     );
   };
 
@@ -132,7 +137,9 @@ const BoxLookup: React.FC = () => {
   const getSelectedBoxesContent = () => {
     if (selectedBoxIds.length === 0) return null;
 
-    const selectedBoxes = boxes.filter(box => selectedBoxIds.includes(box.id));
+    const selectedBoxes = boxes.filter((box) =>
+      selectedBoxIds.includes(box.id)
+    );
 
     if (selectedBoxIds.length === 1) {
       // Single box view
@@ -150,8 +157,8 @@ const BoxLookup: React.FC = () => {
       // Multiple boxes view - sum up contents
       const combinedContents: Record<string, BoxItem> = {};
 
-      selectedBoxes.forEach(box => {
-        box.contents?.forEach(item => {
+      selectedBoxes.forEach((box) => {
+        box.contents?.forEach((item) => {
           const key = `${item.type}-${item.gender}-${item.size}`;
           if (!combinedContents[key]) {
             combinedContents[key] = { ...item, quantity: 0 };
@@ -471,7 +478,13 @@ const BoxLookup: React.FC = () => {
 
   // Handle loading and error states
   if (isLoading) return <div className="p-6">Loading inventory data...</div>;
-  if (isError) return <div className="p-6 text-red-500">Error loading inventory: {error?.message}</div>;
+  if (isError) {
+    return (
+      <div className="p-6 text-red-500">
+        Error loading inventory: {error?.message}
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
@@ -484,10 +497,10 @@ const BoxLookup: React.FC = () => {
       <div className="flex flex-col gap-6 md:flex-row">
         <div className="flex-1">
           <SearchFilters
-            onSearch={(value) => handleFilterChange('searchTerm', value)}
-            onCategoryChange={(value) => handleFilterChange('category', value)}
-            onSizeChange={(value) => handleFilterChange('size', value)}
-            onGenderChange={(value) => handleFilterChange('gender', value)}
+            onSearch={(value) => handleFilterChange("searchTerm", value)}
+            onCategoryChange={(value) => handleFilterChange("category", value)}
+            onSizeChange={(value) => handleFilterChange("size", value)}
+            onGenderChange={(value) => handleFilterChange("gender", value)}
             actionButtons={actionButtons}
           />
 
@@ -497,7 +510,8 @@ const BoxLookup: React.FC = () => {
                 <TableRow>
                   <TableHead className="w-12">
                     <Checkbox
-                      checked={selectedBoxIds.length === filteredBoxes.length && filteredBoxes.length > 0}
+                      checked={selectedBoxIds.length === filteredBoxes.length &&
+                        filteredBoxes.length > 0}
                       onCheckedChange={handleSelectAll}
                       aria-label="Select all boxes"
                     />
@@ -508,32 +522,42 @@ const BoxLookup: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredBoxes.length > 0 ? (
-                  filteredBoxes.map((box) => (
-                    <TableRow key={box.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleBoxSelect(box.id)}>
-                      <TableCell onClick={(e) => e.stopPropagation()}>
-                        <Checkbox
-                          checked={selectedBoxIds.includes(box.id)}
-                          onCheckedChange={() => handleBoxSelect(box.id)}
-                          aria-label={`Select box ${box.name}`}
-                        />
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {box.name}
-                      </TableCell>
-                      <TableCell>{box.location || "—"}</TableCell>
-                      <TableCell>
-                        Qty: {box.contents?.reduce((sum, item) => sum + item.quantity, 0) || 0}
+                {filteredBoxes.length > 0
+                  ? (
+                    filteredBoxes.map((box) => (
+                      <TableRow
+                        key={box.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => handleBoxSelect(box.id)}
+                      >
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={selectedBoxIds.includes(box.id)}
+                            onCheckedChange={() => handleBoxSelect(box.id)}
+                            aria-label={`Select box ${box.name}`}
+                          />
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          Box {box.name}
+                        </TableCell>
+                        <TableCell>{box.location || "—"}</TableCell>
+                        <TableCell>
+                          Qty: {box.contents?.reduce((sum, item) =>
+                            sum + item.quantity, 0) || 0}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )
+                  : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={4}
+                        className="text-center py-6 text-muted-foreground"
+                      >
+                        No boxes found matching your filters
                       </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
-                      No boxes found matching your filters
-                    </TableCell>
-                  </TableRow>
-                )}
+                  )}
               </TableBody>
             </Table>
           </Card>
