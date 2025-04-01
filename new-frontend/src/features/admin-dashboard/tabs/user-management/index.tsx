@@ -1,19 +1,19 @@
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { UserForm } from "./components/user-form";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { useNavigate } from "react-router-dom";
-import { SearchBar } from "./components/search-bar";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { SearchBar } from "./components/search-bar";
+import { UserForm } from "./components/user-form";
 import { UserTable } from "./components/user-table";
-import { UserFormData } from "./types";
 import { useUsers } from "./hooks/use-users";
+import { UserFormData } from "./types";
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('');
