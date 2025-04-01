@@ -32,7 +32,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     <div className="pb-11 flex flex-row justify-between">
       {/* Search Input */}
       <div className="flex flex-row gap-2">
-        <div className="relative">
+        <div className="relative bg-white">
           <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 text-muted-foreground " />
           <Input
             placeholder="Search by box name..."
@@ -48,7 +48,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="rounded-md pl-3 w-60 h-[40px] p-4 font-poppins font-normal border focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus:border-gray-300 bg-transparent shadow-none"
+              className="bg-white rounded-md pl-3 w-60 h-[40px] p-4 font-poppins font-normal border focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus:border-gray-300  shadow-none"
             >
               All actions
             </Button>
