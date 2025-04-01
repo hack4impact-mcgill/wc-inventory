@@ -13,8 +13,8 @@ import UnauthorizedPage from "@/features/auth/unauthorized";
 // import SearchForItem from "@/features/search-for-item";
 import ActivityLog from "@/features/admin-dashboard/tabs/activity-log";
 import UserInfo from "@/features/user-info";
+import AddBox from "@/features/add-box";
 import SizeManagementPage from "@/features/admin-dashboard/tabs/size-management";
-
 import SizeManagement from "@/features/admin-dashboard/tabs/size-management";
 import Inventory from "@/features/admin-dashboard/tabs/inventory";
 import CreateBoxes from "@/features/admin-dashboard/tabs/create-boxes";
@@ -66,6 +66,10 @@ const router = createBrowserRouter([
     ),
   },
   {
+    path: "create-boxes",
+    element: <CreateBoxes />,
+  },
+  {
     path: "/admin",
     element: (
       <AdminWrapper>
@@ -83,11 +87,11 @@ const router = createBrowserRouter([
       },
       {
         path: "users",
-        element: <UserManagement />
+        element: <UserManagement />,
       },
       {
         path: "users/:id",
-        element: <UserInfo />
+        element: <UserInfo />,
       },
 
       {
@@ -98,8 +102,7 @@ const router = createBrowserRouter([
         path: "categories",
         element: <CategoryManagement />,
       },
-      {path: "size-management",
-      element: <SizeManagementPage />},
+      { path: "size-management", element: <SizeManagementPage /> },
       {
         path: "activity-log",
         element: <ActivityLog />,
@@ -113,14 +116,18 @@ const router = createBrowserRouter([
         element: <BoxLookup />,
       },
       {
-        path: "create-boxes",
-        element: <CreateBoxes />,
-      },
-      {
         path: "donations",
         element: <Donations />,
-      }
+      },
     ],
+  },
+  {
+    path: "/create",
+    element: (
+      <VolunteerWrapper>
+        <AddBox />
+      </VolunteerWrapper>
+    ),
   },
   // {
   //   path: "searchforbox",
@@ -154,7 +161,8 @@ const router = createBrowserRouter([
     //so both admin and volunteer can access box-lookup page
     path: "/box-lookup",
     element: (
-      <AuthWrapper> {/* Protect the route so only logged-in users can access */}
+      <AuthWrapper>
+        {/* Protect the route so only logged-in users can access */}
         <BoxLookup />
       </AuthWrapper>
     ),

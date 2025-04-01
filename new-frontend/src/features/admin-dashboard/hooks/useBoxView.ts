@@ -3,19 +3,19 @@ import { BoxView } from "@/types/box";
 import { useQuery } from "@tanstack/react-query";
 
 export function useBoxView() {
-
-  const { data: boxes, isLoading } = useQuery({
+  const { data: boxes, isLoading, error, isError } = useQuery({
     queryFn: async () => {
-      const { data } = await supabase.from("box_view").select()
+      const { data } = await supabase.from("box_view").select();
 
       return data as BoxView[];
     },
-    queryKey: ["box_contents_view"]
-  })
-
+    queryKey: ["box_contents_view"],
+  });
 
   return {
     boxes,
-    isLoading
-  }
+    error,
+    isError,
+    isLoading,
+  };
 }
