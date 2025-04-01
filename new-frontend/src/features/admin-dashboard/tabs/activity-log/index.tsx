@@ -6,11 +6,9 @@ import { activityLogApi } from "@/lib/api/activity-log.ts";
 import { queryKeys } from "@/lib/api/queryKeys.ts";
 import { BoxMovementView } from "@/types/activity-log.ts";
 
-
 const defaultStartDate = new Date("2000-01-01");
 const defaultEndDate = new Date("2100-12-31");
 type ActionTypes = "allActions" | "Donated" | "Moved" | "Retired";
-
 
 const ActivityLog = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -30,38 +28,42 @@ const ActivityLog = () => {
 
   // Filter for search box filters
   const filteredLogs = activityLogs?.filter((log) => {
-    var isInDate = true
-    var isCorrectAction = true
-    var isCorrectName = log.box_name?.toLowerCase().includes(searchTerm.toLowerCase());
+    var isInDate = true;
+    var isCorrectAction = true;
+    var isCorrectName = log.box_name?.toLowerCase().includes(
+      searchTerm.toLowerCase(),
+    );
 
     if (action != "allActions" && action != log.action) {
       isCorrectAction = false;
     }
 
-    if(startDate > new Date(log.moved_at!)) {
+    if (startDate > new Date(log.moved_at!)) {
       isInDate = false;
     }
 
-    if(endDate < new Date(log.moved_at!)) {
+    if (endDate < new Date(log.moved_at!)) {
       isInDate = false;
     }
-    
+
     return isInDate && isCorrectAction && isCorrectName;
   });
-
 
   console.log(filteredLogs as BoxMovementView[]);
   return (
     <>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    </link>
-      <div className="p-16 gap-y-2 bg-white px-20 font-poppins">
+      <div className="p-16 gap-y-2 px-20 font-poppins">
         <h1 className="text-gray-900 text-[28px] font-semibold leading-normal tracking-[-0.144px] pb-8">
           Activity Log
         </h1>
         <div>
-          <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} 
-          setStartDate={setStartDate} setEndDate={setEndDate} setAction={setAction}/>
+          <SearchBar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            setStartDate={setStartDate}
+            setEndDate={setEndDate}
+            setAction={setAction}
+          />
         </div>
         <ActivityLogTable filteredData={filteredLogs!} isLoading={isLoading} />
       </div>
