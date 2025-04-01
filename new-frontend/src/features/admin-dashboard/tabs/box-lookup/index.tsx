@@ -6,6 +6,7 @@ import { BoxItem } from "@/types/box";
 import { useBoxView } from "../../hooks/useBoxView";
 import { BoxTable } from "./components/BoxTable";
 import { printBoxLabels } from "./utils";
+import { useSearchParams } from "react-router-dom";
 
 interface FilterState {
   searchTerm: string;
@@ -35,9 +36,21 @@ const BoxLookup: React.FC = () => {
   });
 
   const { boxes = [], isLoading, isError, error } = useBoxView();
-
   console.log(boxes);
-  // Filter boxes based on search term and filters - memoized for performance
+
+  // Section for activity log to access box lookup
+  const [searchParams] = useSearchParams();
+  const selectedFromLog = searchParams.get("selected");
+  React.useEffect(() => {
+    if (selectedFromLog && boxes.length > 0) {
+      const match = boxes.filter((box) => box.id === selectedFromLog);
+      if (match.length > 0) {
+        setSelectedBoxIds([selectedFromLog]);
+      }
+    }
+  }, [boxes, selectedFromLog]);
+
+   // Filter boxes based on search term and filters - memoized for performance
   const filteredBoxes = React.useMemo(() => {
     return boxes.filter((box) => {
       // Filter by search term (box name)

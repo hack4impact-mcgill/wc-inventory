@@ -133,8 +133,7 @@ const ActivityLogTable = ({
                 <TableCell className="text-[#00559B] underline border-[0.5px] border-gray-300 p-4">
                 <span
                   onClick={() => {
-                    // TODO: Navigate to box popup
-                    navigate(`/admin/box-lookup/`);
+                    navigate(`/admin/box-lookup?selected=${entry.box_id}`);
                   }}
                   className="hover:underline cursor-pointer">
                   {entry.box_name}
