@@ -200,6 +200,7 @@ export type Database = {
           box_id: string
           created_at: string | null
           description: string | null
+          donated_at: string | null
           location_id: string | null
           name: string
           status: Database["public"]["Enums"]["box_status_enum"]
@@ -209,6 +210,7 @@ export type Database = {
           box_id?: string
           created_at?: string | null
           description?: string | null
+          donated_at?: string | null
           location_id?: string | null
           name: string
           status?: Database["public"]["Enums"]["box_status_enum"]
@@ -218,6 +220,7 @@ export type Database = {
           box_id?: string
           created_at?: string | null
           description?: string | null
+          donated_at?: string | null
           location_id?: string | null
           name?: string
           status?: Database["public"]["Enums"]["box_status_enum"]
