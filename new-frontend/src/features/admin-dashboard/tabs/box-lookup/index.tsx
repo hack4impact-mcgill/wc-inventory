@@ -1,28 +1,29 @@
 import React from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useQuery } from "@tanstack/react-query";
 import SearchFilters from "@/features/admin-dashboard/components/SearchFilters";
 import BoxDetails from "@/features/admin-dashboard/components/BoxDetails";
-import { supabase } from "@/lib/supabaseClient";
-import { BoxItem, BoxView } from "@/types/box";
+import { BoxItem } from "@/types/box";
+import { useBoxView } from "../../hooks/useBoxView";
+import { BoxTable } from "./components/BoxTable";
+import { printBoxLabels } from "./utils";
 
-// Define filter state interface
 interface FilterState {
   searchTerm: string;
   category: string;
   size: string;
   gender: string;
 }
+
+const genderMapping: Record<string, string> = {
+  "male": "Men",
+  "female": "Women",
+  "kids": "Kids",
+  "unisex": "Unisex",
+};
+const categoryMapping: Record<string, string> = {
+  "tshirts": "T-shirt",
+  "pants": "Pants",
+};
 
 const BoxLookup: React.FC = () => {
   const [selectedBoxIds, setSelectedBoxIds] = React.useState<string[]>([]);
@@ -33,19 +34,9 @@ const BoxLookup: React.FC = () => {
     gender: "all",
   });
 
-  const { data: boxes = [], isLoading, isError, error } = useQuery<BoxView[]>({
-    queryKey: ["boxes"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("box_view").select("*");
+  const { boxes = [], isLoading, isError, error } = useBoxView();
 
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      return data as BoxView[];
-    },
-  });
-
+  console.log(boxes);
   // Filter boxes based on search term and filters - memoized for performance
   const filteredBoxes = React.useMemo(() => {
     return boxes.filter((box) => {
@@ -70,10 +61,6 @@ const BoxLookup: React.FC = () => {
         return box.contents.some((item) => {
           // Filter by category (item type)
           if (filters.category !== "all") {
-            const categoryMapping: Record<string, string> = {
-              "tshirts": "T-shirt",
-              "pants": "Pants",
-            };
             if (item.type !== categoryMapping[filters.category]) {
               return false;
             }
@@ -88,12 +75,6 @@ const BoxLookup: React.FC = () => {
 
           // Filter by gender
           if (filters.gender !== "all") {
-            const genderMapping: Record<string, string> = {
-              "male": "Men",
-              "female": "Women",
-              "kids": "Kids",
-              "unisex": "Unisex",
-            };
             if (item.gender !== genderMapping[filters.gender]) {
               return false;
             }
@@ -178,16 +159,27 @@ const BoxLookup: React.FC = () => {
     }
   };
 
-  // Action buttons for selected boxes
+  const handlePrintLabel = () => {
+    const selectedBoxes = boxes.filter((box) =>
+      selectedBoxIds.includes(box.id)
+    );
+    printBoxLabels(selectedBoxes);
+  };
+
   const actionButtons = (
     <div className="flex gap-4">
-      <Button variant="outline">Print label</Button>
+      <Button
+        variant="outline"
+        onClick={handlePrintLabel}
+        disabled={selectedBoxIds.length === 0}
+      >
+        Print label
+      </Button>
       <Button variant="outline">Move</Button>
       <Button variant="outline">Donate</Button>
     </div>
   );
 
-  // Handle loading and error states
   if (isLoading) return <div className="p-6">Loading inventory data...</div>;
   if (isError) {
     return (
@@ -214,64 +206,12 @@ const BoxLookup: React.FC = () => {
             onGenderChange={(value) => handleFilterChange("gender", value)}
             actionButtons={actionButtons}
           />
-
-          <Card className="mt-6 overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">
-                    <Checkbox
-                      checked={selectedBoxIds.length === filteredBoxes.length &&
-                        filteredBoxes.length > 0}
-                      onCheckedChange={handleSelectAll}
-                      aria-label="Select all boxes"
-                    />
-                  </TableHead>
-                  <TableHead>Box name</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Quantity</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredBoxes.length > 0
-                  ? (
-                    filteredBoxes.map((box) => (
-                      <TableRow
-                        key={box.id}
-                        className="cursor-pointer hover:bg-muted/50"
-                        onClick={() => handleBoxSelect(box.id)}
-                      >
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <Checkbox
-                            checked={selectedBoxIds.includes(box.id)}
-                            onCheckedChange={() => handleBoxSelect(box.id)}
-                            aria-label={`Select box ${box.name}`}
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          Box {box.name}
-                        </TableCell>
-                        <TableCell>{box.location || "—"}</TableCell>
-                        <TableCell>
-                          Qty: {box.contents?.reduce((sum, item) =>
-                            sum + item.quantity, 0) || 0}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )
-                  : (
-                    <TableRow>
-                      <TableCell
-                        colSpan={4}
-                        className="text-center py-6 text-muted-foreground"
-                      >
-                        No boxes found matching your filters
-                      </TableCell>
-                    </TableRow>
-                  )}
-              </TableBody>
-            </Table>
-          </Card>
+          <BoxTable
+            boxes={filteredBoxes}
+            selectedBoxIds={selectedBoxIds}
+            onBoxSelect={handleBoxSelect}
+            onSelectAll={handleSelectAll}
+          />
         </div>
 
         {/* Right panel for box details */}
