@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabaseClient";
-import { GenderEnum } from "@/types/enums";
+import { BoxStatus, GenderEnum } from "@/types/enums";
 import { useQuery } from "@tanstack/react-query";
+
 
 interface RawBoxContent {
   category_id: string;
@@ -9,6 +10,7 @@ interface RawBoxContent {
   size_id: string | null;
   categories: { name: string };
   sizes: { name: string } | null;
+  boxes: { status: BoxStatus, created_at: string, donated_at: string}
 }
 
 interface SizeItem {
@@ -26,7 +28,7 @@ interface GenderItem {
 export interface InventoryItem {
   category_id: string;
   category_name: string;
-  total_quantity: number;
+  items: {createdAt: string, donatedAt: string, quantity: number}[];
   genders: GenderItem[];
 }
 
@@ -34,7 +36,7 @@ export interface InventoryItem {
 interface SizeAggregation {
   size_id: string | null;
   size_name: string | null;
-  quantity: number;
+  items: {createdAt: string, donatedAt: string, quantity: number}[];
   gender: GenderEnum | null;
 }
 
@@ -46,7 +48,7 @@ interface GenderAggregation {
 interface CategoryAggregation {
   category_id: string;
   category_name: string;
-  total_quantity: number;
+  items: {createdAt: string, donatedAt: string, quantity: number}[];
   genders: Record<string, GenderAggregation>;
 }
 
@@ -59,11 +61,11 @@ const fetchInventory = async (): Promise<InventoryItem[]> => {
       gender,
       size_id,
       categories (name),
-      sizes (name)
+      sizes (name),
+      boxes (status, created_at, donated_at)
     `)
     .returns<RawBoxContent[]>();
 
-  console.log(data);
   if (error) throw new Error(error.message);
   if (!data) return [];
 
@@ -75,19 +77,23 @@ const fetchInventory = async (): Promise<InventoryItem[]> => {
       const sizeId = item.size_id || "no-size"; // Handle null size_id
       const sizeName = item.sizes?.name || "No Size";
       const quantity = item.quantity;
+      const createdAt = item.boxes.created_at;
+      const donatedAt = item.boxes.donated_at;
 
       // Initialize category if it doesn't exist
       if (!acc[categoryId]) {
         acc[categoryId] = {
           category_id: categoryId,
           category_name: categoryName,
-          total_quantity: 0,
+          items: [],
           genders: {},
         };
       }
 
       // Update total quantity
-      acc[categoryId].total_quantity += quantity;
+      acc[categoryId].items.push({ 
+        createdAt, donatedAt, quantity
+      })
 
       // Initialize gender if it doesn't exist
       if (!acc[categoryId].genders[gender]) {
@@ -102,13 +108,13 @@ const fetchInventory = async (): Promise<InventoryItem[]> => {
         acc[categoryId].genders[gender].sizes[sizeId] = {
           size_id: item.size_id, // Keep original null value
           size_name: sizeName,
-          quantity: 0,
+          items: [],
           gender: gender as GenderEnum,
         };
       }
 
       // Update quantity
-      acc[categoryId].genders[gender].sizes[sizeId].quantity += quantity;
+      acc[categoryId].genders[gender].sizes[sizeId].items.push({ createdAt, donatedAt, quantity}) 
 
       return acc;
     },
@@ -116,10 +122,11 @@ const fetchInventory = async (): Promise<InventoryItem[]> => {
   );
 
   // Transform aggregated data into final format
+  //TODO: Type Issue!
   return Object.values(aggregatedData).map((item: CategoryAggregation) => ({
     category_id: item.category_id,
     category_name: item.category_name,
-    total_quantity: item.total_quantity,
+    items: item.items,
     genders: Object.values(item.genders).map((gender: GenderAggregation) => ({
       gender: gender.gender,
       sizes: Object.values(gender.sizes),
