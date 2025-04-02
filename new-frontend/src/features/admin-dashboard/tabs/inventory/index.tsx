@@ -7,7 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useInventory } from "../../hooks/useInventory";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -19,15 +19,13 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 
-
 const Inventory = () => {
   const { data: inventory, isLoading, error } = useInventory();
-  console.log(inventory);
 
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set(),
   );
-  const [currentDate, setCurrentDate ] = useState<Dayjs | null>(dayjs());
+  const [currentDate, setCurrentDate] = useState<Dayjs | null>(dayjs());
 
   const [expandedGenders, setExpandedGenders] = useState<Set<string>>(
     new Set(),
@@ -45,9 +43,10 @@ const Inventory = () => {
   >(null);
 
   const { data: boxDetails, isLoading: boxDetailsLoading } = useBoxDetails(
-    selectedItem?.categoryId || "",
-    selectedItem?.sizeId || null,
-    selectedItem?.gender || null,
+    selectedItem?.categoryId ?? "",
+    selectedItem?.sizeId ?? null,
+    selectedItem?.gender ?? null,
+    { enabled: !!selectedItem },
   );
 
   const toggleCategory = (categoryId: string) => {
@@ -74,16 +73,15 @@ const Inventory = () => {
     });
   };
 
-  const toggleSelection = (id: string) => { 
-    setSelectedIds(prev => { 
-      if (prev.includes(id)) { 
-        return prev.filter(item => item !== id); //deselect item 
-      } else { 
-        return [ ...prev, id];
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((item) => item !== id); //deselect item
+      } else {
+        return [...prev, id];
       }
-    })
-  }
-
+    });
+  };
 
   const handleSizeClick = (
     categoryId: string,
@@ -101,7 +99,7 @@ const Inventory = () => {
 
     const headers = "Category,Total Quantity\n";
     const rows = inventory
-      .map((item) => `${item.category_name},${item.total_quantity}`)
+      .map((item) => `${item.category_name},${item.items.length}`)
       .join("\n");
 
     const csvContent = `data:text/csv;charset=utf-8,${headers + rows}`;
@@ -114,12 +112,41 @@ const Inventory = () => {
     document.body.removeChild(link);
   };
 
+  const getAmount = (
+    items: { createdAt: string; donatedAt: string; quantity: number }[],
+  ) => {
+    return items.map((item) => item.quantity).reduce((a, b) => a + b, 0);
+  };
 
-  const getAmount = (item: {createdAt: string, donatedAt: string, quantity: number}[]) => {
-      return item.map(item => item.quantity).reduce((a, b) => a + b);
-  }
+  const getRefills = (
+    items: { createdAt: string; donatedAt: string; quantity: number }[],
+    date: Dayjs | null,
+  ) => {
+    if (!date) return 0;
+    const dateString = date.startOf("day").toISOString().split("T")[0]; // "YYYY-MM-DD"
+    return items
+      .filter((item) => {
+        const createdDate =
+          dayjs(item.createdAt).startOf("day").toISOString().split("T")[0];
+        return createdDate === dateString;
+      })
+      .reduce((sum, item) => sum + item.quantity, 0);
+  };
 
-
+  const getDistributions = (
+    items: { createdAt: string; donatedAt: string; quantity: number }[],
+    date: Dayjs | null,
+  ) => {
+    if (!date) return 0;
+    const dateString = date.startOf("day").toISOString().split("T")[0];
+    return items
+      .filter((item) =>
+        item.donatedAt &&
+        dayjs(item.donatedAt).startOf("day").toISOString().split("T")[0] ===
+          dateString
+      )
+      .reduce((sum, item) => sum + item.quantity, 0);
+  };
   if (isLoading) return <div>Loading inventory...</div>;
   if (error) {
     return <div>Error loading inventory: {(error as Error).message}</div>;
@@ -170,10 +197,10 @@ const Inventory = () => {
                     </div>
                   </TableCell>
                   <TableCell>{getAmount(item.items)}</TableCell>
-                  <TableCell>/</TableCell>
-                  <TableCell>/</TableCell>
-                  
-
+                  <TableCell>{getRefills(item.items, currentDate)}</TableCell>
+                  <TableCell>
+                    {getDistributions(item.items, currentDate)}
+                  </TableCell>
                 </TableRow>
                 {expandedCategories.has(item.category_id) &&
                   item.genders.map((genderItem) => (
@@ -187,17 +214,28 @@ const Inventory = () => {
                         <TableCell className="pl-8">
                           <div className="flex items-center gap-2">
                             {expandedGenders.has(
-                              `${item.category_id}-${genderItem.gender}`,
-                            )
+                                `${item.category_id}-${genderItem.gender}`,
+                              )
                               ? <ChevronDown size={16} />
                               : <ChevronRight size={16} />}
                             {genderItem.gender}
                           </div>
                         </TableCell>
                         <TableCell>
-                          {genderItem.sizes.reduce(
-                            (sum, size) => sum + size.quantity,
-                            0,
+                          {getAmount(
+                            genderItem.sizes.flatMap((size) => size.items),
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {getRefills(
+                            genderItem.sizes.flatMap((size) => size.items),
+                            currentDate,
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {getDistributions(
+                            genderItem.sizes.flatMap((size) => size.items),
+                            currentDate,
                           )}
                         </TableCell>
                       </TableRow>
@@ -206,8 +244,9 @@ const Inventory = () => {
                       ) &&
                         genderItem.sizes.map((size) => (
                           <TableRow
-                            key={`${item.category_id}-${genderItem.gender}-${size.size_id || "no-size"
-                              }`}
+                            key={`${item.category_id}-${genderItem.gender}-${
+                              size.size_id || "no-size"
+                            }`}
                             className="cursor-pointer hover:bg-gray-100"
                             onClick={() =>
                               handleSizeClick(
@@ -221,7 +260,13 @@ const Inventory = () => {
                             <TableCell className="pl-12">
                               {size.size_name}
                             </TableCell>
-                            <TableCell>{size.quantity}</TableCell>
+                            <TableCell>{getAmount(size.items)}</TableCell>
+                            <TableCell>
+                              {getRefills(size.items, currentDate)}
+                            </TableCell>
+                            <TableCell>
+                              {getDistributions(size.items, currentDate)}
+                            </TableCell>
                           </TableRow>
                         ))}
                     </>

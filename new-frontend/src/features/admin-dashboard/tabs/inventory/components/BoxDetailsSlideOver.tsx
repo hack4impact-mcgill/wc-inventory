@@ -28,7 +28,6 @@ export default function BoxDetailsSlideOver(
   { isOpen, onClose, categoryName, sizeName, boxDetails, isLoading }:
     BoxDetailsSlideOverProps,
 ) {
-  console.log(boxDetails);
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="w-[400px] sm:w-[540px]">
