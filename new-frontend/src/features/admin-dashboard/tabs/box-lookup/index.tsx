@@ -16,7 +16,7 @@ import SearchFilters from "@/features/admin-dashboard/components/SearchFilters";
 import BoxDetails from "@/features/admin-dashboard/components/BoxDetails";
 import { BoxItem } from "@/types/box";
 import { boxApi } from "@/lib/api/boxes";
-import { LocalLocation } from "@/lib/api/locations";
+import { Location } from "@/types/location";
 import { useLocations } from "@/features/admin-dashboard/tabs/location-management/hooks/use-locations.ts"
 import {
   Dialog,
@@ -57,9 +57,14 @@ const BoxLookup: React.FC = () => {
 
   // Location selection states
   const [selectedLocations, setSelectedLocations] = React.useState<string[]>([]);
-  const [locationsByParent, setLocationsByParent] = React.useState<Record<string | null, LocalLocation[]>>({});
+  const [locationsByParent, setLocationsByParent] = React.useState<Record<string, Location[]>>({});
+  // Location debug state
+  const [locationDebugInfo, setLocationDebugInfo] = React.useState<string>("");
 
   const queryClient = useQueryClient();
+
+  // Add state for debug panel expansion
+  const [isDebugPanelExpanded, setIsDebugPanelExpanded] = React.useState<boolean>(false);
 
   // Use React Query to fetch boxes data
   const { data: boxes = [], isLoading: isLoadingBoxes, isError: isBoxesError, error: boxesError } = useQuery({
@@ -67,31 +72,80 @@ const BoxLookup: React.FC = () => {
     queryFn: async () => boxApi.getBoxes(),
   });
 
-  // With this:
   const { locations, isLoading: isLoadingLocations } = useLocations();
 
-  // And modify the useEffect to handle the typing properly:
+  // Organize locations by parent when locations data changes
   React.useEffect(() => {
     if (locations && locations.length > 0) {
+      console.log("Raw locations data:", locations);
+
       // Organize locations by parent
-      const locByParent: Record<string, LocalLocation[]> = {};
+      const locByParent: Record<string, Location[]> = {};
 
       // Initialize the null parent entry with empty string key
       locByParent[''] = [];
 
+      // Ensure all locations have valid location_id before processing
       locations.forEach(loc => {
+        if (!loc.location_id) {
+          console.warn("Location without location_id found:", loc);
+          return;
+        }
+
         const parentId = loc.parent_id || '';
         if (!locByParent[parentId]) {
           locByParent[parentId] = [];
         }
-        // Type assertion to convert Location to LocalLocation
-        locByParent[parentId].push(loc as unknown as LocalLocation);
+        locByParent[parentId].push(loc);
       });
 
-      // Update the state (you'll need to modify getLocationsForLevel accordingly)
       setLocationsByParent(locByParent);
+      generateLocationDebugInfo(locByParent);
+
+      // Log the entire location structure for debugging
+      console.log("Location structure initialized:", locByParent);
     }
   }, [locations]);
+
+  // Function to generate location debug info
+  const generateLocationDebugInfo = (locByParent: Record<string, Location[]>) => {
+    let debugInfo = "Location Hierarchy:\n";
+
+    // Level 0 locations (root locations)
+    debugInfo += "\nLevel 0 (Root):\n";
+    const rootLocations = locByParent[''] || [];
+    rootLocations.forEach(loc => {
+      if (!loc.location_id) return; // Skip locations with no ID
+
+      debugInfo += `- ${loc.name} (ID: ${loc.location_id})\n`;
+
+      // Level 1 locations (children of root)
+      const level1Locations = locByParent[loc.location_id] || [];
+      if (level1Locations.length > 0) {
+        debugInfo += `  Level 1 (Children of ${loc.name}):\n`;
+        level1Locations.forEach(childLoc => {
+          if (!childLoc.location_id) return; // Skip locations with no ID
+
+          debugInfo += `  - ${childLoc.name} (ID: ${childLoc.location_id})\n`;
+
+          // Level 2 locations (grandchildren)
+          const level2Locations = locByParent[childLoc.location_id] || [];
+          if (level2Locations.length > 0) {
+            debugInfo += `    Level 2 (Children of ${childLoc.name}):\n`;
+            level2Locations.forEach(grandchildLoc => {
+              if (!grandchildLoc.location_id) return; // Skip locations with no ID
+
+              debugInfo += `    - ${grandchildLoc.name} (ID: ${grandchildLoc.location_id})\n`;
+            });
+          }
+        });
+      }
+    });
+
+    setLocationDebugInfo(debugInfo);
+    console.log(debugInfo); // Also log to console for easy debugging
+  };
+
   // Mutations for box operations
   const donateBoxesMutation = useMutation({
     mutationFn: (boxIds: string[]) => boxApi.donateBoxes(boxIds),
@@ -253,7 +307,7 @@ const BoxLookup: React.FC = () => {
   };
 
   // Location selection handlers
-  const getLocationsForLevel = (level: number): LocalLocation[] => {
+  const getLocationsForLevel = (level: number): Location[] => {
     if (level === 0) {
       return locationsByParent[''] || [];
     }
@@ -261,13 +315,45 @@ const BoxLookup: React.FC = () => {
     const parentId = selectedLocations[level - 1];
     if (!parentId) return [];
 
-    return locationsByParent[parentId] || [];
+    // Log the locations at this level when retrieving them
+    const locationsAtLevel = locationsByParent[parentId] || [];
+    console.log(`Locations at level ${level} (parent: ${parentId}):`, locationsAtLevel);
+
+    // Filter out any locations without valid location_id
+    return locationsAtLevel.filter(loc => loc.location_id && typeof loc.location_id === 'string');
   };
 
   const handleLocationSelect = (locationId: string, level: number) => {
+    // Make sure we have a valid ID before proceeding
+    if (!locationId) {
+      console.error("Attempted to select location with invalid ID");
+      return;
+    }
+
+    console.log(`Selecting location at level ${level}, ID: ${locationId}`);
+
     // When selecting a location at a level, clear all subsequent levels
-    const newSelectedLocations = [...selectedLocations.slice(0, level), locationId];
-    setSelectedLocations(newSelectedLocations);
+    const newSelectedLocations = [...selectedLocations.slice(0, level)];
+    newSelectedLocations[level] = locationId;
+
+    // Find the location name for better logging
+    let locationName = "Unknown";
+    if (level === 0) {
+      const location = locationsByParent['']?.find(loc => loc.location_id === locationId);
+      locationName = location?.name || "Unknown";
+    } else {
+      const parentId = selectedLocations[level - 1];
+      if (parentId) {
+        const location = locationsByParent[parentId]?.find(loc => loc.location_id === locationId);
+        locationName = location?.name || "Unknown";
+      }
+    }
+
+    console.log(`Selected location: ${locationName} (ID: ${locationId}) at level ${level}`);
+    console.log("New selected locations array:", newSelectedLocations);
+
+    // Force a state update with the new array
+    setSelectedLocations([...newSelectedLocations]);
   };
 
   // Dialog handlers
@@ -292,6 +378,12 @@ const BoxLookup: React.FC = () => {
       });
       return;
     }
+
+    // Reset selected locations when opening the dialog
+    setSelectedLocations([]);
+
+    // Log the location hierarchy before opening the move dialog
+    console.log("Opening move dialog, location hierarchy:", locationsByParent);
     setIsMoveDialogOpen(true);
   };
 
@@ -311,10 +403,28 @@ const BoxLookup: React.FC = () => {
       return;
     }
 
+    // Log the selected location path before submitting
+    console.log("Moving boxes to location path:", selectedLocations.filter(Boolean));
+    console.log("Final target location ID:", targetLocationId);
+
     moveBoxesMutation.mutate({
       boxIds: selectedBoxIds,
       locationId: targetLocationId
     });
+  };
+
+  // Get the name of a location by its ID
+  const getLocationNameById = (locationId: string, parentId: string = ''): string => {
+    if (!locationId) return 'Unknown';
+
+    const locations = parentId ? locationsByParent[parentId] || [] : locationsByParent[''] || [];
+    const location = locations.find(loc => loc.location_id === locationId);
+    return location?.name || 'Unknown';
+  };
+
+  // Toggle debug panel expansion
+  const toggleDebugPanel = () => {
+    setIsDebugPanelExpanded(prev => !prev);
   };
 
   // Action buttons for selected boxes
@@ -416,7 +526,7 @@ const BoxLookup: React.FC = () => {
 
       {/* Donation Confirmation Dialog */}
       <Dialog open={isDonateDialogOpen} onOpenChange={setIsDonateDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md md:max-w-lg lg:max-w-2xl relative">
           <DialogHeader>
             <DialogTitle>Confirm donation of {selectedBoxIds.length} {selectedBoxIds.length === 1 ? 'box' : 'boxes'}?</DialogTitle>
           </DialogHeader>
@@ -433,69 +543,148 @@ const BoxLookup: React.FC = () => {
 
       {/* Move Location Dialog */}
       <Dialog open={isMoveDialogOpen} onOpenChange={setIsMoveDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md w-full overflow-hidden">
           <DialogHeader>
             <DialogTitle>Destination location</DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 w-full overflow-hidden">
+            {/* Collapsible Debug Panel */}
+            <div className="w-full border border-gray-200 rounded-md overflow-hidden">
+              <button
+                onClick={toggleDebugPanel}
+                className="w-full flex items-center justify-between p-2 text-sm bg-gray-50 hover:bg-gray-100 transition-colors"
+              >
+                <span className="font-medium">Debug Information</span>
+                <span className="text-gray-500">
+                  {isDebugPanelExpanded ? '▼' : '►'}
+                </span>
+              </button>
+
+              {isDebugPanelExpanded && (
+                <div className="p-2 border-t border-gray-200">
+                  {/* Location debug info panel */}
+                  <div className="bg-gray-100 p-2 rounded-md text-xs font-mono max-h-40 overflow-y-auto w-full">
+                    <h3 className="font-bold mb-1">Location Hierarchy:</h3>
+                    <div className="whitespace-pre overflow-x-auto">
+                      {locationDebugInfo || "No location data available."}
+                    </div>
+                  </div>
+
+                  {/* Current selected location path (for easy debugging) */}
+                  <div className="bg-blue-50 p-2 rounded-md mt-2 w-full">
+                    <h4 className="text-sm font-medium">Selected locations array:</h4>
+                    <div className="text-xs font-mono overflow-x-auto whitespace-pre">
+                      {JSON.stringify(selectedLocations, null, 2)}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Level 0 locations */}
-            <Select
-              value={selectedLocations[0]}
-              onValueChange={(value) => handleLocationSelect(value, 0)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select location" />
-              </SelectTrigger>
-              <SelectContent>
-                {isLoadingLocations ? (
-                  <SelectItem value="loading" disabled>Loading locations...</SelectItem>
-                ) : (
-                  getLocationsForLevel(0).map(location => (
-                    <SelectItem key={`level0-${location.id}`} value={location.id}>
-                      {location.name}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+            <div className="w-full">
+              <div className="text-sm text-gray-500 mb-1">Level 0 (Root):</div>
+              <Select
+                value={selectedLocations[0] || ''}
+                onValueChange={(value) => handleLocationSelect(value, 0)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select location" />
+                </SelectTrigger>
+                <SelectContent className="max-w-[calc(100vw-4rem)]">
+                  {isLoadingLocations ? (
+                    <SelectItem value="loading" disabled>Loading locations...</SelectItem>
+                  ) : (
+                    getLocationsForLevel(0).map(location => (
+                      location.location_id ? (
+                        <SelectItem key={`level0-${location.location_id}`} value={location.location_id}>
+                          {location.name || 'Unnamed Location'}
+                        </SelectItem>
+                      ) : null
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
 
             {/* Level 1 locations (if level 0 is selected) */}
             {selectedLocations[0] && getLocationsForLevel(1).length > 0 && (
-              <Select
-                value={selectedLocations[1]}
-                onValueChange={(value) => handleLocationSelect(value, 1)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select sub-location" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getLocationsForLevel(1).map(location => (
-                    <SelectItem key={`level1-${location.id}`} value={location.id}>
-                      {location.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="w-full">
+                <div className="text-sm text-gray-500 mb-1">
+                  Level 1 (Children of {getLocationNameById(selectedLocations[0], '')}):
+                </div>
+                <Select
+                  value={selectedLocations[1] || ''}
+                  onValueChange={(value) => handleLocationSelect(value, 1)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select sub-location" />
+                  </SelectTrigger>
+                  <SelectContent className="max-w-[calc(100vw-4rem)]">
+                    {getLocationsForLevel(1).map(location => (
+                      location.location_id ? (
+                        <SelectItem key={`level1-${location.location_id}`} value={location.location_id}>
+                          {location.name || 'Unnamed Location'}
+                        </SelectItem>
+                      ) : null
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             )}
 
             {/* Level 2 locations (if level 1 is selected) */}
             {selectedLocations[1] && getLocationsForLevel(2).length > 0 && (
-              <Select
-                value={selectedLocations[2]}
-                onValueChange={(value) => handleLocationSelect(value, 2)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select sub-location" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getLocationsForLevel(2).map(location => (
-                    <SelectItem key={`level2-${location.id}`} value={location.id}>
-                      {location.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="w-full">
+                <div className="text-sm text-gray-500 mb-1">
+                  Level 2 (Children of {getLocationNameById(selectedLocations[1], selectedLocations[0])}):
+                </div>
+                <Select
+                  value={selectedLocations[2] || ''}
+                  onValueChange={(value) => handleLocationSelect(value, 2)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select sub-location" />
+                  </SelectTrigger>
+                  <SelectContent className="max-w-[calc(100vw-4rem)]">
+                    {getLocationsForLevel(2).map(location => (
+                      location.location_id ? (
+                        <SelectItem key={`level2-${location.location_id}`} value={location.location_id}>
+                          {location.name || 'Unnamed Location'}
+                        </SelectItem>
+                      ) : null
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             )}
+
+            {/* Selected Location Path Display */}
+            <div className="mt-2 p-2 bg-blue-50 rounded-md w-full">
+              <h4 className="text-sm font-medium mb-1">Selected Location Path:</h4>
+              {selectedLocations.some(Boolean) ? (
+                <div className="text-sm">
+                  {selectedLocations.filter(Boolean).map((locId, idx) => {
+                    let locationName = "Unknown";
+                    if (idx === 0) {
+                      locationName = getLocationNameById(locId, '');
+                    } else if (idx === 1) {
+                      locationName = getLocationNameById(locId, selectedLocations[0]);
+                    } else if (idx === 2) {
+                      locationName = getLocationNameById(locId, selectedLocations[1]);
+                    }
+                    return (
+                      <div key={`path-${idx}`} className="flex items-center">
+                        {idx > 0 && <span className="mx-1">→</span>}
+                        <span className="truncate">{`Level ${idx}: ${locationName} (${locId})`}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-sm text-gray-500">No location selected yet</div>
+              )}
+            </div>
           </div>
           <DialogFooter className="mt-4">
             <Button
@@ -507,7 +696,7 @@ const BoxLookup: React.FC = () => {
             </Button>
             <Button
               onClick={handleConfirmMove}
-              disabled={selectedLocations.filter(Boolean).length === 0 || moveBoxesMutation.isPending}
+              disabled={!selectedLocations.some(Boolean) || moveBoxesMutation.isPending}
             >
               {moveBoxesMutation.isPending ? "Processing..." : "✅ Done"}
             </Button>
