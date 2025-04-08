@@ -154,12 +154,6 @@ const Inventory = () => {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Inventory Management</h1>
-        </div>
-      </div>
-
       <div className="flex gap-4 mb-6">
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker

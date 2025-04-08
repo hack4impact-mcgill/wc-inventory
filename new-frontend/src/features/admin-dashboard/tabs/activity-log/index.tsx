@@ -53,9 +53,6 @@ const ActivityLog = () => {
   return (
     <>
       <div className="p-16 gap-y-2 px-20 font-poppins">
-        <h1 className="text-gray-900 text-[28px] font-semibold leading-normal tracking-[-0.144px] pb-8">
-          Activity Log
-        </h1>
         <div>
           <SearchBar
             searchTerm={searchTerm}
