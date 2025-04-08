@@ -28,9 +28,6 @@ const fetchBoxDetails = async (
   sizeId: string | null,
   gender: GenderEnum | null,
 ): Promise<BoxDetail[]> => {
-  console.log(categoryId);
-  console.log(sizeId);
-  console.log(gender);
   const query = supabase
     .from("box_contents")
     .select(`
@@ -53,17 +50,14 @@ const fetchBoxDetails = async (
     query.is("size_id", null);
   }
 
-  console.log(query);
-
   const { data, error } = await query.returns<RawBoxDetail[]>();
-
   if (error) throw new Error(error.message);
   if (!data) return [];
 
   return data.map((item: RawBoxDetail) => ({
     box_id: item.box_id,
     box_name: item.boxes.name,
-    location_name: item.boxes.locations.name,
+    location_name: item.boxes.locations ? item.boxes.locations.name : "N/A",
     gender: item.gender,
     quantity: item.quantity,
   }));
@@ -73,10 +67,11 @@ export const useBoxDetails = (
   categoryId: string,
   sizeId: string | null,
   gender: GenderEnum | null,
+  options: { enabled?: boolean } = {},
 ) => {
   return useQuery({
     queryKey: ["boxDetails", categoryId, sizeId, gender],
     queryFn: () => fetchBoxDetails(categoryId, sizeId, gender),
-    enabled: !!categoryId,
+    enabled: options.enabled ?? !!categoryId,
   });
 };

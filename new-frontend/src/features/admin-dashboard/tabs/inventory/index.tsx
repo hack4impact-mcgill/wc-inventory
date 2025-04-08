@@ -14,16 +14,24 @@ import { Card } from "@/components/ui/card";
 import { useBoxDetails } from "../../hooks/useBoxDetails";
 import BoxDetailsSlideOver from "./components/BoxDetailsSlideOver";
 import { GenderEnum } from "@/types/enums";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs, { Dayjs } from "dayjs";
 
 const Inventory = () => {
   const { data: inventory, isLoading, error } = useInventory();
-  console.log(inventory);
+
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set(),
   );
+  const [currentDate, setCurrentDate] = useState<Dayjs | null>(dayjs());
+
   const [expandedGenders, setExpandedGenders] = useState<Set<string>>(
     new Set(),
   );
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
   const [selectedItem, setSelectedItem] = useState<
     {
       categoryId: string;
@@ -35,9 +43,10 @@ const Inventory = () => {
   >(null);
 
   const { data: boxDetails, isLoading: boxDetailsLoading } = useBoxDetails(
-    selectedItem?.categoryId || "",
-    selectedItem?.sizeId || null,
-    selectedItem?.gender || null,
+    selectedItem?.categoryId ?? "",
+    selectedItem?.sizeId ?? null,
+    selectedItem?.gender ?? null,
+    { enabled: !!selectedItem },
   );
 
   const toggleCategory = (categoryId: string) => {
@@ -63,6 +72,17 @@ const Inventory = () => {
       return newSet;
     });
   };
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((item) => item !== id); //deselect item
+      } else {
+        return [...prev, id];
+      }
+    });
+  };
+
   const handleSizeClick = (
     categoryId: string,
     categoryName: string,
@@ -79,7 +99,7 @@ const Inventory = () => {
 
     const headers = "Category,Total Quantity\n";
     const rows = inventory
-      .map((item) => `${item.category_name},${item.total_quantity}`)
+      .map((item) => `${item.category_name},${item.items.length}`)
       .join("\n");
 
     const csvContent = `data:text/csv;charset=utf-8,${headers + rows}`;
@@ -92,6 +112,41 @@ const Inventory = () => {
     document.body.removeChild(link);
   };
 
+  const getAmount = (
+    items: { createdAt: string; donatedAt: string; quantity: number }[],
+  ) => {
+    return items.map((item) => item.quantity).reduce((a, b) => a + b, 0);
+  };
+
+  const getRefills = (
+    items: { createdAt: string; donatedAt: string; quantity: number }[],
+    date: Dayjs | null,
+  ) => {
+    if (!date) return 0;
+    const dateString = date.startOf("day").toISOString().split("T")[0]; // "YYYY-MM-DD"
+    return items
+      .filter((item) => {
+        const createdDate =
+          dayjs(item.createdAt).startOf("day").toISOString().split("T")[0];
+        return createdDate === dateString;
+      })
+      .reduce((sum, item) => sum + item.quantity, 0);
+  };
+
+  const getDistributions = (
+    items: { createdAt: string; donatedAt: string; quantity: number }[],
+    date: Dayjs | null,
+  ) => {
+    if (!date) return 0;
+    const dateString = date.startOf("day").toISOString().split("T")[0];
+    return items
+      .filter((item) =>
+        item.donatedAt &&
+        dayjs(item.donatedAt).startOf("day").toISOString().split("T")[0] ===
+          dateString
+      )
+      .reduce((sum, item) => sum + item.quantity, 0);
+  };
   if (isLoading) return <div>Loading inventory...</div>;
   if (error) {
     return <div>Error loading inventory: {(error as Error).message}</div>;
@@ -106,6 +161,12 @@ const Inventory = () => {
       </div>
 
       <div className="flex gap-4 mb-6">
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DatePicker
+            value={currentDate}
+            onChange={(val) => setCurrentDate(val)}
+          />
+        </LocalizationProvider>
         <Button onClick={exportToCsv}>Export to CSV</Button>
       </div>
 
@@ -113,8 +174,10 @@ const Inventory = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="font-bold">Category</TableHead>
-              <TableHead className="font-bold">Total Quantity</TableHead>
+              <TableHead className="font-bold">Items</TableHead>
+              <TableHead className="font-bold">Current Inventory</TableHead>
+              <TableHead className="font-bold">Refills</TableHead>
+              <TableHead className="font-bold">Distributions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -133,7 +196,11 @@ const Inventory = () => {
                       {item.category_name}
                     </div>
                   </TableCell>
-                  <TableCell>{item.total_quantity}</TableCell>
+                  <TableCell>{getAmount(item.items)}</TableCell>
+                  <TableCell>{getRefills(item.items, currentDate)}</TableCell>
+                  <TableCell>
+                    {getDistributions(item.items, currentDate)}
+                  </TableCell>
                 </TableRow>
                 {expandedCategories.has(item.category_id) &&
                   item.genders.map((genderItem) => (
@@ -147,17 +214,28 @@ const Inventory = () => {
                         <TableCell className="pl-8">
                           <div className="flex items-center gap-2">
                             {expandedGenders.has(
-                              `${item.category_id}-${genderItem.gender}`,
-                            )
+                                `${item.category_id}-${genderItem.gender}`,
+                              )
                               ? <ChevronDown size={16} />
                               : <ChevronRight size={16} />}
                             {genderItem.gender}
                           </div>
                         </TableCell>
                         <TableCell>
-                          {genderItem.sizes.reduce(
-                            (sum, size) => sum + size.quantity,
-                            0,
+                          {getAmount(
+                            genderItem.sizes.flatMap((size) => size.items),
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {getRefills(
+                            genderItem.sizes.flatMap((size) => size.items),
+                            currentDate,
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {getDistributions(
+                            genderItem.sizes.flatMap((size) => size.items),
+                            currentDate,
                           )}
                         </TableCell>
                       </TableRow>
@@ -166,8 +244,9 @@ const Inventory = () => {
                       ) &&
                         genderItem.sizes.map((size) => (
                           <TableRow
-                            key={`${item.category_id}-${genderItem.gender}-${size.size_id || "no-size"
-                              }`}
+                            key={`${item.category_id}-${genderItem.gender}-${
+                              size.size_id || "no-size"
+                            }`}
                             className="cursor-pointer hover:bg-gray-100"
                             onClick={() =>
                               handleSizeClick(
@@ -181,7 +260,13 @@ const Inventory = () => {
                             <TableCell className="pl-12">
                               {size.size_name}
                             </TableCell>
-                            <TableCell>{size.quantity}</TableCell>
+                            <TableCell>{getAmount(size.items)}</TableCell>
+                            <TableCell>
+                              {getRefills(size.items, currentDate)}
+                            </TableCell>
+                            <TableCell>
+                              {getDistributions(size.items, currentDate)}
+                            </TableCell>
                           </TableRow>
                         ))}
                     </>

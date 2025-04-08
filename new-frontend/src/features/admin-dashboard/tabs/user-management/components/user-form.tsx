@@ -1,4 +1,3 @@
-import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -30,6 +29,7 @@ export function UserForm({ onSubmit, onCancel, isLoading }: UserFormProps) {
   const form = useForm<UserFormData>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
+      name: "",
       email: "",
       password: "",
       role: "volunteer",
@@ -39,6 +39,19 @@ export function UserForm({ onSubmit, onCancel, isLoading }: UserFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem aria-describedby="name">
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input {...field} type="text" placeholder="Enter name" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="email"

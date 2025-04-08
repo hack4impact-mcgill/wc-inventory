@@ -1,41 +1,45 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { UserForm } from "./components/user-form";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { SearchBar } from "./components/search-bar";
-import { UserForm } from "./components/user-form";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 import { UserTable } from "./components/user-table";
-import { useUsers } from "./hooks/use-users";
 import { UserFormData } from "./types";
+import { useUsers } from "./hooks/use-users";
 
 export default function UserManagement() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { users, isLoading, error, createUser, isCreating } = useUsers();
 
-  const filteredUsers = users?.filter(user =>
-    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = users?.filter(
+    (user) =>
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleCreateUser = async (data: UserFormData) => {
     try {
-      await createUser(data);
-      toast({ title: 'Success', description: 'User created successfully' });
+      createUser(data);
+      toast({ title: "Success", description: "User created successfully" });
       setIsModalOpen(false);
     } catch (error) {
       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to create user'
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error
+          ? error.message
+          : "Failed to create user",
       });
     }
   };
@@ -45,7 +49,11 @@ export default function UserManagement() {
   }
 
   if (error) {
-    return <div>Error: {error instanceof Error ? error.message : 'Unknown error'}</div>;
+    return (
+      <div>
+        Error: {error instanceof Error ? error.message : "Unknown error"}
+      </div>
+    );
   }
 
   return (
@@ -61,7 +69,7 @@ export default function UserManagement() {
 
         <UserTable
           users={filteredUsers || []}
-          onUserClick={(id) => navigate(`/admin/users/${id}`)}
+          onUserClick={(email) => navigate(`/admin/users/${email}`)}
         />
 
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -80,4 +88,3 @@ export default function UserManagement() {
     </Card>
   );
 }
-
