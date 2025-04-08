@@ -165,9 +165,53 @@ const Inventory = () => {
           <DatePicker
             value={currentDate}
             onChange={(val) => setCurrentDate(val)}
+            slotProps={{
+              textField: {
+                InputProps: {
+                  sx: {
+                    height: "40px",
+                    pl: "5px",
+                    backgroundColor: "transparent",
+                  },
+                },
+                sx: {
+                  width: "15rem",
+                  height: "41px",
+                  borderRadius: "0.3rem",
+                  border: "1px solid #e0e0e0",
+                  backgroundColor: "white",
+
+                  // 💡 Style the input text when NOT focused and when focused
+                  "& .MuiInputBase-input": {
+                    color: "#000", // Make the input text black
+                    fontWeight: 400,
+                    fontSize: "0.875rem",
+                    fontFamily: "Poppins",
+                  },
+
+                  // 💡 Style the placeholder text
+                  "& .MuiInputBase-input::placeholder": {
+                    color: "#000", // Force black placeholder
+                    opacity: 1, // Required to make the color show
+                  },
+
+                  "& .MuiOutlinedInput-root": {
+                    height: "40px",
+                    "& fieldset": { border: "none" },
+                    "&:hover fieldset": { border: "none" },
+                    "&.Mui-focused fieldset": { border: "none" },
+                  },
+                },
+              },
+            }}
           />
         </LocalizationProvider>
-        <Button onClick={exportToCsv}>Export to CSV</Button>
+        <Button 
+          onClick={exportToCsv}
+          className="h-[39px]"
+        >
+          Export to CSV
+          </Button>
       </div>
 
       <Card className="mt-6 overflow-x-auto">
