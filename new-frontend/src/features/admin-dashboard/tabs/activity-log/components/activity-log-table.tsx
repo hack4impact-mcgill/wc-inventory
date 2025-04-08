@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { ArrowUpDown } from "lucide-react";
 import { BoxMovementView } from "@/types/activity-log";
-import { format, set } from "date-fns";
+import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 
 type SortKeyOption = "moved_by_email" | "box_name" | "moved_at" | null;
@@ -27,13 +27,12 @@ const ActivityLogTable = ({
   const [sortKey, setSortKey] = useState<SortKeyOption>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  // Sorting method for the toggle, sorts descending or asceding. 
+  // Sorting method for the toggle, sorts descending or asceding.
   useEffect(() => {
-
     if (!sortKey) {
       setSortKey("box_name");
     }
-    
+
     filteredData.sort((a, b) => {
       let result = 0;
 
@@ -47,7 +46,7 @@ const ActivityLogTable = ({
         case "moved_at":
           result = a.moved_at!.localeCompare(b.moved_at!);
           break;
-        default: 
+        default:
           console.error("Invalid sort key");
           return 0;
       }
@@ -60,7 +59,7 @@ const ActivityLogTable = ({
     return <p className="text-center p-4">Loading...</p>;
   }
 
-// ----------------------------- Table Header -----------------------------------------
+  // ----------------------------- Table Header -----------------------------------------
 
   return (
     <div>
@@ -68,94 +67,118 @@ const ActivityLogTable = ({
         <TableHeader>
           <TableRow className="bg-gray-100">
             <TableHead className="font-poppins font-normal text-black p-4 cursor-pointer border-[0.5px] border-gray-300 rounded-tl">
-              User <ArrowUpDown 
-              className="inline pl-1"
-              onClick={() => {
-                setSortKey("moved_by_email");
-                console.log("sortKey", sortKey);
-                (sortOrder === "asc" ? setSortOrder("desc") : setSortOrder("asc"));
-                console.log("sortOrder", sortOrder);
-              }}
+              User{" "}
+              <ArrowUpDown
+                className="inline pl-1"
+                onClick={() => {
+                  setSortKey("moved_by_email");
+                  console.log("sortKey", sortKey);
+                  sortOrder === "asc"
+                    ? setSortOrder("desc")
+                    : setSortOrder("asc");
+                  console.log("sortOrder", sortOrder);
+                }}
               />
             </TableHead>
 
-            <TableHead
-              className="font-poppins font-normal text-black p-4 cursor-pointer border-[0.5px] border-gray-300"
-            >
-            Action 
+            <TableHead className="font-poppins font-normal text-black p-4 cursor-pointer border-[0.5px] border-gray-300">
+              Action
             </TableHead>
-
-            <TableHead
-              className="font-poppins font-normal text-black p-4 cursor-pointer border-[0.5px] border-gray-300"
-            >
-            Note 
-            </TableHead>
-
 
             <TableHead className="font-poppins font-normal text-black p-4 cursor-pointer border-[0.5px] border-gray-300">
-              Box 
-              <ArrowUpDown 
-                className="inline pl-1" 
+              Note
+            </TableHead>
+
+            <TableHead className="font-poppins font-normal text-black p-4 cursor-pointer border-[0.5px] border-gray-300">
+              Box
+              <ArrowUpDown
+                className="inline pl-1"
                 onClick={() => {
                   setSortKey("box_name");
                   console.log("sortKey", sortKey);
-                  (sortOrder === "asc" ? setSortOrder("desc") : setSortOrder("asc"));
-                  console.log("sortOrder", sortOrder);              }}/>
+                  sortOrder === "asc"
+                    ? setSortOrder("desc")
+                    : setSortOrder("asc");
+                  console.log("sortOrder", sortOrder);
+                }}
+              />
             </TableHead>
 
             <TableHead className="font-poppins font-normal text-black p-4 cursor-pointer border-[0.5px] border-gray-300 rounded-tr-md">
-              Time 
-              <ArrowUpDown className="inline pl-1" onClick={() => {
+              Time
+              <ArrowUpDown
+                className="inline pl-1"
+                onClick={() => {
                   setSortKey("moved_at");
-                  (sortOrder === "asc" ? setSortOrder("desc") : setSortOrder("asc"));
-              }}/>
+                  sortOrder === "asc"
+                    ? setSortOrder("desc")
+                    : setSortOrder("asc");
+                }}
+              />
             </TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody> 
-          {filteredData.length > 0 ? (
-            filteredData.map((entry, index) => (
-              <TableRow key={index} className="border-[0.5px]">
-                <TableCell className={`text-[#00559B] border-[0.5px] border-gray-300 p-4 hover:underline cursor-pointer ${
+        <TableBody>
+          {filteredData.length > 0
+            ? (
+              filteredData.map((entry, index) => (
+                <TableRow key={index} className="border-[0.5px]">
+                  <TableCell
+                    className={`text-[#00559B] border-[0.5px] border-gray-300 p-4 hover:underline cursor-pointer ${
                       index === filteredData.length - 1 ? "rounded-bl-md" : ""
-                    }`}>
-                  <span
-                    onClick={() => {
-                      navigate(`/admin/users/${entry.moved_by_user_id}`);
-                    }}
-                    className="hover:underline cursor-pointer underline"
+                    }`}
                   >
-                    {entry.moved_by_email}
-                  </span>
-                </TableCell>
-                <TableCell className="text-gray-500 border-[0.5px] border-gray-300 p-4">{entry.action}</TableCell>
-                <TableCell className="text-gray-500 border-[0.5px] border-gray-300 p-4">{entry.note}</TableCell>
-                <TableCell className="text-[#00559B] underline border-[0.5px] border-gray-300 p-4">
-                <span
-                  onClick={() => {
-                    // TODO: Navigate to box popup
-                    navigate(`/admin/box-lookup/`);
-                  }}
-                  className="hover:underline cursor-pointer">
-                  {entry.box_name}
-                </span>
-                </TableCell>
-                <TableCell className={`text-gray-500 border-[0.5px] border-gray-300 p-4${
+                    <span
+                      onClick={() => {
+                        navigate(`/admin/users/${entry.moved_by_user_id}`);
+                      }}
+                      className="hover:underline cursor-pointer underline"
+                    >
+                      {entry.moved_by_email}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-gray-500 border-[0.5px] border-gray-300 p-4">
+                    {entry.action}
+                  </TableCell>
+                  <TableCell className="text-gray-500 border-[0.5px] border-gray-300 p-4">
+                    {entry.note}
+                  </TableCell>
+                  <TableCell className="text-[#00559B] underline border-[0.5px] border-gray-300 p-4">
+                    <span
+                      onClick={() => {
+                        // TODO: Navigate to box popup
+                        navigate(`/admin/box-lookup/`);
+                      }}
+                      className="hover:underline cursor-pointer"
+                    >
+                      {entry.box_name}
+                    </span>
+                  </TableCell>
+                  <TableCell
+                    className={`text-gray-500 border-[0.5px] border-gray-300 p-4${
                       index === filteredData.length - 1 ? "rounded-br-md" : ""
-                    }`}>
-                  {entry.moved_at
-                    ? format(new Date(entry.moved_at), "MMM dd, yyyy, hh:mm a")
-                    : "N/A"}
+                    }`}
+                  >
+                    {entry.moved_at
+                      ? format(
+                        new Date(entry.moved_at),
+                        "MMM dd, yyyy, hh:mm a",
+                      )
+                      : "N/A"}
+                  </TableCell>
+                </TableRow>
+              ))
+            )
+            : (
+              <TableRow>
+                <TableCell
+                  colSpan={4}
+                  className="text-center py-4 border-[0.5px] border-gray-300 p-4 font-poppins font-normal "
+                >
+                  No results found.
                 </TableCell>
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={4} className="text-center py-4 border-[0.5px] border-gray-300 p-4 font-poppins font-normal ">
-                No results found.
-              </TableCell>
-            </TableRow>
-          )}
+            )}
         </TableBody>
       </Table>
     </div>
