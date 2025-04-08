@@ -4,6 +4,20 @@ import { BoxItem } from "@/types/box";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 interface BoxDetailsProps {
   boxName: string;
@@ -24,6 +38,20 @@ const BoxDetails = ({
 }: BoxDetailsProps) => {
   const queryClient = useQueryClient();
   const [editMode, setEditMode] = useState<boolean>(false);
+  const [showModal, setShowModal] = useState(false);
+  const [dropdownValues, setDropdownValues] = useState<string[]>([]);
+
+  const handleDropdownChange = (index: number, value: string) => {
+    const updated = [...dropdownValues];
+    updated[index] = value;
+
+    // If this was the last dropdown and we haven't reached 4 yet, add a new one
+    if (index === dropdownValues.length - 1 && dropdownValues.length < 4) {
+      updated.push("");
+    }
+
+    setDropdownValues(updated);
+  };
 
   const handleDeleteItemById = async (id: string) => {
     //
@@ -35,6 +63,7 @@ const BoxDetails = ({
       .eq("box_content_id", id);
 
     if (error) {
+      return error;
     }
 
     queryClient.invalidateQueries({ queryKey: ["box_contents_view"] });
@@ -62,7 +91,14 @@ const BoxDetails = ({
                 Log
               </Button>
             ) : (
-              <Button variant="link" className="text-blue-600">
+              <Button
+                variant="link"
+                className="text-blue-600"
+                onClick={() => {
+                  setShowModal(true);
+                  setDropdownValues([""]); // start fresh
+                }}
+              >
                 +
               </Button>
             )}
@@ -100,6 +136,44 @@ const BoxDetails = ({
           />
         ))}
       </div>
+
+      <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>New Box Contents</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {dropdownValues.map((val, idx) => (
+              <Select
+                key={idx}
+                value={val}
+                onValueChange={(value) => handleDropdownChange(idx, value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={`Select item ${idx + 1}`} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="tshirt">T-shirt</SelectItem>
+                  <SelectItem value="pants">Pants</SelectItem>
+                  <SelectItem value="socks">Socks</SelectItem>
+                  <SelectItem value="shoes">Shoes</SelectItem>
+                </SelectContent>
+              </Select>
+            ))}
+          </div>
+
+          <DialogFooter className="flex justify-between mt-6">
+            <Button variant="outline" onClick={() => setShowModal(false)}>
+              Cancel
+            </Button>
+            {dropdownValues.length === 4 &&
+              dropdownValues.every((val) => val) && (
+                <Button onClick={() => setShowModal(false)}>Done</Button>
+              )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
