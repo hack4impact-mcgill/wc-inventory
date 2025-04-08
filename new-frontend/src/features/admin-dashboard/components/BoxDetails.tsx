@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import ContentCard from "./ContentCard";
 import { BoxItem } from "@/types/box";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -39,6 +39,12 @@ const BoxDetails = ({
 
     queryClient.invalidateQueries({ queryKey: ["box_contents_view"] });
   };
+
+  useEffect(() => {
+    if (isMultiSelect && editMode) {
+      setEditMode(false);
+    }
+  }, [isMultiSelect, editMode]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
