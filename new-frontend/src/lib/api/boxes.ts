@@ -1,15 +1,12 @@
-// lib/api/boxes.ts
 import { Box, BoxView } from "@/types/box";
-import { BoxStatusEnum } from "@/types/enums.ts";
 import { supabase } from "../supabaseClient";
-import { Box } from "lucide-react";
 
 export const boxApi = {
   getBoxes: async () => {
     const { data, error } = await supabase
       .from("box_view")
       .select()
-      .order('name', { ascending: true });
+      .order("name", { ascending: true });
 
     if (error) throw new Error(error.message);
     return data as BoxView[];
@@ -37,15 +34,15 @@ export const boxApi = {
   },
 
   moveBoxes: async (boxIds: string[], locationId: string) => {
-    const { data, error } = await supabase
-      .rpc('move_boxes', {
-        p_box_ids: boxIds,
-        p_location_id: locationId
-      });
+    const { data, error } = await supabase.rpc("move_boxes", {
+      p_box_ids: boxIds,
+      p_location_id: locationId,
+    });
 
     if (error) throw new Error(error.message);
     return data;
   },
+
   donateBoxes: async (boxIds: string[]) => {
     console.log("Donating boxes:", boxIds);
 
@@ -65,8 +62,8 @@ export const boxApi = {
     }
 
     // Create movement records for each box
-    const movements = boxIds.map(boxId => {
-      const box = boxesData?.find(b => b.box_id === boxId);
+    const movements = boxIds.map((boxId) => {
+      const box = boxesData?.find((b) => b.box_id === boxId);
       return {
         box_id: boxId,
         action: "Donated", // Using the box_movement_action enum
@@ -74,7 +71,7 @@ export const boxApi = {
         to_location_id: null, // No destination for donations
         moved_at: new Date().toISOString(),
         moved_by: userId || null,
-        note: "Donated via inventory management"
+        note: "Donated via inventory management",
       };
     });
 
@@ -93,7 +90,7 @@ export const boxApi = {
       .from("boxes")
       .update({
         location_id: null,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .in("box_id", boxIds)
       .select();
@@ -103,7 +100,10 @@ export const boxApi = {
       throw new Error(updateError.message);
     }
 
-    console.log("Donation completed successfully:", { movements: movementData, boxes: updatedBoxes });
+    console.log("Donation completed successfully:", {
+      movements: movementData,
+      boxes: updatedBoxes,
+    });
     return { movements: movementData, boxes: updatedBoxes };
-  }
+  },
 };

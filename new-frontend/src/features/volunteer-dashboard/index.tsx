@@ -1,10 +1,6 @@
-import {
-  PackagePlus,
-  PackageSearch,
-} from "lucide-react";
+import { PackagePlus, PackageSearch } from "lucide-react";
 import DashboardTile from "./components/dashboard-tile";
 import { useNavigate } from "react-router-dom";
-
 
 const VolunteerDashboard = () => {
   const navigate = useNavigate();
@@ -23,6 +19,7 @@ const VolunteerDashboard = () => {
       title: "Create a box",
       bgColor: "bg-red-500",
       hoverColor: "hover:bg-red-600",
+      onClick: () => navigate("/create"),
     },
   ];
 

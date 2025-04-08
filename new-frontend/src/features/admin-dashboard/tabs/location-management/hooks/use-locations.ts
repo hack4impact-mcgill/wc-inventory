@@ -1,4 +1,3 @@
-// src/features/admin-dashboard/tabs/location-management/hooks/use-locations.ts
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { locationApi } from "@/lib/api/locations";
 import { queryKeys } from "@/lib/api/queryKeys";
@@ -10,7 +9,7 @@ export function useLocations() {
 
   const { data: locations = [], isLoading } = useQuery<Location[]>({
     queryKey: queryKeys.locations.all,
-    queryFn: locationApi.getLocations,
+    queryFn: () => locationApi.getLocations(),
   });
 
   const createMutation = useMutation({
@@ -70,5 +69,11 @@ export function useLocations() {
     },
   });
 
-  return { locations, isLoading, createMutation, updateMutation, deleteMutation };
+  return {
+    locations,
+    isLoading,
+    createMutation,
+    updateMutation,
+    deleteMutation,
+  };
 }
