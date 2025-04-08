@@ -6,8 +6,9 @@ export type Box = BoxTable["Row"];
 // export type BoxView = Database["public"]["Views"]["box_view"]["Row"];
 
 export interface BoxItem {
+  id: string;
   type: string;
-  gender: 'Men' | 'Women' | 'Kids' | 'Unisex';
+  gender: "Men" | "Women" | "Kids" | "Unisex";
   size: string;
   quantity: number;
 }

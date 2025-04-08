@@ -15,14 +15,14 @@ interface FilterState {
 }
 
 const genderMapping: Record<string, string> = {
-  "male": "Men",
-  "female": "Women",
-  "kids": "Kids",
-  "unisex": "Unisex",
+  male: "Men",
+  female: "Women",
+  kids: "Kids",
+  unisex: "Unisex",
 };
 const categoryMapping: Record<string, string> = {
-  "tshirts": "T-shirt",
-  "pants": "Pants",
+  tshirts: "T-shirt",
+  pants: "Pants",
 };
 
 const BoxLookup: React.FC = () => {
@@ -55,7 +55,8 @@ const BoxLookup: React.FC = () => {
 
       // Filter by contents
       if (
-        filters.category !== "all" || filters.size !== "all" ||
+        filters.category !== "all" ||
+        filters.size !== "all" ||
         filters.gender !== "all"
       ) {
         return box.contents.some((item) => {
@@ -68,7 +69,8 @@ const BoxLookup: React.FC = () => {
 
           // Filter by size
           if (
-            filters.size !== "all" && item.size !== filters.size.toUpperCase()
+            filters.size !== "all" &&
+            item.size !== filters.size.toUpperCase()
           ) {
             return false;
           }
@@ -117,12 +119,13 @@ const BoxLookup: React.FC = () => {
     if (selectedBoxIds.length === 0) return null;
 
     const selectedBoxes = boxes.filter((box) =>
-      selectedBoxIds.includes(box.id)
+      selectedBoxIds.includes(box.id),
     );
 
     if (selectedBoxIds.length === 1) {
       // Single box view
       const box = selectedBoxes[0];
+      console.log(box.contents);
       return (
         <BoxDetails
           boxName={box.name}
@@ -161,7 +164,7 @@ const BoxLookup: React.FC = () => {
 
   const handlePrintLabel = () => {
     const selectedBoxes = boxes.filter((box) =>
-      selectedBoxIds.includes(box.id)
+      selectedBoxIds.includes(box.id),
     );
     printBoxLabels(selectedBoxes);
   };
@@ -215,9 +218,7 @@ const BoxLookup: React.FC = () => {
         </div>
 
         {/* Right panel for box details */}
-        <div className="w-full md:w-96">
-          {getSelectedBoxesContent()}
-        </div>
+        <div className="w-full md:w-96">{getSelectedBoxesContent()}</div>
       </div>
     </div>
   );
