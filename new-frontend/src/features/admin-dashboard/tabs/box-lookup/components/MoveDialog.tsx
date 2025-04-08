@@ -110,7 +110,7 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
   const handleConfirm = () => {
     // Get the most specific selected location (the last non-empty one)
     const targetLocationId = selectedLocations.filter(Boolean).pop();
-    console.log(targetLocationId);
+
     if (targetLocationId) {
       onConfirm(targetLocationId);
     }
