@@ -9,7 +9,7 @@ export function useLocations() {
 
   const { data: locations = [], isLoading } = useQuery<Location[]>({
     queryKey: queryKeys.locations.all,
-    queryFn: locationApi.getLocations,
+    queryFn: () => locationApi.getLocations(),
   });
 
   const createMutation = useMutation({
@@ -32,7 +32,7 @@ export function useLocations() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: LocationUpdate }) =>
-      locationApi.updateLocation({id, data}),
+      locationApi.updateLocation({ id, data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.locations.all });
       toast({
@@ -69,5 +69,11 @@ export function useLocations() {
     },
   });
 
-  return { locations, isLoading, createMutation, updateMutation, deleteMutation };
+  return {
+    locations,
+    isLoading,
+    createMutation,
+    updateMutation,
+    deleteMutation,
+  };
 }

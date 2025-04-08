@@ -1,4 +1,15 @@
-import { Tags, LayoutDashboard, Users, PackagePlus, PackageSearch, Shirt, Ruler, FileClock, MapPin, HandHeart } from "lucide-react";
+import {
+  FileClock,
+  HandHeart,
+  LayoutDashboard,
+  MapPin,
+  PackagePlus,
+  PackageSearch,
+  Ruler,
+  Shirt,
+  Tags,
+  Users,
+} from "lucide-react";
 import { NavItem } from "../types";
 
 export const navItems: NavItem[] = [
@@ -62,6 +73,5 @@ export const navItems: NavItem[] = [
     href: "/admin/users",
     icon: Users,
     description: "Manage users and permissions",
-  }
-
+  },
 ];

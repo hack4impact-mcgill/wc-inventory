@@ -9,8 +9,6 @@ import CategoryManagement from "@/features/admin-dashboard/tabs/category-managem
 import LocationManagement from "@/features/admin-dashboard/tabs/location-management";
 import UserManagement from "@/features/admin-dashboard/tabs/user-management";
 import UnauthorizedPage from "@/features/auth/unauthorized";
-// import SearchForBoxByIdPage from "@/features/search-box-by-id";
-// import SearchForItem from "@/features/search-for-item";
 import ActivityLog from "@/features/admin-dashboard/tabs/activity-log";
 import UserInfo from "@/features/user-info";
 import AddBox from "@/features/add-box";
@@ -66,10 +64,6 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "create-boxes",
-    element: <CreateBoxes />,
-  },
-  {
     path: "/admin",
     element: (
       <AdminWrapper>
@@ -88,6 +82,10 @@ const router = createBrowserRouter([
       {
         path: "users",
         element: <UserManagement />,
+      },
+      {
+        path: "create-boxes",
+        element: <CreateBoxes />,
       },
       {
         path: "users/:id",
