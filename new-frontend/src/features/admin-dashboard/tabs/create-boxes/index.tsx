@@ -18,24 +18,25 @@ interface CreateBoxItem {
   box_name: string;
   category_id: string;
   quantity: number;
-  boxes_quantity: number;
   gender: string;
   size_id?: string | null;
+  location_id?: string | null;
 }
 
 const CreateBox: React.FC = () => {
   const [categories, setCategories] = useState<Tables<'categories'>[]>([]);
   const [sizes, setSizes] = useState<Tables<'sizes'>[]>([]);
   const [existingBoxes, setExistingBoxes] = useState<Tables<'boxes'>[]>([]);
+  const [locations, setLocations] = useState<Tables<'locations'>[]>([]);
   const [createBoxItems, setCreateBoxItems] = useState<CreateBoxItem[]>([
     { 
       box_id: null,
       box_name: '',
       category_id: '',
       quantity: 0,
-      boxes_quantity: 0,
       gender: 'Unisex',
-      size_id: null
+      size_id: null,
+      location_id: null
     }
   ]);
 
@@ -53,6 +54,10 @@ const CreateBox: React.FC = () => {
         .from('boxes')
         .select('*');
 
+      const { data: locationsData, error: locationsError } = await supabase
+        .from('locations')
+        .select('*');
+
       if (categoriesError) {
         console.error('Error fetching categories:', categoriesError);
       }
@@ -65,9 +70,14 @@ const CreateBox: React.FC = () => {
         console.error('Error fetching boxes:', boxesError);
       }
 
+      if (locationsError) {
+        console.error('Error fetching locations:', locationsError);
+      }
+
       setCategories(categoriesData || []);
       setSizes(sizesData || []);
       setExistingBoxes(boxesData || []);
+      setLocations(locationsData || []);
     };
 
     fetchData();
@@ -81,15 +91,15 @@ const CreateBox: React.FC = () => {
 
   const addNewItemRow = () => {
     setCreateBoxItems([
-      ...createBoxItems, 
-      { 
+      ...createBoxItems,
+      {
         box_id: null,
         box_name: '',
         category_id: '',
         quantity: 0,
-        boxes_quantity: 0,
         gender: 'Unisex',
-        size_id: null
+        size_id: null,
+        location_id: null
       }
     ]);
   };
@@ -98,8 +108,7 @@ const CreateBox: React.FC = () => {
     const boxesToCreate = createBoxItems.filter(item => 
       (item.box_id || item.box_name) && 
       item.category_id && 
-      item.quantity > 0 && 
-      item.boxes_quantity > 0
+      item.quantity > 0
     );
   
     try {
@@ -111,7 +120,8 @@ const CreateBox: React.FC = () => {
             .from('boxes')
             .insert({
               name: item.box_name || `${categories.find(c => c.category_id === item.category_id)?.name || 'Box'}-${Date.now()}`,
-              description: `${item.boxes_quantity} boxes of ${item.quantity} items`
+              description: `${item.quantity} items`,
+              location_id: item.location_id
             })
             .select()
             .single();
@@ -127,7 +137,7 @@ const CreateBox: React.FC = () => {
           .insert({
             box_id: targetBoxId,
             category_id: item.category_id,
-            quantity: item.quantity * item.boxes_quantity,
+            quantity: item.quantity,
             gender: item.gender,
             size_id: item.size_id
           });
@@ -135,25 +145,25 @@ const CreateBox: React.FC = () => {
         if (contentsError) throw contentsError;
       }
   
-      setCreateBoxItems([
+      setCreateBoxItems([  // Reset to a single item
         { 
           box_id: null,
           box_name: '',
           category_id: '',
           quantity: 0,
-          boxes_quantity: 0,
           gender: 'Unisex',
-          size_id: null
+          size_id: null,
+          location_id: null
         }
       ]);
-  
+
       // toast.success('Boxes created successfully');
 
       const { data: boxesData } = await supabase.from('boxes').select('*');
       setExistingBoxes(boxesData || []);
     } catch (error) {
       console.error('Error creating boxes:', error);
-      // toast.error('Failed to create boxes');
+    // toast.error('Failed to create boxes');
     }
   };
 
@@ -165,9 +175,9 @@ const CreateBox: React.FC = () => {
             <TableHead>Box</TableHead>
             <TableHead>Category</TableHead>
             <TableHead>Quantity of Items per Box</TableHead>
-            <TableHead>Number of Boxes</TableHead>
             <TableHead>Gender</TableHead>
             <TableHead>Size</TableHead>
+            <TableHead>Location</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -231,16 +241,6 @@ const CreateBox: React.FC = () => {
                 />
               </TableCell>
               <TableCell>
-                <Input 
-                  type="number"
-                  value={item.boxes_quantity}
-                  onChange={(e) => updateCreateBoxItem(index, { 
-                    boxes_quantity: parseInt(e.target.value) || 0 
-                  })}
-                  placeholder="0"
-                />
-              </TableCell>
-              <TableCell>
                 <select 
                   value={item.gender}
                   onChange={(e) => updateCreateBoxItem(index, { 
@@ -271,16 +271,32 @@ const CreateBox: React.FC = () => {
                   ))}
                 </select>
               </TableCell>
+              <TableCell>
+                <select
+                  value={item.location_id || ''}
+                  onChange={(e) => updateCreateBoxItem(index, {
+                    location_id: e.target.value || null
+                  })}
+                  className="w-full p-2 border rounded"
+                >
+                  <option value="">Select Location</option>
+                  {locations.map((location) => (
+                    <option key={location.location_id} value={location.location_id}>
+                      {location.name}
+                    </option>
+                  ))}
+                </select>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
       <div className="flex justify-between mt-4">
-        <Button variant="outline" onClick={addNewItemRow}>
+      <Button variant="outline" onClick={addNewItemRow}>
           Add Item Row
         </Button>
         <Button onClick={handleCreateBox}>
-          Create Boxes
+          Create Box
         </Button>
       </div>
     </Card>
