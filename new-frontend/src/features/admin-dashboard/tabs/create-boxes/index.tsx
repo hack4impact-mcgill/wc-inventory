@@ -12,6 +12,8 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabaseClient";
 import { Tables, Enums } from "@/types/supabase";
+// import { ToastContainer, toast } from 'react-toastify';
+// import 'react-toastify/dist/ReactToastify.css';
 
 interface CreateBoxItem {
   box_id?: string | null;
@@ -145,7 +147,7 @@ const CreateBox: React.FC = () => {
         if (contentsError) throw contentsError;
       }
   
-      setCreateBoxItems([  // Reset to a single item
+      setCreateBoxItems([
         { 
           box_id: null,
           box_name: '',
@@ -157,13 +159,13 @@ const CreateBox: React.FC = () => {
         }
       ]);
 
-      // toast.success('Boxes created successfully');
+      // toast.success('Box created!');
 
       const { data: boxesData } = await supabase.from('boxes').select('*');
       setExistingBoxes(boxesData || []);
     } catch (error) {
       console.error('Error creating boxes:', error);
-    // toast.error('Failed to create boxes');
+    // toast.error('Failed to create boxe');
     }
   };
 
