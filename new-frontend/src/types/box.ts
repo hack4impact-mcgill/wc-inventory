@@ -1,3 +1,4 @@
+import { BoxStatus } from "./enums";
 import { Database } from "./supabase";
 
 type BoxTable = Database["public"]["Tables"]["boxes"];
@@ -16,6 +17,7 @@ export interface BoxView {
   id: string;
   location: string;
   name: string;
+  status: BoxStatus;
   contents: BoxItem[];
   createdAt: string;
   updatedAt: string;

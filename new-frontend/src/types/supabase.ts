@@ -1,4 +1,3 @@
-// src/types/supabase.ts
 export type Json =
   | string
   | number
@@ -458,6 +457,7 @@ export type Database = {
           id: string | null
           location: string | null
           name: string | null
+          status: Database["public"]["Enums"]["box_status_enum"] | null
           updatedAt: string | null
         }
         Relationships: []
@@ -486,34 +486,19 @@ export type Database = {
       }
     }
     Functions: {
-      add_user_role:
-      | {
-        Args: {
-          new_user_id: number
-          new_role: string
-        }
+      add_user_role: {
+        Args:
+          | { new_user_id: string; new_role: string }
+          | { new_user_id: number; new_role: string }
         Returns: undefined
       }
-      | {
-        Args: {
-          new_user_id: string
-          new_role: string
-        }
-        Returns: undefined
-      }
-      add_user_role_uuid:
-      | {
-        Args: {
-          new_user_id: string
-          new_role: Database["public"]["Enums"]["app_role"]
-        }
-        Returns: undefined
-      }
-      | {
-        Args: {
-          new_user_id: string
-          new_role: string
-        }
+      add_user_role_uuid: {
+        Args:
+          | {
+              new_user_id: string
+              new_role: Database["public"]["Enums"]["app_role"]
+            }
+          | { new_user_id: string; new_role: string }
         Returns: undefined
       }
       authorize: {
@@ -523,24 +508,15 @@ export type Database = {
         Returns: boolean
       }
       check_user_exists: {
-        Args: {
-          input_email: string
-        }
+        Args: { input_email: string }
         Returns: boolean
       }
       create_new_user: {
-        Args: {
-          email: string
-          password: string
-          name: string
-          role: string
-        }
+        Args: { email: string; password: string; name: string; role: string }
         Returns: undefined
       }
       custom_access_token_hook: {
-        Args: {
-          event: Json
-        }
+        Args: { event: Json }
         Returns: Json
       }
       get_user_role: {
@@ -554,6 +530,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      move_boxes: {
+        Args: { p_box_ids: string[]; p_location_id: string; p_note?: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_permission: "users.create" | "users.edit" | "users.delete"
@@ -562,19 +542,19 @@ export type Database = {
       box_status_enum: "Active" | "Donated" | "Archived"
       gender_enum: "Male" | "Female" | "Unisex" | "Kids"
       icon_name_enum:
-      | "Folder"
-      | "FolderTree"
-      | "Shirt"
-      | "ShirtRound"
-      | "Watch"
-      | "Bath"
-      | "PenLine"
-      | "CircleDot"
-      | "Backpack"
-      | "Cloud"
-      | "Smile"
+        | "Folder"
+        | "FolderTree"
+        | "Shirt"
+        | "ShirtRound"
+        | "Watch"
+        | "Bath"
+        | "PenLine"
+        | "CircleDot"
+        | "Backpack"
+        | "Cloud"
+        | "Smile"
       movement_type_enum: "Create" | "Move" | "Donate" | "Archive"
-      size_category_enum: "Adult" | "Kid" | "Shoe" | "Other"
+      size_category_enum: "Adult" | "Kid" | "Shoe" | "Other" | "baby"
       size_region_enum: "US" | "EU" | "UK" | "INT"
       user_role: "admin" | "volunteer"
       user_role_enum: "Volunteer" | "Admin"
@@ -585,99 +565,137 @@ export type Database = {
   }
 }
 
-type PublicSchema = Database[Extract<keyof Database, "public">]
+type DefaultSchema = Database[Extract<keyof Database, "public">]
 
 export type Tables<
-  PublicTableNameOrOptions extends
-  | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
-  | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-  ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-    Database[PublicTableNameOrOptions["schema"]]["Views"])
-  : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-    Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof Database },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
+  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
-  ? R
-  : never
-  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
-    PublicSchema["Views"])
-  ? (PublicSchema["Tables"] &
-    PublicSchema["Views"])[PublicTableNameOrOptions] extends {
-      Row: infer R
-    }
-  ? R
-  : never
-  : never
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
 
 export type TablesInsert<
-  PublicTableNameOrOptions extends
-  | keyof PublicSchema["Tables"]
-  | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-  ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-  : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Insert: infer I
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof Database },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof Database
   }
-  ? I
-  : never
-  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-  ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-    Insert: infer I
-  }
-  ? I
-  : never
-  : never
+    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
+  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
 
 export type TablesUpdate<
-  PublicTableNameOrOptions extends
-  | keyof PublicSchema["Tables"]
-  | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-  ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-  : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Update: infer U
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof Database },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof Database
   }
-  ? U
-  : never
-  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-  ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-    Update: infer U
-  }
-  ? U
-  : never
-  : never
+    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
+  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
 
 export type Enums<
-  PublicEnumNameOrOptions extends
-  | keyof PublicSchema["Enums"]
-  | { schema: keyof Database },
-  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
-  ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
-  : never = never,
-> = PublicEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
-  ? PublicSchema["Enums"][PublicEnumNameOrOptions]
-  : never
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof Database },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
+  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-  | keyof PublicSchema["CompositeTypes"]
-  | { schema: keyof Database },
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof Database },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof Database
   }
-  ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-  : never = never,
+    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
 > = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
   ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
-  ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-  : never
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      app_permission: ["users.create", "users.edit", "users.delete"],
+      app_role: ["admin", "volunteer"],
+      box_movement_action: ["Donated", "Moved", "Retired", "Other"],
+      box_status_enum: ["Active", "Donated", "Archived"],
+      gender_enum: ["Male", "Female", "Unisex", "Kids"],
+      icon_name_enum: [
+        "Folder",
+        "FolderTree",
+        "Shirt",
+        "ShirtRound",
+        "Watch",
+        "Bath",
+        "PenLine",
+        "CircleDot",
+        "Backpack",
+        "Cloud",
+        "Smile",
+      ],
+      movement_type_enum: ["Create", "Move", "Donate", "Archive"],
+      size_category_enum: ["Adult", "Kid", "Shoe", "Other", "baby"],
+      size_region_enum: ["US", "EU", "UK", "INT"],
+      user_role: ["admin", "volunteer"],
+      user_role_enum: ["Volunteer", "Admin"],
+    },
+  },
+} as const

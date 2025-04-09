@@ -10,13 +10,14 @@ import { toast } from "sonner";
 import DonateDialog from "./components/DonateDialog";
 import MoveDialog from "./components/MoveDialog";
 import BoxesTable from "./components/BoxesTable";
+import { BoxStatus } from "@/types/enums";
 
-// Define filter state interface
 interface FilterState {
   searchTerm: string;
   category: string;
   size: string;
   gender: string;
+  status: BoxStatus;
 }
 
 const genderMapping: Record<string, string> = {
@@ -39,6 +40,7 @@ const BoxLookup: React.FC = () => {
     category: "all",
     size: "all",
     gender: "all",
+    status: "Active",
   });
 
   // Dialog states
@@ -117,6 +119,11 @@ const BoxLookup: React.FC = () => {
   // Filter boxes based on search term and filters - memoized for performance
   const filteredBoxes = React.useMemo(() => {
     return boxes.filter((box) => {
+      // filter by status
+      if (filters.status != box.status) {
+        return false;
+      }
+
       // Filter by search term (box name)
       if (
         filters.searchTerm &&
@@ -321,6 +328,7 @@ const BoxLookup: React.FC = () => {
             onCategoryChange={(value) => handleFilterChange("category", value)}
             onSizeChange={(value) => handleFilterChange("size", value)}
             onGenderChange={(value) => handleFilterChange("gender", value)}
+            onStatusChange={(value) => handleFilterChange("status", value)}
             actionButtons={actionButtons}
           />
 
