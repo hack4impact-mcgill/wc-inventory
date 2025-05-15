@@ -18,6 +18,7 @@ import Inventory from "@/features/admin-dashboard/tabs/inventory";
 import CreateBoxes from "@/features/admin-dashboard/tabs/create-boxes";
 import BoxLookup from "@/features/admin-dashboard/tabs/box-lookup";
 import Donations from "@/features/admin-dashboard/tabs/donations";
+import AdminOverview from "@/features/admin-dashboard/components/AdminOverview.tsx";
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
@@ -73,7 +74,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <div>Welcome to the Admin Overview</div>,
+        element:<AdminOverview/>,
       },
       {
         path: "inventory",
