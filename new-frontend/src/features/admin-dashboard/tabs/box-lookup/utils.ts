@@ -219,10 +219,10 @@ export const printBoxLabels = (selectedBoxes: BoxView[]): void => {
             </tbody>
           </table>
         </div>
-        <div class="barcode-container">
+        <!-- <div class="barcode-container">
           <div class="barcode-label">Box ID: ${box.id}</div>
           <svg id="barcode-${index}"></svg>
-        </div>
+        </div> -->
       </div>
     `);
   });
