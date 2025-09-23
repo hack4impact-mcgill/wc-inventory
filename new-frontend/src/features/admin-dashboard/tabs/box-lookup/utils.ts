@@ -215,7 +215,7 @@ export const printBoxLabels = (selectedBoxes: BoxView[]): void => {
       `);
     }
 
-    /* printWindow.document.write(`
+    printWindow.document.write(`
             </tbody>
           </table>
         </div>
@@ -224,7 +224,7 @@ export const printBoxLabels = (selectedBoxes: BoxView[]): void => {
           <svg id="barcode-${index}"></svg>
         </div>
       </div>
-    `); */
+    `);
   });
 
   printWindow.document.write(`
