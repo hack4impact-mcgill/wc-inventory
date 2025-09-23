@@ -80,12 +80,8 @@ const SearchFilters = ({
         </div>
         {actionButtons}
       </div>
-      <Button variant="outline" className="w-full bg-black text-white">
-        Find Items
-      </Button>
     </div>
   );
 };
 
 export default SearchFilters;
-
