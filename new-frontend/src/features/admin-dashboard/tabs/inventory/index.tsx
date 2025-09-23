@@ -18,6 +18,8 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
+import { debugIntegration } from "@sentry/react";
+import { GenderFemaleIcon } from "@phosphor-icons/react";
 
 const Inventory = () => {
   const { data: inventory, isLoading, error } = useInventory();
@@ -94,15 +96,25 @@ const Inventory = () => {
   };
 
   const exportToCsv = () => {
-    //TODO: Discuss Formatting of CSV
     if (!inventory) return;
 
-    const headers = "Category,Total Quantity\n";
-    const rows = inventory
-      .map((item) => `${item.category_name},${item.items.length}`)
-      .join("\n");
+    const headers = "Category,Gender,Size,Total Quantity\n";
 
-    const csvContent = `data:text/csv;charset=utf-8,${headers + rows}`;
+    
+    const rows = [];
+    for (const category of inventory) {
+        rows.push(`${category.category_name},,,${getAmount(category.items)}`); // Category total
+      for (const gender of category.genders) {
+        rows.push(` , ${gender.gender} ,, ${gender.sizes.flatMap((size) => size.items).length}  `) //gender total
+        for (const size of gender.sizes) {
+          for(const item of size.items){
+            rows.push(`,,${size.size_name},${item.quantity}`);
+          }
+        }
+      }
+    }
+
+    const csvContent = `data:text/csv;charset=utf-8,${headers + rows.join("\n")}`;
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
