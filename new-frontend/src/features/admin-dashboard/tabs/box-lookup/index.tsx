@@ -11,6 +11,7 @@ import DonateDialog from "./components/DonateDialog";
 import MoveDialog from "./components/MoveDialog";
 import BoxesTable from "./components/BoxesTable";
 import { BoxStatus } from "@/types/enums";
+import { printBoxLabels } from "./utils";
 
 interface FilterState {
   searchTerm: string;
@@ -280,10 +281,22 @@ const BoxLookup: React.FC = () => {
     });
   };
 
+  const handlePrintLabel = () => {
+    const selectedBoxes = boxes.filter((box) =>
+      selectedBoxIds.includes(box.id)
+    );
+    printBoxLabels(selectedBoxes);
+  };
+
   // Action buttons for selected boxes
   const actionButtons = (
     <div className="flex gap-4">
-      <Button variant="outline">Print label</Button>
+      <Button variant="outline" 
+        onClick={handlePrintLabel}
+        disabled={selectedBoxIds.length === 0}
+      >
+        Print label
+      </Button>
       <Button
         variant="outline"
         onClick={handleMoveClick}
