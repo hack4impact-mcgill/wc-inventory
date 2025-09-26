@@ -18,6 +18,9 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
+import { getSizeWeight } from "@/lib/utils/size"; 
+
+
 
 const Inventory = () => {
   const { data: inventory, isLoading, error } = useInventory();
@@ -95,22 +98,69 @@ const Inventory = () => {
 
   const exportToCsv = () => {
     if (!inventory) return;
-
-    const headers = "Category,Gender,Size,Total Quantity\n";
-
     
-    const rows = [];
-    for (const category of inventory) {
-        rows.push(`${category.category_name},,,${getAmount(category.items)}`); // Category total
-      for (const gender of category.genders) {
-        rows.push(` , ${gender.gender} ,, ${gender.sizes.flatMap((size) => size.items).length}  `) //gender total
-        for (const size of gender.sizes) {
-          for(const item of size.items){
-            rows.push(`,,${size.size_name},${item.quantity}`);
-          }
+    const today = new Date().toLocaleDateString()
+    const viewedDate = currentDate ? currentDate.format("MM/DD/YYYY") : "N/A";
+    const headers =
+    `Export Date: ${today},Viewed Date: ${viewedDate}\n` +
+    "Category,Gender,Size,Total Quantity,New Stock,Donations\n";
+
+
+    const sortedInventory = [...inventory].sort((a, b) => a.category_name.localeCompare(b.category_name));
+    const rows: string[] = [];
+
+
+
+    for (const category of sortedInventory) {
+        const categoryTotal = getAmount(category.items);
+        const categoryNewStock = getRefills(category.items, currentDate);
+        const categoryDonations = getDistributions(category.items, currentDate);
+        rows.push(`${category.category_name},,,${categoryTotal},${categoryNewStock},${categoryDonations}`);
+
+      for (const gender of [...category.genders].sort((a, b) =>
+        a.gender.localeCompare(b.gender)
+      )) {
+
+      const sizeTotals: Record<string, { qty: number; newStock: number; donations: number }> = {};
+
+      for (const size of gender.sizes) {
+        const key = size.size_name || "No Size";
+        const qty = getAmount(size.items);
+        const newStock = getRefills(size.items, currentDate);
+        const donations = getDistributions(size.items, currentDate);
+
+        if (!sizeTotals[key]) {
+          sizeTotals[key] = { qty: 0, newStock: 0, donations: 0 };
         }
+        sizeTotals[key].qty += qty;
+        sizeTotals[key].newStock += newStock;
+        sizeTotals[key].donations += donations;
       }
+
+      const genderTotal = Object.values(sizeTotals).reduce(
+        (sum, s) => sum + s.qty,
+        0
+      );
+      const genderNewStock = Object.values(sizeTotals).reduce(
+        (sum, s) => sum + s.newStock,
+        0
+      );
+      const genderDonations = Object.values(sizeTotals).reduce(
+        (sum, s) => sum + s.donations,
+        0
+      );
+
+      rows.push(
+        `,${gender.gender},,${genderTotal},${genderNewStock},${genderDonations}`
+      );
+
+      Object.entries(sizeTotals)
+        .sort(([a], [b]) => getSizeWeight(a) - getSizeWeight(b))
+        .forEach(([sizeName, { qty, newStock, donations }]) => {
+          rows.push(`,,${sizeName},${qty},${newStock},${donations}`);
+        });
     }
+  }
 
     const csvContent = `data:text/csv;charset=utf-8,${headers + rows.join("\n")}`;
     const encodedUri = encodeURI(csvContent);
@@ -224,12 +274,14 @@ const Inventory = () => {
             <TableRow>
               <TableHead className="font-bold">Items</TableHead>
               <TableHead className="font-bold">Current Inventory</TableHead>
-              <TableHead className="font-bold">Refills</TableHead>
-              <TableHead className="font-bold">Distributions</TableHead>
+              <TableHead className="font-bold">New Stock</TableHead>
+              <TableHead className="font-bold">Donations</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {inventory?.map((item) => (
+            {(inventory ?? [])
+            .sort((a, b) => a.category_name.localeCompare(b.category_name))
+            .map((item) => (
               <>
                 <TableRow
                   key={item.category_id}
@@ -251,7 +303,9 @@ const Inventory = () => {
                   </TableCell>
                 </TableRow>
                 {expandedCategories.has(item.category_id) &&
-                  item.genders.map((genderItem) => (
+                  [...item.genders]
+                  .sort((a, b) => a.gender.localeCompare(b.gender))
+                  .map((genderItem) => (
                     <>
                       <TableRow
                         key={`${item.category_id}-${genderItem.gender}`}
@@ -290,7 +344,7 @@ const Inventory = () => {
                       {expandedGenders.has(
                         `${item.category_id}-${genderItem.gender}`,
                       ) &&
-                        genderItem.sizes.map((size) => (
+                      [...genderItem.sizes].sort((a, b) =>  getSizeWeight(a.size_name) - getSizeWeight(b.size_name)).map((size) => (
                           <TableRow
                             key={`${item.category_id}-${genderItem.gender}-${
                               size.size_id || "no-size"
