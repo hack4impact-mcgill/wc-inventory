@@ -1,6 +1,5 @@
-import { Button } from "@/components/ui/button";
-import ContentCard from "./ContentCard";
 import { BoxItem } from "@/types/box";
+import ContentCard from "./ContentCard";
 
 interface BoxDetailsProps {
   boxName: string;

@@ -17,7 +17,11 @@ const ActivityLog = () => {
   const [action, setAction] = useState<ActionTypes>("allActions");
 
   // Get data entries
-  const { data: activityLogs, isLoading } = useQuery({
+  const {
+    data: activityLogs,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryFn: activityLogApi.getActivityLogs,
     queryKey: queryKeys.activityLog.all,
   });
@@ -30,9 +34,9 @@ const ActivityLog = () => {
   const filteredLogs = activityLogs?.filter((log) => {
     var isInDate = true;
     var isCorrectAction = true;
-    var isCorrectName = log.box_name?.toLowerCase().includes(
-      searchTerm.toLowerCase(),
-    );
+    var isCorrectName = log.box_name
+      ?.toLowerCase()
+      .includes(searchTerm.toLowerCase());
 
     if (action != "allActions" && action != log.action) {
       isCorrectAction = false;
@@ -60,6 +64,7 @@ const ActivityLog = () => {
             setStartDate={setStartDate}
             setEndDate={setEndDate}
             setAction={setAction}
+            onRefetch={refetch}
           />
         </div>
         <ActivityLogTable filteredData={filteredLogs!} isLoading={isLoading} />

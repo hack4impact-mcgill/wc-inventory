@@ -38,7 +38,7 @@ export function UserTable({ users, onUserClick }: UserTableProps) {
           <TableRow
             key={user.id}
             className="cursor-pointer hover:bg-muted"
-            onClick={() => onUserClick(user.email!)}
+            onClick={() => onUserClick(user.id!)}
           >
             <TableCell>{user.name ?? "N/A"}</TableCell>
             <TableCell>{user.email}</TableCell>
