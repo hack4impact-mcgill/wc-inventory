@@ -52,7 +52,11 @@ const UserInfo: React.FC = () => {
           <div>
             <div className="mb-4">
               <label className="font-semibold">Name: </label>
-              <p>{user.email}</p>
+              <p>{user.name ?? "N/A"}</p>
+            </div>
+            <div className="mb-4">
+              <label className="font-semibold">Email: </label>
+              <p>{user.email ?? "N/A"}</p>
             </div>
             <div className="mb-4">
               <label className="font-semibold">Created on:</label>
@@ -72,12 +76,8 @@ const UserInfo: React.FC = () => {
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">
-                    Active (current volunteer)
-                  </SelectItem>
-                  <SelectItem value="inactive">
-                    Inactive (no longer volunteer)
-                  </SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
                 </SelectContent>
               </Select>
             </div>
