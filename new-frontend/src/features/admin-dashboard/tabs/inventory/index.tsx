@@ -251,7 +251,7 @@ const Inventory = () => {
           onClick={exportToExcel}
           className="h-[39px]"
         >
-          Export to CSV
+          Export to Excel
           </Button>
       </div>
 
