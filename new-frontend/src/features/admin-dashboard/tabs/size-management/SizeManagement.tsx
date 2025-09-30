@@ -32,7 +32,7 @@ import { useSizes } from "./hooks/use-sizes";
 import { SizeTable } from "./components/size-table";
 import SizeForm from "./components/size-form";
 import { sizeApi } from "@/lib/api/sizes";
-import {getSizeWeight, sortSizes} from "@/lib/utils/size"; 
+
 
 
 const SizeManagement = () => {

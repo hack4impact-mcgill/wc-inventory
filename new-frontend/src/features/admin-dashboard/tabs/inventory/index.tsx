@@ -19,6 +19,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import { getSizeWeight } from "@/lib/utils/size"; 
+import * as XLSX from "xlsx";
 
 
 
@@ -95,81 +96,67 @@ const Inventory = () => {
   ) => {
     setSelectedItem({ categoryId, categoryName, sizeId, sizeName, gender });
   };
-
-  const exportToCsv = () => {
+  
+  const exportToExcel = () => {
     if (!inventory) return;
-    
-    const today = new Date().toLocaleDateString()
+  
+    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
     const viewedDate = currentDate ? currentDate.format("MM/DD/YYYY") : "N/A";
-    const headers =
-    `Export Date: ${today},Viewed Date: ${viewedDate}\n` +
-    "Category,Gender,Size,Total Quantity,New Stock,Donations\n";
+  
 
-
-    const sortedInventory = [...inventory].sort((a, b) => a.category_name.localeCompare(b.category_name));
-    const rows: string[] = [];
-
-
-
+    const rows: any[][] = [];
+    rows.push([`Inventory as of: ${viewedDate}`]);
+    rows.push([]); 
+    rows.push(["Category", "Gender", "Size", "Available", "New Stock", "Donations"]);
+  
+    const sortedInventory = [...inventory].sort((a, b) =>
+      a.category_name.localeCompare(b.category_name)
+    );
+  
     for (const category of sortedInventory) {
-        const categoryTotal = getAmount(category.items);
-        const categoryNewStock = getRefills(category.items, currentDate);
-        const categoryDonations = getDistributions(category.items, currentDate);
-        rows.push(`${category.category_name},,,${categoryTotal},${categoryNewStock},${categoryDonations}`);
-
+      const categoryTotal = getAmount(category.items);
+      const categoryNewStock = getRefills(category.items, currentDate);
+      const categoryDonations = getDistributions(category.items, currentDate);
+  
+      rows.push([category.category_name, "", "", categoryTotal, categoryNewStock, categoryDonations]);
+  
       for (const gender of [...category.genders].sort((a, b) =>
         a.gender.localeCompare(b.gender)
       )) {
-
-      const sizeTotals: Record<string, { qty: number; newStock: number; donations: number }> = {};
-
-      for (const size of gender.sizes) {
-        const key = size.size_name || "No Size";
-        const qty = getAmount(size.items);
-        const newStock = getRefills(size.items, currentDate);
-        const donations = getDistributions(size.items, currentDate);
-
-        if (!sizeTotals[key]) {
-          sizeTotals[key] = { qty: 0, newStock: 0, donations: 0 };
+        const sizeTotals: Record<string, { qty: number; newStock: number; donations: number }> = {};
+  
+        for (const size of gender.sizes) {
+          const key = size.size_name || "No Size";
+          const qty = getAmount(size.items);
+          const newStock = getRefills(size.items, currentDate);
+          const donations = getDistributions(size.items, currentDate);
+  
+          if (!sizeTotals[key]) sizeTotals[key] = { qty: 0, newStock: 0, donations: 0 };
+          sizeTotals[key].qty += qty;
+          sizeTotals[key].newStock += newStock;
+          sizeTotals[key].donations += donations;
         }
-        sizeTotals[key].qty += qty;
-        sizeTotals[key].newStock += newStock;
-        sizeTotals[key].donations += donations;
+  
+        const genderTotal = Object.values(sizeTotals).reduce((s, v) => s + v.qty, 0);
+        const genderNewStock = Object.values(sizeTotals).reduce((s, v) => s + v.newStock, 0);
+        const genderDonations = Object.values(sizeTotals).reduce((s, v) => s + v.donations, 0);
+  
+        rows.push(["", gender.gender, "", genderTotal, genderNewStock, genderDonations]);
+  
+        Object.entries(sizeTotals)
+          .sort(([a], [b]) => getSizeWeight(a) - getSizeWeight(b))
+          .forEach(([sizeName, { qty, newStock, donations }]) => {
+            rows.push(["", "", String(sizeName), qty, newStock, donations]);
+          });
       }
-
-      const genderTotal = Object.values(sizeTotals).reduce(
-        (sum, s) => sum + s.qty,
-        0
-      );
-      const genderNewStock = Object.values(sizeTotals).reduce(
-        (sum, s) => sum + s.newStock,
-        0
-      );
-      const genderDonations = Object.values(sizeTotals).reduce(
-        (sum, s) => sum + s.donations,
-        0
-      );
-
-      rows.push(
-        `,${gender.gender},,${genderTotal},${genderNewStock},${genderDonations}`
-      );
-
-      Object.entries(sizeTotals)
-        .sort(([a], [b]) => getSizeWeight(a) - getSizeWeight(b))
-        .forEach(([sizeName, { qty, newStock, donations }]) => {
-          rows.push(`,,${sizeName},${qty},${newStock},${donations}`);
-        });
     }
-  }
+  
+    const worksheet = XLSX.utils.aoa_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Inventory");
+  
 
-    const csvContent = `data:text/csv;charset=utf-8,${headers + rows.join("\n")}`;
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "inventory.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    XLSX.writeFile(workbook, `inventory_export_${today}.xlsx`);
   };
 
   const getAmount = (
@@ -261,7 +248,7 @@ const Inventory = () => {
           />
         </LocalizationProvider>
         <Button 
-          onClick={exportToCsv}
+          onClick={exportToExcel}
           className="h-[39px]"
         >
           Export to CSV
