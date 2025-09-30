@@ -73,18 +73,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   </div>
                 </DropdownMenuLabel>
                 {/* user?.role === 'Admin' &&  */}
-                {true && (
-                  <>
-                    <DropdownMenuItem
-                      onClick={() => navigate("/admin")}
-                      className="text-gray-700 dark:text-gray-300 cursor-pointer"
-                    >
-                      <Shield className="mr-2 h-4 w-4" />
-                      <span>Admin Dashboard</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="h-px bg-gray-200 dark:bg-gray-700 p-0 m-1" />
-                  </>
-                )}
+                <DropdownMenuItem
+                  onClick={() => navigate("/admin")}
+                  className="text-gray-700 dark:text-gray-300 cursor-pointer"
+                >
+                  <Shield className="mr-2 h-4 w-4" />
+                  <span>Admin Dashboard</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="h-px bg-gray-200 dark:bg-gray-700 p-0 m-1" />
                 <DropdownMenuItem
                   onClick={handleSignOut}
                   className="text-red-600 dark:text-red-400 cursor-pointer"

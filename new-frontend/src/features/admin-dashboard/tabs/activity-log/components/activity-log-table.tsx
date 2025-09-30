@@ -119,66 +119,61 @@ const ActivityLogTable = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredData.length > 0
-            ? (
-              filteredData.map((entry, index) => (
-                <TableRow key={index} className="border-[0.5px]">
-                  <TableCell
-                    className={`text-[#00559B] border-[0.5px] border-gray-300 p-4 hover:underline cursor-pointer ${
-                      index === filteredData.length - 1 ? "rounded-bl-md" : ""
-                    }`}
-                  >
-                    <span
-                      onClick={() => {
-                        navigate(`/admin/users/${entry.moved_by_user_id}`);
-                      }}
-                      className="hover:underline cursor-pointer underline"
-                    >
-                      {entry.moved_by_email}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-gray-500 border-[0.5px] border-gray-300 p-4">
-                    {entry.action}
-                  </TableCell>
-                  <TableCell className="text-gray-500 border-[0.5px] border-gray-300 p-4">
-                    {entry.note}
-                  </TableCell>
-                  <TableCell className="text-[#00559B] underline border-[0.5px] border-gray-300 p-4">
-                    <span
-                      onClick={() => {
-                        // TODO: Navigate to box popup
-                        navigate(`/admin/box-lookup/`);
-                      }}
-                      className="hover:underline cursor-pointer"
-                    >
-                      {entry.box_name}
-                    </span>
-                  </TableCell>
-                  <TableCell
-                    className={`text-gray-500 border-[0.5px] border-gray-300 p-4${
-                      index === filteredData.length - 1 ? "rounded-br-md" : ""
-                    }`}
-                  >
-                    {entry.moved_at
-                      ? format(
-                        new Date(entry.moved_at),
-                        "MMM dd, yyyy, hh:mm a",
-                      )
-                      : "N/A"}
-                  </TableCell>
-                </TableRow>
-              ))
-            )
-            : (
-              <TableRow>
+          {filteredData.length > 0 ? (
+            filteredData.map((entry, index) => (
+              <TableRow key={index} className="border-[0.5px]">
                 <TableCell
-                  colSpan={4}
-                  className="text-center py-4 border-[0.5px] border-gray-300 p-4 font-poppins font-normal "
+                  className={`text-[#00559B] border-[0.5px] border-gray-300 p-4 hover:underline cursor-pointer ${
+                    index === filteredData.length - 1 ? "rounded-bl-md" : ""
+                  }`}
                 >
-                  No results found.
+                  <span
+                    onClick={() => {
+                      navigate(`/admin/users/${entry.moved_by_user_id}`);
+                    }}
+                    className="hover:underline cursor-pointer underline"
+                  >
+                    {entry.moved_by_email}
+                  </span>
+                </TableCell>
+                <TableCell className="text-gray-500 border-[0.5px] border-gray-300 p-4">
+                  {entry.action}
+                </TableCell>
+                <TableCell className="text-gray-500 border-[0.5px] border-gray-300 p-4">
+                  {entry.note}
+                </TableCell>
+                <TableCell className="text-[#00559B] underline border-[0.5px] border-gray-300 p-4">
+                  <span
+                    onClick={() => {
+                      // TODO: Navigate to box popup
+                      navigate(`/admin/box-lookup/`);
+                    }}
+                    className="hover:underline cursor-pointer"
+                  >
+                    {entry.box_name}
+                  </span>
+                </TableCell>
+                <TableCell
+                  className={`text-gray-500 border-[0.5px] border-gray-300 p-4${
+                    index === filteredData.length - 1 ? "rounded-br-md" : ""
+                  }`}
+                >
+                  {entry.moved_at
+                    ? format(new Date(entry.moved_at), "MMM dd, yyyy, hh:mm a")
+                    : "N/A"}
                 </TableCell>
               </TableRow>
-            )}
+            ))
+          ) : (
+            <TableRow>
+              <TableCell
+                colSpan={4}
+                className="text-center py-4 border-[0.5px] border-gray-300 p-4 font-poppins font-normal "
+              >
+                No results found.
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
     </div>

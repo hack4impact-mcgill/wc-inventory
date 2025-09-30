@@ -1,6 +1,4 @@
-import React from "react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -8,6 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import React from "react";
 
 interface SearchFiltersProps {
   onSearch: (value: string) => void;
@@ -80,12 +79,8 @@ const SearchFilters = ({
         </div>
         {actionButtons}
       </div>
-      <Button variant="outline" className="w-full bg-black text-white">
-        Find Items
-      </Button>
     </div>
   );
 };
 
 export default SearchFilters;
-

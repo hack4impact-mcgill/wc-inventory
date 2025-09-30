@@ -1,7 +1,5 @@
-import { Button } from "@/components/ui/button";
-import ContentCard from "./ContentCard";
 import { BoxItem } from "@/types/box";
-
+import ContentCard from "./ContentCard";
 
 interface BoxDetailsProps {
   boxName: string;
@@ -31,11 +29,11 @@ const BoxDetails = ({
         <>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Box {boxName}</h2>
-            <Button variant="link" className="text-blue-600">Log</Button>
           </div>
           <p className="text-gray-600 mb-2">Location: {location}</p>
           <p className="text-gray-600 mb-4">
-            Created on: {formatDate(createdAt)}<br />
+            Created on: {formatDate(createdAt)}
+            <br />
             Updated on: {formatDate(updatedAt)}
           </p>
         </>
