@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { Search, RotateCcw } from "lucide-react";
+import { Search, RotateCw } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,7 +51,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           size="icon"
           className="bg-white h-full rounded-md border"
         >
-          <RotateCcw />
+          <RotateCw />
         </Button>
 
         <DropdownMenu>
