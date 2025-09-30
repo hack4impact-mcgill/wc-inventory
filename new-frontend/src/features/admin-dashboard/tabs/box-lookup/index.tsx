@@ -212,6 +212,7 @@ const BoxLookup: React.FC = () => {
       const box = selectedBoxes[0];
       return (
         <BoxDetails
+          boxId={box.id}
           boxName={box.name}
           location={box.location || ""}
           createdAt={box.createdAt || ""}

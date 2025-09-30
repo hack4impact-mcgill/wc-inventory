@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabaseClient";
 import { BoxContent } from "@/types/boxContent";
 
@@ -22,6 +22,8 @@ export const useSaveBox = ({
   location,
   onAddSuccess
 }: UseSaveBoxParams) => {
+  const queryClient = useQueryClient();
+  
   return useMutation({
     mutationFn: async () => {
       // First create the box
@@ -52,6 +54,9 @@ export const useSaveBox = ({
       return boxData;
     },
     onSuccess: () => {
+      // Invalidate the boxes query to trigger a refetch
+      queryClient.invalidateQueries({ queryKey: ["boxes"] });
+      queryClient.invalidateQueries({ queryKey: ["boxCount"] });
       onAddSuccess?.();
     },
   });

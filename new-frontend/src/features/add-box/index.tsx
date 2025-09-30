@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,8 +18,15 @@ import { BoxContent, InsertBoxContent } from "@/types/boxContent";
 import { buildLocationTree } from "./utils";
 import { useToast } from "@/hooks/use-toast";
 import { getCategoryIcon } from "@/types/icons";
+import { supabase } from "@/lib/supabaseClient";
 
 const AddBox = () => {
+  // Get URL search params to check if we're in update mode
+  const [searchParams] = useSearchParams();
+  const boxIdParam = searchParams.get('boxId');
+  const boxNameParam = searchParams.get('boxName');
+  const isUpdateMode = !!boxIdParam;
+
   // Add toast for notifications
   const { toast } = useToast();
 
@@ -27,7 +35,7 @@ const AddBox = () => {
   const [categoryId, setCategoryId] = useState<string>("");
   const [sizeId, setSizeId] = useState<string>("");
   const [gender, setGender] = useState<GenderEnum | "">("");
-  const [quantity, setQuantity] = useState<number>(1);
+  const [quantity, setQuantity] = useState<number>(0);
   const [location, setLocation] = useState<{
     room: string;
     level: string;
@@ -50,13 +58,122 @@ const AddBox = () => {
   // Use existing queries
   const { locations, categories, sizes, boxCount } = useAddBoxQueries();
 
+  // Fetch box data when in update mode
+  useEffect(() => {
+    const fetchBoxData = async () => {
+      if (!isUpdateMode || !boxIdParam) return;
+
+      try {
+        // Fetch box info including location
+        const { data: boxInfo, error: boxError } = await supabase
+          .from('boxes')
+          .select('*, locations(*)')
+          .eq('box_id', boxIdParam)
+          .single();
+
+        if (boxError) {
+          console.error('Error fetching box info:', boxError);
+          toast({
+            title: "Error",
+            description: "Failed to load box information",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Set the location if it exists
+        if (boxInfo && boxInfo.location_id) {
+          // We need to traverse the location hierarchy to set all levels
+          const locationId = boxInfo.location_id;
+          
+          // Function to build location hierarchy
+          const buildLocationHierarchy = async (locId: string) => {
+            const hierarchy: string[] = [];
+            let currentId: string | null = locId;
+            
+            while (currentId) {
+              const { data: loc } = await supabase
+                .from('locations')
+                .select('*')
+                .eq('location_id', currentId)
+                .single();
+                
+              if (loc && typeof loc === 'object' && 'location_id' in loc) {
+                hierarchy.unshift(currentId); // Add to beginning
+                currentId = (loc as any).parent_id || null;
+              } else {
+                break;
+              }
+            }
+            
+            return hierarchy;
+          };
+          
+          const hierarchy = await buildLocationHierarchy(locationId);
+          
+          // Set location based on hierarchy depth
+          if (hierarchy.length >= 1) {
+            setLocation(prev => ({ ...prev, room: hierarchy[0] }));
+          }
+          if (hierarchy.length >= 2) {
+            setLocation(prev => ({ ...prev, level: hierarchy[1] }));
+          }
+          if (hierarchy.length >= 3) {
+            setLocation(prev => ({ ...prev, aisle: hierarchy[2] }));
+          }
+          if (hierarchy.length >= 4) {
+            setLocation(prev => ({ ...prev, row: hierarchy[3] }));
+          }
+        }
+
+        // Fetch box contents
+        const { data: boxData, error } = await supabase
+          .from('box_contents')
+          .select(`
+            *,
+            categories(name),
+            sizes(name)
+          `)
+          .eq('box_id', boxIdParam);
+
+        if (error) {
+          console.error('Error fetching box data:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load box data",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        if (boxData && boxData.length > 0) {
+          // Transform the data to match the items format
+          const transformedItems: BoxContent[] = boxData.map((item: any) => ({
+            box_content_id: item.box_content_id,
+            box_id: item.box_id,
+            category_id: item.category_id,
+            size_id: item.size_id,
+            gender: item.gender,
+            quantity: item.quantity,
+          }));
+
+          setItems(transformedItems);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    fetchBoxData();
+  }, [isUpdateMode, boxIdParam]);
+
   // Reset all state to default values
   const resetForm = () => {
     setItems([]);
     setCategoryId("");
     setSizeId("");
     setGender("");
-    setQuantity(1);
+    setQuantity(0);
     setLocation({
       room: "",
       level: "",
@@ -94,7 +211,7 @@ const AddBox = () => {
         setCategoryId("");
         setSizeId("");
         setGender("");
-        setQuantity(1);
+        setQuantity(0);
         setIsEditing(false);
       }
     }
@@ -232,7 +349,7 @@ const AddBox = () => {
     setCategoryId("");
     setSizeId("");
     setGender("");
-    setQuantity(1);
+    setQuantity(0);
     setIsEditing(false);
   };
 
@@ -247,7 +364,7 @@ const AddBox = () => {
       setCategoryId("");
       setSizeId("");
       setGender("");
-      setQuantity(1);
+      setQuantity(0);
       setIsEditing(false);
     }
   };
@@ -255,6 +372,7 @@ const AddBox = () => {
   // Function to handle clicking on an item to edit
   const handleEditItem = (index: number) => {
     setEditingItemIndex(index);
+    setShowSidebar(true); // Open the sidebar when clicking an item
   };
 
   // Function to cancel editing
@@ -263,7 +381,7 @@ const AddBox = () => {
     setCategoryId("");
     setSizeId("");
     setGender("");
-    setQuantity(1);
+    setQuantity(0);
     setIsEditing(false);
   };
 
@@ -382,7 +500,7 @@ const AddBox = () => {
       setCategoryId("");
       setSizeId("");
       setGender("");
-      setQuantity(1);
+      setQuantity(0);
       setIsEditing(false);
     }
   };
@@ -407,7 +525,7 @@ const AddBox = () => {
           <Card className="shadow-sm h-full">
             <CardContent className="p-6">
               <h2 className="text-2xl font-bold mb-6">
-                Creating Box {nextBoxId || "456"}
+                {isUpdateMode ? `Updating ${boxNameParam || 'Box'}` : `Creating Box ${nextBoxId || "456"}`}
               </h2>
 
               <div className="bg-gray-50 p-4 rounded-md mb-6">
@@ -529,7 +647,9 @@ const AddBox = () => {
                   >
                     <Package size={20} />
                     <span>
-                      {saveBoxMutation.isPending ? "Creating..." : "Create box"}
+                      {saveBoxMutation.isPending 
+                        ? (isUpdateMode ? "Updating..." : "Creating...") 
+                        : (isUpdateMode ? "Update box" : "Create box")}
                     </span>
                   </Button>
                 )}
@@ -615,10 +735,13 @@ const AddBox = () => {
                   </label>
                   <Input
                     type="number"
-                    min={1}
-                    value={quantity}
-                    onChange={(e) =>
-                      setQuantity(Math.max(1, Number(e.target.value)))}
+                    min={0}
+                    value={quantity || ''}
+                    placeholder="Enter quantity"
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setQuantity(value === '' ? 0 : Number(value));
+                    }}
                   />
                 </div>
 
@@ -650,7 +773,9 @@ const AddBox = () => {
               disabled={items.length === 0 || saveBoxMutation.isPending}
             >
               <span>
-                {saveBoxMutation.isPending ? "Creating..." : "Create box"}
+                {saveBoxMutation.isPending 
+                ? (isUpdateMode ? "Updating..." : "Creating...") 
+                : (isUpdateMode ? "Update box" : "Create box")}
               </span>
             </Button>
           </div>
