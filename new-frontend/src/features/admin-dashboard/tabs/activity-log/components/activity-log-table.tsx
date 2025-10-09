@@ -17,15 +17,18 @@ type SortKeyOption = "moved_by_email" | "box_name" | "moved_at" | null;
 interface ActivityLogTableProps {
   filteredData: BoxMovementView[];
   isLoading: boolean;
+  onBoxSelect: (boxId: string, anchorEl: HTMLElement) => void;
 }
 
 const ActivityLogTable = ({
   filteredData,
   isLoading,
+  onBoxSelect,
 }: ActivityLogTableProps) => {
   const navigate = useNavigate();
   const [sortKey, setSortKey] = useState<SortKeyOption>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  
 
   // Sorting method for the toggle, sorts descending or asceding.
   useEffect(() => {
@@ -142,15 +145,19 @@ const ActivityLogTable = ({
                 <TableCell className="text-gray-500 border-[0.5px] border-gray-300 p-4">
                   {entry.note}
                 </TableCell>
-                <TableCell className="text-[#00559B] underline border-[0.5px] border-gray-300 p-4">
+                <TableCell className="text-[#00559B] border-[0.5px] border-gray-300 p-4">
                   <span
-                    onClick={() => {
-                      // TODO: Navigate to box popup
-                      navigate(`/admin/box-lookup/`);
+                    className="underline hover:no-underline cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (entry.box_id) {
+                        onBoxSelect(String(entry.box_id), e.currentTarget as HTMLElement);
+                      }
                     }}
-                    className="hover:underline cursor-pointer"
+                    role="button"
+                    tabIndex={0}
                   >
-                    {entry.box_name}
+                  {entry.box_name}
                   </span>
                 </TableCell>
                 <TableCell
