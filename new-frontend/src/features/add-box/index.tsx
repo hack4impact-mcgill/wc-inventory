@@ -17,6 +17,7 @@ import { BoxContent, InsertBoxContent } from "@/types/boxContent";
 import { buildLocationTree } from "./utils";
 import { useToast } from "@/hooks/use-toast";
 import { getCategoryIcon } from "@/types/icons";
+import { useMobile } from "./hooks/useMobile";
 
 const AddBox = () => {
   // Add toast for notifications
@@ -68,6 +69,8 @@ const AddBox = () => {
     setIsEditing(false);
     setShowSidebar(false);
   };
+
+  const isMobile = useMobile();
 
   // Set the next box ID when component loads or box count changes
   useEffect(() => {
@@ -539,122 +542,271 @@ const AddBox = () => {
         </div>
 
         {showSidebar && (
-          <div className="w-80 bg-white rounded-lg shadow-sm p-4 border relative">
-            <button
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-              onClick={() => setShowSidebar(false)}
-            >
-              <X size={20} />
-            </button>
-
-            <div className="mb-6 mt-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium">
-                  {isEditing ? "Edit item" : "Add items"}
-                </h3>
-                {isEditing && (
+            isMobile ? (
+              // mobile view
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="bg-white w-full max-w-sm rounded-lg shadow-lg p-4 relative mx-4">
                   <button
-                    className="text-red-500 hover:text-red-700 transition-colors"
-                    onClick={handleDeleteItem}
-                    aria-label="Delete item"
+                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                    onClick={() => setShowSidebar(false)}
                   >
-                    <Trash size={20} />
+                    <X size={20} />
                   </button>
-                )}
-              </div>
+                          <div className="mb-6 mt-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-medium">
+                          {isEditing ? "Edit item" : "Add items"}
+                        </h3>
+                        {isEditing && (
+                          <button
+                            className="text-red-500 hover:text-red-700 transition-colors"
+                            onClick={handleDeleteItem}
+                            aria-label="Delete item"
+                          >
+                            <Trash size={20} />
+                          </button>
+                        )}
+                      </div>
 
-              <div className="space-y-4">
-                <Select value={categoryId} onValueChange={setCategoryId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {leafCategories?.map((category) => (
-                      <SelectItem
-                        key={category.category_id}
-                        value={category.category_id}
-                      >
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      <div className="space-y-4">
+                        <Select value={categoryId} onValueChange={setCategoryId}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {leafCategories?.map((category) => (
+                              <SelectItem
+                                key={category.category_id}
+                                value={category.category_id}
+                              >
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
 
-                <Select
-                  value={gender}
-                  onValueChange={(val) => setGender(val as GenderEnum)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {["Male", "Female", "Unisex", "Kids"].map((g) => (
-                      <SelectItem key={g} value={g}>
-                        {g}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                        <Select
+                          value={gender}
+                          onValueChange={(val) => setGender(val as GenderEnum)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Gender" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {["Male", "Female", "Unisex", "Kids"].map((g) => (
+                              <SelectItem key={g} value={g}>
+                                {g}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
 
-                <Select value={sizeId} onValueChange={setSizeId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Size" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sizes?.map((size) => (
-                      <SelectItem key={size.size_id} value={size.size_id}>
-                        {size.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                        <Select value={sizeId} onValueChange={setSizeId}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Size" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {sizes?.map((size) => (
+                              <SelectItem key={size.size_id} value={size.size_id}>
+                                {size.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Quantity
-                  </label>
-                  <Input
-                    type="number"
-                    min={1}
-                    value={quantity}
-                    onChange={(e) =>
-                      setQuantity(Math.max(1, Number(e.target.value)))}
-                  />
-                </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Quantity
+                          </label>
+                          <Input
+                          type="number"
+                          min={1}
+                          value={quantity}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '') {
+                              setQuantity(val);
+                            } else {
+                              const num = Number(val);
+                              if (!isNaN(num)) {
+                                setQuantity(num);
+                              }
+                            }
+                          }}
+                          onBlur={() => {
+                            if (quantity === '' || quantity < 1) {
+                              setQuantity(1);
+                            }
+                          }}
+                          />
+                        </div>
 
-                <div className="flex gap-2">
-                  {isEditing && (
+                        <div className="flex gap-2">
+                          {isEditing && (
+                            <Button
+                              className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800"
+                              onClick={handleCancelEdit}
+                            >
+                              Cancel
+                            </Button>
+                          )}
+                          <Button
+                            className={`${
+                              isEditing ? "flex-1" : "w-full"
+                            } bg-blue-600 hover:bg-blue-700`}
+                            onClick={handleAdd}
+                            disabled={!categoryId || !sizeId || !gender}
+                          >
+                            {isEditing ? "Update" : "Add item"}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
                     <Button
-                      className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800"
-                      onClick={handleCancelEdit}
+                      className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 flex justify-center items-center gap-2 mb-4"
+                      onClick={handleCreateBox}
+                      disabled={items.length === 0 || saveBoxMutation.isPending}
                     >
-                      Cancel
+                      <span>
+                        {saveBoxMutation.isPending ? "Creating..." : "Create box"}
+                      </span>
                     </Button>
+                  </div>
+                </div>
+            ) : (
+
+            <div className="w-80 bg-white rounded-lg shadow-sm p-4 border relative">
+              <button
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                onClick={() => setShowSidebar(false)}
+              >
+                <X size={20} />
+              </button>
+
+              <div className="mb-6 mt-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-medium">
+                    {isEditing ? "Edit item" : "Add items"}
+                  </h3>
+                  {isEditing && (
+                    <button
+                      className="text-red-500 hover:text-red-700 transition-colors"
+                      onClick={handleDeleteItem}
+                      aria-label="Delete item"
+                    >
+                      <Trash size={20} />
+                    </button>
                   )}
-                  <Button
-                    className={`${
-                      isEditing ? "flex-1" : "w-full"
-                    } bg-blue-600 hover:bg-blue-700`}
-                    onClick={handleAdd}
-                    disabled={!categoryId || !sizeId || !gender}
+                </div>
+
+                <div className="space-y-4">
+                  <Select value={categoryId} onValueChange={setCategoryId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {leafCategories?.map((category) => (
+                        <SelectItem
+                          key={category.category_id}
+                          value={category.category_id}
+                        >
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select
+                    value={gender}
+                    onValueChange={(val) => setGender(val as GenderEnum)}
                   >
-                    {isEditing ? "Update" : "Add item"}
-                  </Button>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {["Male", "Female", "Unisex", "Kids"].map((g) => (
+                        <SelectItem key={g} value={g}>
+                          {g}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={sizeId} onValueChange={setSizeId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sizes?.map((size) => (
+                        <SelectItem key={size.size_id} value={size.size_id}>
+                          {size.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Quantity
+                    </label>
+                    <Input
+                          min={1}
+                          value={quantity}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '') {
+                              setQuantity(val);
+                            } else {
+                              const num = Number(val);
+                              if (!isNaN(num)) {
+                                setQuantity(num);
+                              }
+                            }
+                          }}
+                          onBlur={() => {
+                            if (quantity === '' || quantity < 1) {
+                              setQuantity(1);
+                            }
+                          }} 
+                    />
+                  </div>
+
+                  <div className="flex gap-2">
+                    {isEditing && (
+                      <Button
+                        className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800"
+                        onClick={handleCancelEdit}
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                    <Button
+                      className={`${
+                        isEditing ? "flex-1" : "w-full"
+                      } bg-blue-600 hover:bg-blue-700`}
+                      onClick={handleAdd}
+                      disabled={!categoryId || !sizeId || !gender}
+                    >
+                      {isEditing ? "Update" : "Add item"}
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <Button
-              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 flex justify-center items-center gap-2 mb-4"
-              onClick={handleCreateBox}
-              disabled={items.length === 0 || saveBoxMutation.isPending}
-            >
-              <span>
-                {saveBoxMutation.isPending ? "Creating..." : "Create box"}
-              </span>
-            </Button>
-          </div>
+              <Button
+                className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 flex justify-center items-center gap-2 mb-4"
+                onClick={handleCreateBox}
+                disabled={items.length === 0 || saveBoxMutation.isPending}
+              >
+                <span>
+                  {saveBoxMutation.isPending ? "Creating..." : "Create box"}
+                </span>
+              </Button>
+            </div>
+          )
         )}
+        
       </div>
     </div>
   );
