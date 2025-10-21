@@ -619,11 +619,25 @@ const AddBox = () => {
                             Quantity
                           </label>
                           <Input
-                            type="number"
-                            min={1}
-                            value={quantity}
-                            onChange={(e) =>
-                              setQuantity(Math.max(1, Number(e.target.value)))}
+                          type="number"
+                          min={1}
+                          value={quantity}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '') {
+                              setQuantity(val);
+                            } else {
+                              const num = Number(val);
+                              if (!isNaN(num)) {
+                                setQuantity(num);
+                              }
+                            }
+                          }}
+                          onBlur={() => {
+                            if (quantity === '' || quantity < 1) {
+                              setQuantity(1);
+                            }
+                          }}
                           />
                         </div>
 
@@ -737,11 +751,24 @@ const AddBox = () => {
                       Quantity
                     </label>
                     <Input
-                      type="number"
-                      min={1}
-                      value={quantity}
-                      onChange={(e) =>
-                        setQuantity(Math.max(1, Number(e.target.value)))}
+                          min={1}
+                          value={quantity}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '') {
+                              setQuantity(val);
+                            } else {
+                              const num = Number(val);
+                              if (!isNaN(num)) {
+                                setQuantity(num);
+                              }
+                            }
+                          }}
+                          onBlur={() => {
+                            if (quantity === '' || quantity < 1) {
+                              setQuantity(1);
+                            }
+                          }} 
                     />
                   </div>
 
