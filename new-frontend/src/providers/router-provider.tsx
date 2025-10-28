@@ -18,6 +18,7 @@ import Inventory from "@/features/admin-dashboard/tabs/inventory";
 import CreateBoxes from "@/features/admin-dashboard/tabs/create-boxes";
 import BoxLookup from "@/features/admin-dashboard/tabs/box-lookup";
 import Donations from "@/features/admin-dashboard/tabs/donations";
+import InventoryUpload from "@/features/admin-dashboard/tabs/inventory-upload";
 import AdminOverview from "@/features/admin-dashboard/components/AdminOverview.tsx";
 
 interface ProtectedRouteProps {
@@ -117,6 +118,10 @@ const router = createBrowserRouter([
       {
         path: "donations",
         element: <Donations />,
+      },
+      {
+        path: "inventory-upload",
+        element: <InventoryUpload />,
       },
     ],
   },
