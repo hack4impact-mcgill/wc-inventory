@@ -19,6 +19,7 @@ import CreateBoxes from "@/features/admin-dashboard/tabs/create-boxes";
 import BoxLookup from "@/features/admin-dashboard/tabs/box-lookup";
 import Donations from "@/features/admin-dashboard/tabs/donations";
 import AdminOverview from "@/features/admin-dashboard/components/AdminOverview.tsx";
+import LookupBox from "@/features/lookup-box";
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
@@ -157,14 +158,10 @@ const router = createBrowserRouter([
     element: <Navigate to="/" replace />,
   },
   {
-    //so both admin and volunteer can access box-lookup page
-    path: "/box-lookup",
+    path: "/lookup",
     element: (
       <VolunteerWrapper>
-        <AuthWrapper>
-          {/* Protect the route so only logged-in users can access */}
-          <BoxLookup />
-        </AuthWrapper>
+        <LookupBox />
       </VolunteerWrapper>
     ),
   },
