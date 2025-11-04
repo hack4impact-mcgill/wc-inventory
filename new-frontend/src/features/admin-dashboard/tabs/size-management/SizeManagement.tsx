@@ -33,6 +33,8 @@ import { SizeTable } from "./components/size-table";
 import SizeForm from "./components/size-form";
 import { sizeApi } from "@/lib/api/sizes";
 
+
+
 const SizeManagement = () => {
     const {
         sizes,
@@ -221,7 +223,7 @@ const SizeManagement = () => {
             }
         });
     };
-
+    
     const filteredSizes = sortSizes(
         sizes.filter(size => {
             const matchesSearch = 
