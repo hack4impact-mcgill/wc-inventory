@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, RotateCw } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +19,7 @@ interface SearchBarProps {
   setStartDate: (value: Date) => void;
   setEndDate: (value: Date) => void;
   setAction: (value: ActionTypes) => void;
+  onRefetch: () => void;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
@@ -27,6 +28,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   setStartDate,
   setEndDate,
   setAction,
+  onRefetch,
 }) => {
   return (
     <div className="pb-11 flex flex-row justify-between">
@@ -43,12 +45,20 @@ const SearchBar: React.FC<SearchBarProps> = ({
             }}
           />
         </div>
+        <Button
+          onClick={onRefetch}
+          variant="ghost"
+          size="icon"
+          className="bg-white h-full rounded-md border"
+        >
+          <RotateCw />
+        </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="bg-white rounded-md pl-3 w-60 h-[40px] p-4 font-poppins font-normal border focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus:border-gray-300  shadow-none"
+              className="bg-white rounded-md pl-3 w-60 h-[40px] p-4 font-poppins font-normal border focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus:border-gray-300 shadow-none"
             >
               All actions
             </Button>
@@ -72,7 +82,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
       {/* Date Range Filter */}
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <div className="flex flex-row gap-3 pl-52">
+        <div className="flex flex-row gap-3 pl-5">
           <DatePicker
             label=""
             slotProps={{

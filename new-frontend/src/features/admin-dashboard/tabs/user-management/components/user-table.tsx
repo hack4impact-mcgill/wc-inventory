@@ -30,8 +30,6 @@ export function UserTable({ users, onUserClick }: UserTableProps) {
           <TableHead>Name</TableHead>
           <TableHead>Email</TableHead>
           <TableHead>Role</TableHead>
-          <TableHead>Last Action</TableHead>
-          <TableHead>When</TableHead>
           <TableHead>Account Creation</TableHead>
         </TableRow>
       </TableHeader>
@@ -40,13 +38,11 @@ export function UserTable({ users, onUserClick }: UserTableProps) {
           <TableRow
             key={user.id}
             className="cursor-pointer hover:bg-muted"
-            onClick={() => onUserClick(user.email!)}
+            onClick={() => onUserClick(user.id!)}
           >
             <TableCell>{user.name ?? "N/A"}</TableCell>
             <TableCell>{user.email}</TableCell>
             <TableCell>{user.role}</TableCell>
-            <TableCell>-</TableCell>
-            <TableCell>-</TableCell>
             <TableCell>
               {user.created_at ? format(new Date(user.created_at), "PP") : "-"}
             </TableCell>

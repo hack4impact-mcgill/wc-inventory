@@ -13,14 +13,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Check, Folder } from "lucide-react";
-import { CATEGORY_ICONS, type CategoryIconName } from "@/types/icons";
+import { Check } from "lucide-react"; 
+import { getCategoryIconPath, getAvailableIconNames } from "@/lib/iconLoader"; 
 
 interface IconSelectorProps {
   value: string | null;
-  onChange: (value: CategoryIconName) => void;
+  onChange: (value: string) => void;
   className?: string;
 }
+
 
 const IconSelector: FC<IconSelectorProps> = ({
   value,
@@ -30,14 +31,12 @@ const IconSelector: FC<IconSelectorProps> = ({
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Get all icon names
-  const iconNames = Object.keys(CATEGORY_ICONS) as CategoryIconName[];
 
-  // Get current icon component
-  const CurrentIcon =
-    value && CATEGORY_ICONS[value as CategoryIconName]
-      ? CATEGORY_ICONS[value as CategoryIconName]
-      : Folder;
+  const iconNames = getAvailableIconNames();
+
+  const CurrentIcon = value
+    ? getCategoryIconPath(value)
+    : getCategoryIconPath("default");
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -49,12 +48,24 @@ const IconSelector: FC<IconSelectorProps> = ({
           className={className ?? "w-[200px] justify-between"}
         >
           <div className="flex items-center gap-2">
-            <CurrentIcon className="h-4 w-4" />
+            <img
+              src={CurrentIcon}
+              alt={value ?? "icon"}
+              className="h-4 w-4 object-contain"
+              onError={(e) =>
+                ((e.currentTarget as HTMLImageElement).src =
+                  "/icons/default.svg")
+              }
+            />
             <span>{value || "Select icon..."}</span>
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+
+      <PopoverContent
+        className="w-[200px] p-0"
+        onWheel={(e) => e.stopPropagation()}
+      >
         <Command>
           <CommandInput
             placeholder="Search icons..."
@@ -62,14 +73,15 @@ const IconSelector: FC<IconSelectorProps> = ({
             onValueChange={setSearchQuery}
           />
           <CommandEmpty>No icons found.</CommandEmpty>
-          <CommandGroup>
-            <ScrollArea className="h-64">
+
+          <ScrollArea className="h-64">
+            <CommandGroup>
               {iconNames
                 .filter((name) =>
-                  name.toLowerCase().includes(searchQuery.toLowerCase()),
+                  name.toLowerCase().includes(searchQuery.toLowerCase())
                 )
                 .map((name) => {
-                  const Icon = CATEGORY_ICONS[name];
+                  const iconPath = getCategoryIconPath(name);
                   return (
                     <CommandItem
                       key={name}
@@ -78,18 +90,26 @@ const IconSelector: FC<IconSelectorProps> = ({
                         onChange(name);
                         setOpen(false);
                       }}
-                      className="cursor-pointer"
+                      className="cursor-pointer flex items-center gap-2"
                     >
-                      <div className="flex items-center gap-2">
-                        <Icon className="h-4 w-4" />
-                        <span>{name}</span>
-                      </div>
-                      {value === name && <Check className="ml-auto h-4 w-4" />}
+                      <img
+                        src={iconPath}
+                        alt={name}
+                        className="h-4 w-4 object-contain"
+                        onError={(e) =>
+                          ((e.currentTarget as HTMLImageElement).src =
+                            "/icons/default.svg")
+                        }
+                      />
+                      <span>{name}</span>
+                      {value === name && (
+                        <Check className="ml-auto h-4 w-4 text-muted-foreground" />
+                      )}
                     </CommandItem>
                   );
                 })}
-            </ScrollArea>
-          </CommandGroup>
+            </CommandGroup>
+          </ScrollArea>
         </Command>
       </PopoverContent>
     </Popover>

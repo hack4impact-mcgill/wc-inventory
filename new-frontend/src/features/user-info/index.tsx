@@ -32,16 +32,15 @@ const UserInfo: React.FC = () => {
 
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: queryKeys.users.detail(id!),
-    queryFn: () => userApi.getUser(id!)
-  })
+    queryFn: () => userApi.getUser(id!),
+  });
 
   const { data: userActivity, isLoading: activityLoading } = useQuery({
     queryKey: queryKeys.activityLog.byUser(id!),
-    queryFn: () => activityLogApi.getActivityLogByUserId(id!)
+    queryFn: () => activityLogApi.getActivityLogByUserId(id!),
   });
 
   if (userLoading || activityLoading || !user) return <div>Loading...</div>;
-
 
   return (
     <Card className="max-w mx-auto">
@@ -57,7 +56,11 @@ const UserInfo: React.FC = () => {
             </div>
             <div className="mb-4">
               <label className="font-semibold">Created on:</label>
-              <p>{user.created_at ? format(new Date(user.created_at), 'PP') : '-'}</p>
+              <p>
+                {user.created_at
+                  ? format(new Date(user.created_at), "PP")
+                  : "-"}
+              </p>
             </div>
             <div className="mb-4">
               <label className="font-semibold">Account Status:</label>
@@ -81,7 +84,12 @@ const UserInfo: React.FC = () => {
           </div>
 
           <div>
-            <h2 className="font-semibold mb-4">Permissions:</h2>
+            <h2 className="font-semibold mb-4">
+              Role:{" "}
+              {user?.role
+                ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
+                : "Unknown"}
+            </h2>
             <div className="space-y-2">
               {/* {Object.keys(permissions).map((key) => (
                 <label key={key} className="flex items-center space-x-2">
@@ -115,10 +123,13 @@ const UserInfo: React.FC = () => {
               {userActivity && userActivity.length > 0 ? (
                 userActivity.map((movement: BoxMovementView) => (
                   <TableRow key={movement.box_movement_id}>
-                    <TableCell>{movement.from_location_name} {'->'} {movement.to_location_name}</TableCell>
+                    <TableCell>
+                      {movement.from_location_name} {"->"}{" "}
+                      {movement.to_location_name}
+                    </TableCell>
                     <TableCell>{movement.box_name}</TableCell>
                     <TableCell>
-                      {format(new Date(movement.moved_at!), 'PP')}
+                      {format(new Date(movement.moved_at!), "PP")}
                     </TableCell>
                     <TableCell>{movement.note}</TableCell>
                   </TableRow>

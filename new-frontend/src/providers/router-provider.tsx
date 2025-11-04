@@ -74,7 +74,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element:<AdminOverview/>,
+        element: <AdminOverview />,
       },
       {
         path: "inventory",
@@ -160,10 +160,12 @@ const router = createBrowserRouter([
     //so both admin and volunteer can access box-lookup page
     path: "/box-lookup",
     element: (
-      <AuthWrapper>
-        {/* Protect the route so only logged-in users can access */}
-        <BoxLookup />
-      </AuthWrapper>
+      <VolunteerWrapper>
+        <AuthWrapper>
+          {/* Protect the route so only logged-in users can access */}
+          <BoxLookup />
+        </AuthWrapper>
+      </VolunteerWrapper>
     ),
   },
 ]);
