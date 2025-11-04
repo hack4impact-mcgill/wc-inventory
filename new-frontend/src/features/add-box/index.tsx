@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,7 @@ import { supabase } from "@/lib/supabaseClient";
 const AddBox = () => {
   // Get URL search params to check if we're in update mode
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const boxIdParam = searchParams.get('boxId');
   const boxNameParam = searchParams.get('boxName');
   const isUpdateMode = !!boxIdParam;
@@ -231,19 +232,32 @@ const AddBox = () => {
     items,
     boxCount,
     location,
-    onAddSuccess: () => {
-      // Show success notification
-      toast({
-        title: "Box Created Successfully",
-        description: "Box has been created and saved to inventory.",
-      });
+    boxId: boxIdParam,
+    isUpdateMode,
+    onAddSuccess: (data) => {
+      if (isUpdateMode) {
+        // Show update success notification
+        toast({
+          title: "Box Updated Successfully",
+          description: "Box contents have been updated.",
+        });
 
-      // Reset the form
-      resetForm();
+        // Navigate back to box lookup with the box selected
+        navigate(`/box-lookup?selectedBoxId=${boxIdParam}`);
+      } else {
+        // Show create success notification
+        toast({
+          title: "Box Created Successfully",
+          description: "Box has been created and saved to inventory.",
+        });
 
-      // Update the next box ID after saving
-      if (nextBoxId !== null) {
-        setNextBoxId(nextBoxId + 1);
+        // Reset the form
+        resetForm();
+
+        // Update the next box ID after saving
+        if (nextBoxId !== null) {
+          setNextBoxId(nextBoxId + 1);
+        }
       }
     },
   });
