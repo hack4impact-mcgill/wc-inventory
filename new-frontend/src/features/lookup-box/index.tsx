@@ -5,13 +5,14 @@ import MainFilters from "./components/MainFilters"
 import ItemFilters from "./components/ItemFilters"
 import BoxFilters from "./components/BoxFilters"
 import LocationFilters from "./components/LocationFilters"
+import FilterResults from "./components/FilterResults"
 
 
 const LookupBox = () => {
 
   const navigate = useNavigate();
   const [view, setView] = useState< "main-filter" | "item-filter" | "box-filter" | "location-filter" | "filter-results">("main-filter");
-  const [prevView, setPrevView] = useState< "main-filter" | "item-filter" | "box-filter" | "location-filter">("main-filter");
+  const [prevView, setPrevView] = useState< "main-filter" | "item-filter" | "box-filter" | "location-filter" | "filter-results">("main-filter");
   const [active, setActive] = useState<boolean>(false);
   
   const handleBack = () => {
@@ -20,23 +21,29 @@ const LookupBox = () => {
     }
     else {
       setView(prevView);
+      setPrevView("main-filter");
     }
   };
 
   const handleItemFilter = () => {
-    setView("item-filter") 
+    setView("item-filter"); 
   };
 
   const handleBoxFilter = () => {
-    setView("box-filter") 
+    setView("box-filter"); 
   }; 
 
   const handleLocationFilter = () => {
-    setView("location-filter") 
+    setView("location-filter"); 
   };
 
   const handleActive = () => {
-    setActive(!active)
+    setActive(!active);
+  };
+
+  const handleSearch = () => {
+    setPrevView(view);
+    setView("filter-results"); 
   };
 
   const title = view === "filter-results"
@@ -89,10 +96,26 @@ const LookupBox = () => {
           <LocationFilters/> 
         )}
 
+        {view === "filter-results" && (
+          <>
+            <FilterResults/> 
+            <div className="flex justify-center">
+              <button 
+                className="w-3/4 border-2 border-gray-900 bg-yellow-300 hover:bg-yellow-400 text-black p-4 rounded-3xl shadow font-medium duration-300 ease-in-out"
+              >
+                <p className="text-2xl">
+                  View Contents
+                </p>
+              </button>
+            </div>
+          </>
+        )}
+
         {["item-filter", "box-filter", "location-filter"].includes(view) && (
           <div className="flex-1 flex justify-center">
             <button 
               className="w-3/4 border-2 border-gray-900 bg-gray-950 hover:bg-gray-700 text-white p-4 rounded-3xl shadow font-medium duration-300 ease-in-out"
+              onClick={handleSearch}
             >
               <p className="text-2xl">
                 Search
