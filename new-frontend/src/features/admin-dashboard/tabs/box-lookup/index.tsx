@@ -69,7 +69,8 @@ const BoxLookup: React.FC = () => {
   // Organize locations by parent when locations data changes
   // Mutations for box operations
   const donateBoxesMutation = useMutation({
-    mutationFn: (boxIds: string[]) => boxApi.donateBoxes(boxIds),
+    mutationFn: ({ boxIds, note }: { boxIds: string[]; note?: string }) =>
+      boxApi.donateBoxes(boxIds, note),
     onSuccess: () => {
       toast.success(
         `${selectedBoxIds.length} ${
@@ -93,10 +94,12 @@ const BoxLookup: React.FC = () => {
     mutationFn: ({
       boxIds,
       locationId,
+      note,
     }: {
       boxIds: string[];
       locationId: string;
-    }) => boxApi.moveBoxes(boxIds, locationId),
+      note?: string;
+    }) => boxApi.moveBoxes(boxIds, locationId, note),
     onSuccess: () => {
       toast.success(
         `${selectedBoxIds.length} ${
@@ -268,16 +271,17 @@ const BoxLookup: React.FC = () => {
     setIsMoveDialogOpen(true);
   };
 
-  const handleConfirmDonation = () => {
-    donateBoxesMutation.mutate(selectedBoxIds);
+  const handleConfirmDonation = (note?: string) => {
+    donateBoxesMutation.mutate({ boxIds: selectedBoxIds, note });
   };
 
-  const handleConfirmMove = (locationId: string) => {
+  const handleConfirmMove = (locationId: string, note?: string) => {
     // The validation is now happening in the MoveDialog component
     // Here we just need to handle the mutation
     moveBoxesMutation.mutate({
       boxIds: selectedBoxIds,
       locationId,
+      note,
     });
   };
 
