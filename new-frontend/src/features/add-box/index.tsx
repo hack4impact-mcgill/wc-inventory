@@ -17,7 +17,7 @@ import { GenderEnum } from "@/types/enums";
 import { BoxContent, InsertBoxContent } from "@/types/boxContent";
 import { buildLocationTree } from "./utils";
 import { useToast } from "@/hooks/use-toast";
-import { getCategoryIcon } from "@/types/icons";
+import { getCategoryIconPath } from "@/lib/iconLoader";
 import { supabase } from "@/lib/supabaseClient";
 import { useMobile } from "./hooks/useMobile";
 
@@ -684,7 +684,7 @@ const AddBox = () => {
                   >
                     <X size={20} />
                   </button>
-                          <div className="mb-6 mt-4">
+                    <div className="mb-6 mt-4">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-medium">
                           {isEditing ? "Edit item" : "Add items"}
@@ -699,6 +699,8 @@ const AddBox = () => {
                           </button>
                         )}
                       </div>
+                    </div>
+                  </div>
 
               <div className="space-y-4">
                 <Select value={categoryId} onValueChange={setCategoryId}>
@@ -905,8 +907,7 @@ const AddBox = () => {
               </span>
             </Button>
           </div>
-        )}
-        
+        ))}
       </div>
     </div>
   );
