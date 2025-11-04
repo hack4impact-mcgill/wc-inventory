@@ -1,6 +1,4 @@
 # Both
-
-# Both
 **/node_modules/
 **/package-lock.json
 **/dist
@@ -16,7 +14,7 @@
 **/pnpm-lock.yaml
 
 # Frontend
-frontend/dist-ssr
+dist-ssr
 *.local
 
 # Editor directories and files
@@ -32,3 +30,7 @@ frontend/dist-ssr
 # Local Netlify folder
 .netlify
 new-frontend/.vite/** 
+
+# Sentry Config File
+.env.sentry-build-plugin
+
