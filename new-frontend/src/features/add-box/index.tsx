@@ -16,8 +16,12 @@ import { GenderEnum } from "@/types/enums";
 import { BoxContent, InsertBoxContent } from "@/types/boxContent";
 import { buildLocationTree } from "./utils";
 import { useToast } from "@/hooks/use-toast";
-import { getCategoryIcon } from "@/types/icons";
+
+import { getCategoryIconPath } from "@/lib/iconLoader";
+
+
 import { useMobile } from "./hooks/useMobile";
+
 
 const AddBox = () => {
   // Add toast for notifications
@@ -390,18 +394,6 @@ const AddBox = () => {
     }
   };
 
-  // Get icon component for a category
-  const getCategoryIconComponent = (categoryId: string) => {
-    const category = categories?.find((c) => c.category_id === categoryId);
-    if (!category || !category.icon) {
-      // Default to Package if no category is found or no icon specified
-      return <Package size={20} />;
-    }
-
-    // Get the icon component using the utility function
-    const IconComponent = getCategoryIcon(category.icon);
-    return <IconComponent size={20} />;
-  };
 
   return (
     <div className="flex min-h-screen bg-white">
@@ -473,7 +465,7 @@ const AddBox = () => {
                             c.category_id === item.category_id
                           );
                           const IconComponent = category?.icon
-                            ? getCategoryIcon(category.icon)
+                            ? getCategoryIconPath(category.icon)
                             : Package;
 
                           return (
@@ -489,7 +481,17 @@ const AddBox = () => {
                               <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-3">
                                   <div className="text-gray-500">
-                                    <IconComponent size={20} />
+                                    <img
+                                      src={getCategoryIconPath(
+                                        category!.icon
+                                      )}
+                                      alt={category?.name || "Item"}
+                                      className="h-6 w-6 object-contain"
+                                      onError={(e) =>
+                                        ((e.currentTarget as HTMLImageElement).src =
+                                          "/icons/default.svg.svg")
+                                      }
+                                    />
                                   </div>
                                   <div>
                                     <p className="font-medium">

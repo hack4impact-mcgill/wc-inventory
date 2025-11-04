@@ -24,6 +24,8 @@ const CategoryManagement = () => {
         updateMutation,
         deleteMutation
     } = useCategories();
+    const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+    const sortedCategories = [...categories].sort((a, b) => a.name.localeCompare(b.name));
     const [globalFilter, setGlobalFilter] = useState("");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -95,10 +97,12 @@ const CategoryManagement = () => {
                     </div>
 
                     <CategoriesTable
-                        data={categories}
+                        data={sortedCategories}
                         filter={globalFilter}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
+                        expandedCategories={expandedCategories}
+                        setExpandedCategories={setExpandedCategories}
                     />
                 </CardContent>
             </Card>
