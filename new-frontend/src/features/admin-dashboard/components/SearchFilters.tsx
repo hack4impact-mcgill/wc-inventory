@@ -35,12 +35,16 @@ const SearchFilters = ({
   
   const handleCategoryChange = (value: string) => {
     setSelectedCategoryId(value);
-    onCategoryChange(value);
+    // onCategoryChange needs category name for filter logic
+    const selected = categories?.find(c => c.category_id === value);
+    onCategoryChange(value === "all" ? "all" : selected?.name ?? "all");
   };
 
     const handleSizeChange = (value: string) => {
     setSelectedSizeId(value);
-    onSizeChange(value);
+    // onSizeChange needs size name for filter logic
+    const selected = sizes?.find((s) => s.size_id === value);
+    onSizeChange(value === "all" ? "all" : selected?.name ?? "all");
   };
 
     const handleGenderChange = (value: string) => {
