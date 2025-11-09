@@ -1,33 +1,171 @@
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 
-const LocationFilters = () => {
+interface LocationNode {
+  description: string | null;
+  level: number | null;
+  location_id: string;
+  name: string;
+  parent_id: string | null;
+  children?: LocationNode[];
+}
+
+interface LocationFiltersProps {
+  locationTree: LocationNode[];
+  selectedRoom: string;
+  selectedLevel: string;
+  selectedAisle: string;
+  selectedRow: string;
+  onRoomChange: (value: string) => void;
+  onLevelChange: (value: string) => void;
+  onAisleChange: (value: string) => void;
+  onRowChange: (value: string) => void;
+}
+
+const LocationFilters = ({
+  locationTree,
+  selectedRoom,
+  selectedLevel,
+  selectedAisle,
+  selectedRow,
+  onRoomChange,
+  onLevelChange,
+  onAisleChange,
+  onRowChange,
+}: LocationFiltersProps) => {
+
+  const findChildren = (parentId: string | null): LocationNode[] => {
+    if (!locationTree.length) {
+      return [];
+    }
+    if (!parentId) {
+      return locationTree;
+    }
+
+    const findNode = (nodes: LocationNode[]): LocationNode | null => {
+      for (const node of nodes) {
+        if (node.location_id === parentId) {
+          return node;
+        }
+        const found = findNode(node.children ?? []);
+        if (found) {
+          return found;
+        }
+      }
+      return null;
+    };
+
+    return findNode(locationTree)?.children || [];
+  };
 
   return (
     <>
 
-      <button 
-        className="flex-1 flex items-center justify-center gap-3 border-2 border-gray-900 bg-gray-200 hover:bg-gray-300 text-black p-4 rounded-lg shadow font-medium duration-300 ease-in-out"
-      >
-        <p className="text-3xl">
-          Select Room
-        </p>
-      </button>
+      {findChildren(null).length > 0 && (
+        <Select
+          value={selectedRoom}
+          onValueChange={onRoomChange}
+        >
+          <SelectTrigger
+            className="max-h-[12rem] flex-1 flex items-center justify-center gap-5 w-full border-2 border-gray-900 bg-gray-200 hover:bg-gray-300 duration-300 ease-in-out 
+              p-4 rounded-lg shadow font-medium text-3xl [&>svg]:h-8 [&>svg]:w-8"
+          >
+            <SelectValue placeholder="Select Room" />
+          </SelectTrigger>
 
-      <button 
-        className="flex-1 flex items-center justify-center gap-3 border-2 border-gray-900 bg-gray-200 hover:bg-gray-300 text-black p-4 rounded-lg shadow font-medium duration-300 ease-in-out"
-      >
-        <p className="text-3xl">
-          Select Level
-        </p>
-      </button>
+          <SelectContent>
+            <SelectItem className="text-2xl text-black" value="default">
+              Select Room
+            </SelectItem>
+            {findChildren(null).map((room) => (
+              <SelectItem className="text-2xl text-black" key={room.location_id} value={room.location_id}>
+                {room.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
-      <button 
-        className="flex-1 flex items-center justify-center gap-3 border-2 border-gray-900 bg-gray-200 hover:bg-gray-300 text-black p-4 rounded-lg shadow font-medium duration-300 ease-in-out"
-      >
-        <p className="text-3xl">
-          Select Aisle
-        </p>
-      </button>
+      {selectedRoom && findChildren(selectedRoom).length > 0 && (
+        <Select
+          value={selectedLevel}
+          onValueChange={onLevelChange}
+        >
+          <SelectTrigger
+            className="max-h-[12rem] flex-1 flex items-center justify-center gap-5 w-full border-2 border-gray-900 bg-gray-200 hover:bg-gray-300 duration-300 ease-in-out 
+              p-4 rounded-lg shadow font-medium text-3xl [&>svg]:h-8 [&>svg]:w-8"
+          >
+            <SelectValue placeholder="Select Level" />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem className="text-2xl text-black" value="default">
+              Select Level
+            </SelectItem>
+            {findChildren(selectedRoom).map((level) => (
+              <SelectItem className="text-2xl text-black" key={level.location_id} value={level.location_id}>
+                {level.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+
+      {selectedLevel && findChildren(selectedLevel).length > 0 && (
+        <Select
+          value={selectedAisle}
+          onValueChange={onAisleChange}
+        >
+          <SelectTrigger
+            className="max-h-[12rem] flex-1 flex items-center justify-center gap-5 w-full border-2 border-gray-900 bg-gray-200 hover:bg-gray-300 duration-300 ease-in-out 
+              p-4 rounded-lg shadow font-medium text-3xl [&>svg]:h-8 [&>svg]:w-8"
+          >
+            <SelectValue placeholder="Select Aisle" />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem className="text-2xl text-black" value="default">
+              Select Aisle
+            </SelectItem>
+            {findChildren(selectedLevel).map((aisle) => (
+              <SelectItem className="text-2xl text-black" key={aisle.location_id} value={aisle.location_id}>
+                {aisle.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+
+      {selectedAisle && findChildren(selectedAisle).length > 0 && (
+        <Select
+          value={selectedRow}
+          onValueChange={onRowChange}
+        >
+          <SelectTrigger
+            className="max-h-[12rem] flex-1 flex items-center justify-center gap-5 w-full border-2 border-gray-900 bg-gray-200 hover:bg-gray-300 duration-300 ease-in-out 
+              p-4 rounded-lg shadow font-medium text-3xl [&>svg]:h-8 [&>svg]:w-8"
+          >
+            <SelectValue placeholder="Select Row" />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem className="text-2xl text-black" value="default">
+              Select Row
+            </SelectItem>
+            {findChildren(selectedAisle).map((row) => (
+              <SelectItem className="text-2xl text-black" key={row.location_id} value={row.location_id}>
+                {row.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
     </>
   );

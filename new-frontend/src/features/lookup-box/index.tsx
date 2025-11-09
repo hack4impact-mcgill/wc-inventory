@@ -15,6 +15,7 @@ import MoveDialog from "@/features/admin-dashboard/tabs/box-lookup/components/Mo
 import { BoxStatus } from "@/types/enums";
 import { printBoxLabels } from "@/features/admin-dashboard/tabs/box-lookup/utils";
 import { useSearchFiltersQueries } from "@/features/admin-dashboard/hooks/useSearchFiltersQueries";
+import { buildLocationTree } from "@/features/add-box/utils";
 
 
 type FilterType = "item" | "box-id" | "location";
@@ -30,6 +31,7 @@ interface FilterStateLocation {
   room: string;
   level: string;
   aisle: string;
+  row: string;
 }
 
 const genderMapping: Record<string, string> = {
@@ -54,21 +56,28 @@ const LookupBox = () => {
   });
   const [boxIdFilters, setBoxIdFilters] = useState<Record<string, string>>({});
   const [locationFilters, setLocationFilters] = useState<FilterStateLocation>({
-    room: "",
-    level: "",
-    aisle: "",
+    room: "default",
+    level: "default",
+    aisle: "default",
+    row: "default",
   });
+
+  const queryClient = useQueryClient();
+  const { locations, isLoading: isLoadingLocations } = useLocations();
+  
+  const { categories, sizes } = useSearchFiltersQueries();
 
   const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
   const [isDonateDialogOpen, setIsDonateDialogOpen] = useState(false);
   const [, setSelectedLocations] = useState<string[]>([]);
   const [selectedBoxIds, setSelectedBoxIds] = useState<string[]>([]);
 
-  const queryClient = useQueryClient();
-  const { locations, isLoading: isLoadingLocations } = useLocations();
-
-  const { categories, sizes } = useSearchFiltersQueries();
-
+  // build locationTree for location filters
+  const locationTree = locations
+    ? buildLocationTree(locations.map((loc) => ({ ...loc, children: [] })))
+    : [];
+  // location id : name mapping for filter logic
+  const locationsMap = Object.fromEntries(locations.map(l => [l.location_id, l.name]));
 
   // Use React Query to fetch boxes data
   const {
@@ -102,10 +111,20 @@ const LookupBox = () => {
         );
       }
       else if (filterType === "box-id") {
+        if (Object.entries(boxIdFilters).length === 0) {
+          return true;
+        }
         return box.id in boxIdFilters;
       }
       else if (filterType === "location") {
-        return true;
+        const locationParts = box.location?.split(" > ") ?? [];
+
+        return (
+          (locationFilters.room === "default" || locationParts.includes(locationsMap[locationFilters.room])) &&
+          (locationFilters.level === "default" || locationParts.includes(locationsMap[locationFilters.level])) &&
+          (locationFilters.aisle === "default" || locationParts.includes(locationsMap[locationFilters.aisle])) &&
+          (locationFilters.row === "default" || locationParts.includes(locationsMap[locationFilters.row]))
+        );
       }
 
       return true;
@@ -228,10 +247,27 @@ const LookupBox = () => {
   };
 
   const handleLocationFilterChange = (filterType: keyof FilterStateLocation, value: string) => {
-    setLocationFilters((prev) => ({
-      ...prev,
-      [filterType]: value,
-    }));
+    setLocationFilters((prev) => {
+      const updated = { ...prev };
+
+      if (filterType === "room") {
+        updated.room = value;
+        updated.level = "default";
+        updated.aisle = "default";
+        updated.row = "default";
+      } else if (filterType === "level") {
+        updated.level = value;
+        updated.aisle = "default";
+        updated.row = "default";
+      } else if (filterType === "aisle") {
+        updated.aisle = value;
+        updated.row = "default";
+      } else if (filterType === "row") {
+        updated.row = value;
+      }
+
+      return updated;
+    });
   };
 
   // Handle box selection logic
@@ -356,9 +392,15 @@ const LookupBox = () => {
 
         {view === "location-filter" && (
           <LocationFilters
+            locationTree={locationTree}
+            selectedRoom={locationFilters.room}
+            selectedLevel={locationFilters.level}
+            selectedAisle={locationFilters.aisle}
+            selectedRow={locationFilters.row}
             onRoomChange={(value) => handleLocationFilterChange("room", value)}
             onLevelChange={(value) => handleLocationFilterChange("level", value)}
             onAisleChange={(value) => handleLocationFilterChange("aisle", value)}
+            onRowChange={(value) => handleLocationFilterChange("row", value)}
           /> 
         )}
 
@@ -404,7 +446,7 @@ const LookupBox = () => {
         )}
 
         {["item-filter", "box-filter", "location-filter"].includes(view) && (
-          <div className="flex-1 flex justify-center">
+          <div className="max-h-[12rem] flex-1 flex justify-center">
             <button 
               className="w-3/4 border-2 border-gray-900 bg-gray-950 hover:bg-gray-700 text-white p-4 rounded-3xl shadow font-medium duration-300 ease-in-out"
               onClick={handleSearch}
