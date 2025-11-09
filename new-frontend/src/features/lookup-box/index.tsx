@@ -1,50 +1,116 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ArrowLeft } from "lucide-react";
 import MainFilters from "./components/MainFilters"
 import ItemFilters from "./components/ItemFilters"
 import BoxFilters from "./components/BoxFilters"
 import LocationFilters from "./components/LocationFilters"
 import FilterResults from "./components/FilterResults"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { boxApi } from "@/lib/api/boxes";
+import { useLocations } from "@/features/admin-dashboard/tabs/location-management/hooks/use-locations.ts";
+import { toast } from "sonner";
+import DonateDialog from "@/features/admin-dashboard/tabs/box-lookup/components/DonateDialog";
+import MoveDialog from "@/features/admin-dashboard/tabs/box-lookup/components/MoveDialog";
+import { BoxStatus } from "@/types/enums";
+import { printBoxLabels } from "@/features/admin-dashboard/tabs/box-lookup/utils";
+import { useSearchFiltersQueries } from "@/features/admin-dashboard/hooks/useSearchFiltersQueries";
 
+
+type FilterType = "item" | "box-id" | "location";
+
+interface FilterStateItem {
+  category: string;
+  size: string;
+  gender: string;
+  status: BoxStatus; 
+}
+
+interface FilterStateLocation {
+  room: string;
+  level: string;
+  aisle: string;
+}
+
+const genderMapping: Record<string, string> = {
+  male: "Men",
+  female: "Women",
+  kids: "Kids",
+  unisex: "Unisex",
+};
 
 const LookupBox = () => {
 
   const navigate = useNavigate();
   const [view, setView] = useState< "main-filter" | "item-filter" | "box-filter" | "location-filter" | "filter-results">("main-filter");
   const [prevView, setPrevView] = useState< "main-filter" | "item-filter" | "box-filter" | "location-filter" | "filter-results">("main-filter");
-  const [active, setActive] = useState<boolean>(false);
-  
-  const handleBack = () => {
-    if (view === "main-filter") {
-      navigate("/");
-    }
-    else {
-      setView(prevView);
-      setPrevView("main-filter");
-    }
-  };
 
-  const handleItemFilter = () => {
-    setView("item-filter"); 
-  };
+  const [filterType, setFilterType] = useState<FilterType>("item");
+  const [itemFilters, setItemFilters] = useState<FilterStateItem>({
+    category: "all",
+    size: "all",
+    gender: "all",
+    status: "Active",
+  });
+  const [boxIdFilters, setBoxIdFilters] = useState<Record<string, string>>({});
+  const [locationFilters, setLocationFilters] = useState<FilterStateLocation>({
+    room: "",
+    level: "",
+    aisle: "",
+  });
 
-  const handleBoxFilter = () => {
-    setView("box-filter"); 
-  }; 
+  const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
+  const [isDonateDialogOpen, setIsDonateDialogOpen] = useState(false);
+  const [, setSelectedLocations] = useState<string[]>([]);
+  const [selectedBoxIds, setSelectedBoxIds] = useState<string[]>([]);
 
-  const handleLocationFilter = () => {
-    setView("location-filter"); 
-  };
+  const queryClient = useQueryClient();
+  const { locations, isLoading: isLoadingLocations } = useLocations();
 
-  const handleActive = () => {
-    setActive(!active);
-  };
+  const { categories, sizes } = useSearchFiltersQueries();
 
-  const handleSearch = () => {
-    setPrevView(view);
-    setView("filter-results"); 
-  };
+
+  // Use React Query to fetch boxes data
+  const {
+    data: boxes = [],
+    isLoading: isLoadingBoxes,
+    isError: isBoxesError,
+    error: boxesError,
+  } = useQuery({
+    queryKey: ["boxes"],
+    queryFn: async () => boxApi.getBoxes(),
+  });
+
+  // filter boxes based on filter type
+  const filteredBoxes = useMemo(() => {
+    return boxes.filter((box) => {
+
+      if (filterType === "item") {
+        const selectedCategoryName =
+          categories?.find((c) => c.category_id === itemFilters.category)?.name ?? "all";
+        const selectedSizeName =
+          sizes?.find((s) => s.size_id === itemFilters.size)?.name ?? "all";
+
+        return (
+          box.status === itemFilters.status &&
+          (selectedCategoryName === "all" ||
+            box.contents?.some((item) => item.type === selectedCategoryName)) &&
+          (selectedSizeName === "all" ||
+            box.contents?.some((item) => item.size === selectedSizeName)) &&
+          (itemFilters.gender === "all" ||
+            box.contents?.some((item) => item.gender === genderMapping[itemFilters.gender.toLowerCase()]))
+        );
+      }
+      else if (filterType === "box-id") {
+        return box.id in boxIdFilters;
+      }
+      else if (filterType === "location") {
+        return true;
+      }
+
+      return true;
+    });
+  }, [boxes, filterType, itemFilters, boxIdFilters, locationFilters]);
 
   const title = view === "filter-results"
     ? "Inventory Management"
@@ -55,8 +121,191 @@ const LookupBox = () => {
         : view === "location-filter"
           ? "Search Box by Location"
           : "Inventory Management";
-        
+
+  const moveBoxesMutation = useMutation({
+    mutationFn: ({
+      boxIds,
+      locationId,
+    }: {
+      boxIds: string[];
+      locationId: string;
+    }) => boxApi.moveBoxes(boxIds, locationId),
+    onSuccess: () => {
+      toast.success(
+        `${selectedBoxIds.length} ${
+          selectedBoxIds.length === 1 ? "box" : "boxes"
+        } moved successfully.`,
+      );
+      queryClient.invalidateQueries({ queryKey: ["boxes"] });
+      setSelectedBoxIds([]);
+      setIsMoveDialogOpen(false);
+      setSelectedLocations([]);
+    },
+    onError: (error) => {
+      toast.warning(
+        `Failed to move boxes: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    },
+  });
+
+  // Organize locations by parent when locations data changes
+  // Mutations for box operations
+  const donateBoxesMutation = useMutation({
+    mutationFn: (boxIds: string[]) => boxApi.donateBoxes(boxIds),
+    onSuccess: () => {
+      toast.success(
+        `${selectedBoxIds.length} ${
+          selectedBoxIds.length === 1 ? "box" : "boxes"
+        } donated successfully.`,
+      );
+      queryClient.invalidateQueries({ queryKey: ["boxes"] });
+      setSelectedBoxIds([]);
+      setIsDonateDialogOpen(false);
+    },
+    onError: (error) => {
+      toast.error(
+        `Failed to donate boxes: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    },
+  });
+    
+  const handleGoBack = () => {
+    if (view === "main-filter") {
+      navigate("/");
+    }
+    else {
+      setView(prevView);
+      setPrevView("main-filter");
+    }
+  };
+
+  const handleItemFilter = () => {
+    setFilterType("item");
+    setView("item-filter"); 
+  };
+
+  const handleBoxFilter = () => {
+    setFilterType("box-id");
+    setView("box-filter"); 
+  }; 
+
+  const handleLocationFilter = () => {
+    setFilterType("location");
+    setView("location-filter"); 
+  };
+
+  const handleSearch = () => {
+    setPrevView(view);
+    setView("filter-results"); 
+  };
+
+  const handleItemFilterChange = (filterType: keyof FilterStateItem, value: string) => {
+    setItemFilters((prev) => ({
+      ...prev,
+      [filterType]: value,
+    }));
+  };
+  
+  const handleBoxIdFilterChange= (id: string, name: string) => {
+    setBoxIdFilters((prev) => {
+      const updated = {...prev};
+      if (id in updated) {
+        delete updated[id];
+      }
+      else {
+        updated[id] = name;
+      }
+      return updated;
+    });
+  };
+  
+  const clearAllBoxIds = () => {
+    setBoxIdFilters({});
+  };
+
+  const handleLocationFilterChange = (filterType: keyof FilterStateLocation, value: string) => {
+    setLocationFilters((prev) => ({
+      ...prev,
+      [filterType]: value,
+    }));
+  };
+
+  // Handle box selection logic
+  const handleBoxSelect = (boxId: string) => {
+    setSelectedBoxIds((prev) => {
+      const isSelected = prev.includes(boxId);
+      return isSelected ? prev.filter((id) => id !== boxId) : [...prev, boxId];
+    });
+    console.log(selectedBoxIds);
+  };
+
+  const handlePrintLabel = () => {
+    if (selectedBoxIds.length === 0) {
+      toast.info("Please select one box to print.");
+      return;
+    }
+
+    const selectedBoxes = boxes.filter((box) =>
+      selectedBoxIds.includes(box.id)
+    );
+    printBoxLabels(selectedBoxes);
+  };
+
+  const handleMoveClick = () => {
+    if (selectedBoxIds.length === 0) {
+      toast.info("Please select one box to move.");
+      return;
+    }
+
+    // Reset selected locations when opening the dialog
+    setSelectedLocations([]);
+
+    // Log the location hierarchy before opening the move dialog
+    setIsMoveDialogOpen(true);
+  };
+
+  const handleConfirmMove = (locationId: string) => {
+    // The validation is now happening in the MoveDialog component
+    // Here we just need to handle the mutation
+    moveBoxesMutation.mutate({
+      boxIds: selectedBoxIds,
+      locationId,
+    });
+  };
+
+  const handleDonateClick = () => {
+    if (selectedBoxIds.length === 0) {
+      toast.info("Please select one box to donate.");
+      return;
+    }
+    setIsDonateDialogOpen(true);
+  };
+
+  const handleConfirmDonation = () => {
+    donateBoxesMutation.mutate(selectedBoxIds);
+  };
+
+  // Handle loading and error states
+  if (isLoadingBoxes) {
     return (
+      <div className="p-6">
+        Loading inventory data...
+      </div>
+    );
+  }
+  if (isBoxesError) {
+    return (
+      <div className="p-6 text-red-500">
+        Error loading inventory: {boxesError?.message}
+      </div>
+    );
+  }
+
+  return (
     <div className="h-screen flex flex-col items-center bg-white px-4 overflow-hidden">
       
       <div className="flex-[1] basis-0 w-full max-w-screen-md flex flex-col justify-center items-start mb-8">
@@ -65,7 +314,7 @@ const LookupBox = () => {
         </h1>
         <button 
           className="p-2 rounded-md border-2 border-gray-900 bg-gray-300 hover:bg-gray-400 mb-3 duration-300 ease-in-out"
-          onClick={handleBack}
+          onClick={handleGoBack}
         >
           <ArrowLeft size={40} />
         </button>
@@ -83,22 +332,47 @@ const LookupBox = () => {
 
         {view === "item-filter" && (
           <ItemFilters
-            active={active}
-            handleActive={handleActive}
-          /> 
+            categories={categories}
+            sizes={sizes}
+            selectedCategoryId={itemFilters.category}
+            selectedSizeId={itemFilters.size}
+            selectedGender={itemFilters.gender}
+            selectedStatus={itemFilters.status}
+            onCategoryChange={(value) => handleItemFilterChange("category", value)}
+            onSizeChange={(value) => handleItemFilterChange("size", value)}
+            onGenderChange={(value) => handleItemFilterChange("gender", value)}
+            onStatusChange={(value) => handleItemFilterChange("status", value)}
+          />
         )}
 
         {view === "box-filter" && (
-          <BoxFilters/> 
+          <BoxFilters
+            boxes={boxes}
+            boxIdFilters={boxIdFilters}
+            handleBoxIdFilterChange={handleBoxIdFilterChange}
+            clearAllBoxIds={clearAllBoxIds}
+          /> 
         )}
 
         {view === "location-filter" && (
-          <LocationFilters/> 
+          <LocationFilters
+            onRoomChange={(value) => handleLocationFilterChange("room", value)}
+            onLevelChange={(value) => handleLocationFilterChange("level", value)}
+            onAisleChange={(value) => handleLocationFilterChange("aisle", value)}
+          /> 
         )}
 
         {view === "filter-results" && (
           <>
-            <FilterResults/> 
+            <FilterResults
+              handlePrintLabel={handlePrintLabel}
+              handleMoveClick={handleMoveClick}
+              handleDonateClick={handleDonateClick}
+              handleBoxSelect={handleBoxSelect}
+              filteredBoxes={filteredBoxes}
+              selectedBoxIds={selectedBoxIds}
+            />
+
             <div className="flex justify-center">
               <button 
                 className="w-3/4 border-2 border-gray-900 bg-yellow-300 hover:bg-yellow-400 text-black p-4 rounded-3xl shadow font-medium duration-300 ease-in-out"
@@ -108,6 +382,24 @@ const LookupBox = () => {
                 </p>
               </button>
             </div>
+
+            {/* Donation Confirmation Dialog */}
+            <DonateDialog
+              open={isDonateDialogOpen}
+              onOpenChange={setIsDonateDialogOpen}
+              onConfirm={handleConfirmDonation}
+              boxCount={selectedBoxIds.length}
+              isProcessing={donateBoxesMutation.isPending}
+            />
+            {/* Move Location Dialog */}
+            <MoveDialog
+              open={isMoveDialogOpen}
+              onOpenChange={setIsMoveDialogOpen}
+              onConfirm={handleConfirmMove}
+              locations={locations}
+              isLoading={isLoadingLocations}
+              isProcessing={moveBoxesMutation.isPending}
+            />
           </>
         )}
 
