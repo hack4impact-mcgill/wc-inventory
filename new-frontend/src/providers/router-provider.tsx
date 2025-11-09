@@ -20,6 +20,7 @@ import BoxLookup from "@/features/admin-dashboard/tabs/box-lookup";
 import Donations from "@/features/admin-dashboard/tabs/donations";
 import AdminOverview from "@/features/admin-dashboard/components/AdminOverview.tsx";
 import LookupBox from "@/features/lookup-box";
+import ViewContents from "@/features/lookup-box/pages/ViewContents";
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
@@ -162,6 +163,14 @@ const router = createBrowserRouter([
     element: (
       <VolunteerWrapper>
         <LookupBox />
+      </VolunteerWrapper>
+    ),
+  },
+  {
+    path: "/lookup-box/view-contents",
+    element: (
+      <VolunteerWrapper>
+        <ViewContents />
       </VolunteerWrapper>
     ),
   },

@@ -281,7 +281,7 @@ const LookupBox = () => {
 
   const handlePrintLabel = () => {
     if (selectedBoxIds.length === 0) {
-      toast.info("Please select one box to print.");
+      toast.info("Please select at least one box to print.");
       return;
     }
 
@@ -293,7 +293,7 @@ const LookupBox = () => {
 
   const handleMoveClick = () => {
     if (selectedBoxIds.length === 0) {
-      toast.info("Please select one box to move.");
+      toast.info("Please select at least one box to move.");
       return;
     }
 
@@ -315,7 +315,7 @@ const LookupBox = () => {
 
   const handleDonateClick = () => {
     if (selectedBoxIds.length === 0) {
-      toast.info("Please select one box to donate.");
+      toast.info("Please select at least one box to donate.");
       return;
     }
     setIsDonateDialogOpen(true);
@@ -323,6 +323,14 @@ const LookupBox = () => {
 
   const handleConfirmDonation = () => {
     donateBoxesMutation.mutate(selectedBoxIds);
+  };
+
+  const handleViewContents = () => {
+    if (selectedBoxIds.length === 0) {
+      toast.info("Please select at least one box to view its contents.");
+      return;
+    }
+    navigate("/lookup-box/view-contents", { state: { boxIds: selectedBoxIds } });
   };
 
   // Handle loading and error states
@@ -418,6 +426,7 @@ const LookupBox = () => {
             <div className="flex justify-center">
               <button 
                 className="w-3/4 border-2 border-gray-900 bg-yellow-300 hover:bg-yellow-400 text-black p-4 rounded-3xl shadow font-medium duration-300 ease-in-out"
+                onClick={handleViewContents}
               >
                 <p className="text-2xl">
                   View Contents
