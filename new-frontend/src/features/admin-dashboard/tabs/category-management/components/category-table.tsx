@@ -18,7 +18,7 @@ import { MoreHorizontal, ChevronRight, ChevronDown } from "lucide-react";
 import { Category } from "@/types/category";
 import { buildHierarchy, CategoryWithChildren, matchesFilter } from "../utils";
 import React from "react";
-import { getCategoryIconPath } from "@/lib/iconLoader";
+import { getAllIcons, getIconCache } from "@/lib/iconLoader";
 
 interface CategoriesTableProps {
   data: Category[] | undefined;
@@ -36,7 +36,19 @@ const CategoriesTable: FC<CategoriesTableProps> = ({
   expandedCategories,
   setExpandedCategories
 }) => {
+  const [iconsReady, setIconsReady] = useState(false);
 
+  useEffect(() => {
+    const loadIcons = async () => {
+      try {
+        await getAllIcons(); 
+        setIconsReady(true);
+      } catch (err) {
+        console.error("Failed to load icons:", err);
+      }
+    };
+    loadIcons();
+  }, [data]);
   useEffect(() => {
     if (filter) {
       const categoryMap = new Map<string, CategoryWithChildren>();
@@ -82,6 +94,12 @@ const CategoriesTable: FC<CategoriesTableProps> = ({
 
   
     if (filter && !matchesFilter(category, filter)) return null;
+    const cachedIcons = getIconCache();
+    const iconKey = category.icon?.toLowerCase() || "";
+    const matched = cachedIcons?.find(
+      (icon) => icon.name.toLowerCase() === iconKey
+    );
+    const iconSrc = matched?.data || "/src/assets/category_icons/Folder.svg";
   
     return (
       <React.Fragment key={category.category_id}>
@@ -115,7 +133,7 @@ const CategoriesTable: FC<CategoriesTableProps> = ({
 
               <div className="flex items-center justify-center h-5 w-5">
                 <img
-                        src={getCategoryIconPath(category.icon)}
+                        src={iconSrc}
                         alt={category.icon!}
                         className="h-4 w-4 object-contain"
                         onError={(e) =>

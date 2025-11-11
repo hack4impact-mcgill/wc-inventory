@@ -210,6 +210,7 @@ const BoxLookup: React.FC = () => {
     if (selectedBoxIds.length === 1) {
       // Single box view
       const box = selectedBoxes[0];
+      console.log("box here is " , box)
       return (
         <BoxDetails
           boxName={box.name}
@@ -325,7 +326,8 @@ const BoxLookup: React.FC = () => {
       </div>
     );
   }
-
+  const content = getSelectedBoxesContent();
+  console.log(content);
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">

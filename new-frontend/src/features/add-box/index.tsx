@@ -17,10 +17,10 @@ import { BoxContent, InsertBoxContent } from "@/types/boxContent";
 import { buildLocationTree } from "./utils";
 import { useToast } from "@/hooks/use-toast";
 
-import { getCategoryIconPath } from "@/lib/iconLoader";
 
 
 import { useMobile } from "./hooks/useMobile";
+import { getSpecificIcon, getAllIcons, getIconCache } from '@/lib/iconLoader';
 
 
 const AddBox = () => {
@@ -107,6 +107,36 @@ const AddBox = () => {
     }
   }, [editingItemIndex, items]);
 
+  const [iconSrcMap, setIconSrcMap] = useState<Map<string, string>>(new Map());
+
+  useEffect(() => {
+  const loadIcons = async () => {
+    try {
+
+      const cached = getIconCache();
+
+      if (cached && cached.length > 0) {
+        const map = new Map<string, string>();
+        for (const icon of cached) {
+          map.set(icon.name.toLowerCase().trim(), icon.data);
+        }
+        setIconSrcMap(map);
+      }
+
+
+      const icons = await getAllIcons();
+      const freshMap = new Map<string, string>();
+      for (const icon of icons) {
+        freshMap.set(icon.name.toLowerCase().trim(), icon.data);
+      }
+      setIconSrcMap(freshMap);
+    } catch (error) {
+      console.error("Failed to fetch icons:", error);
+    }
+  };
+
+  loadIcons();
+}, []);
   const locationTree = locations
     ? buildLocationTree(locations.map((loc) => ({ ...loc, children: [] })))
     : [];
@@ -464,9 +494,7 @@ const AddBox = () => {
                           const category = categories?.find((c) =>
                             c.category_id === item.category_id
                           );
-                          const IconComponent = category?.icon
-                            ? getCategoryIconPath(category.icon)
-                            : Package;
+                          const imgsrc = category?.icon? iconSrcMap.get(category.icon.toLowerCase().trim()): undefined;
 
                           return (
                             <div
@@ -482,15 +510,9 @@ const AddBox = () => {
                                 <div className="flex items-center gap-3">
                                   <div className="text-gray-500">
                                     <img
-                                      src={getCategoryIconPath(
-                                        category!.icon
-                                      )}
+                                      src={imgsrc!}
                                       alt={category?.name || "Item"}
                                       className="h-6 w-6 object-contain"
-                                      onError={(e) =>
-                                        ((e.currentTarget as HTMLImageElement).src =
-                                          "/icons/default.svg.svg")
-                                      }
                                     />
                                   </div>
                                   <div>

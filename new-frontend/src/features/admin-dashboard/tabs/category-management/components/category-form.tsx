@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import IconSelector from "@/components/icon-selector";
 import { Category, CategoryFormData } from "@/types/category";
 import { Upload } from "lucide-react";
-
+import { uploadIcon } from "@/lib/iconLoader";
+import { supabase } from "@/lib/supabaseClient";
 export interface CategoryFormProps {
   categories: ReadonlyArray<Category>;
   onSubmit: (values: CategoryFormData) => Promise<void>;
@@ -41,7 +42,6 @@ const CategoryForm: FC<CategoryFormProps> = (
   const currentParent = breadcrumb[breadcrumb.length - 1];
   const searchQuery = (breadcrumb.map(c => c.name).join("") + "" + parentSearch).toLowerCase().replace(/\s/g, "");
 
-  // Get the path to a category
   const getCategoryPath = (category: Category): string => {
     const path: string[] = [category.name];
     let currentCategory = category;
@@ -204,31 +204,61 @@ const CategoryForm: FC<CategoryFormProps> = (
           {/* Icon selector */}
           <div className="flex-1">
             <IconSelector
-              value={formData.icon && !formData.icon.startsWith("data:") ? formData.icon : null}
+              value={formData.icon}
               onChange={handleIconChange}
               className="w-full"
             />
           </div>
 
-          {/* Upload button to-do later*/}
-          {/* <input
+          <input
             type="file"
             id="icon-upload"
-            accept=".svg,.png"
+            accept=".svg"
             className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
+            onChange={async (e) => {
+              const fileInput = e.target;
+              const file = fileInput.files?.[0];
               if (!file) return;
 
-              const reader = new FileReader();
-              reader.onload = (ev) => {
-                const dataUrl = ev.target?.result as string;
-                setFormData((prev) => ({
-                  ...prev,
-                  icon: dataUrl, 
-                }));
-              };
-              reader.readAsDataURL(file);
+              try {
+                const reader = new FileReader();
+                reader.onload = async (ev) => {
+                  const dataUrl = ev.target?.result as string;
+                  const { data: { user } } = await supabase.auth.getUser();
+                  const user_id = user?.id;
+
+                  const newIcon = await uploadIcon(
+                    file,
+                    file.name.replace(/\.[^/.]+$/, ""), 
+                    user_id
+
+                  )
+                  
+                  
+                  // await iconApi.createIcon({
+                  //   name: file.name.replace(/\.[^/.]+$/, ""), 
+                  //   mime_type: file.type,
+                  //   data: dataUrl,
+                  //   uploaded_by: null,
+                  // });
+                  
+                  console.log("newicon"+newIcon)
+
+                  setFormData((prev) => ({
+                    ...prev,
+                    icon: newIcon.name, 
+                  }));
+
+                  alert(`Icon "${newIcon.name}" uploaded successfully!`);
+                  fileInput.value = ""; 
+                };
+
+                reader.readAsDataURL(file);
+              } catch (error) {
+                console.error("Upload failed:", error);
+                alert("Failed to upload icon");
+                fileInput.value = "";
+              }
             }}
           />
 
@@ -243,13 +273,7 @@ const CategoryForm: FC<CategoryFormProps> = (
             <Upload className="h-4 w-4" />
           </Button>
 
-          {formData.icon && formData.icon.startsWith("data:") && (
-            <img
-              src={formData.icon}
-              alt="Preview"
-              className="h-6 w-6 object-contain border rounded"
-            />
-          )} */}
+
         </div>
       </div>
 

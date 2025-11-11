@@ -43,9 +43,9 @@ const BoxDetails = ({
 
       <h3 className="font-medium mb-3">Contents:</h3>
       <div className="space-y-3">
-        {contents.map((item, idx) => (
-          <ContentCard key={idx} item={item} />
-        ))}
+        {contents.map((item, idx) => {
+          return <ContentCard key={idx} item={item} />;
+        })} 
       </div>
     </div>
   );
