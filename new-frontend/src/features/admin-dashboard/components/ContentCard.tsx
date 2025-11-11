@@ -21,8 +21,7 @@ const ContentCard = ({ item }: ContentCardProps) => {
           map.set(icon.name.toLowerCase().trim(), icon.data);
         }
         setIconMap(map);
-        console.log(item)
-        console.log(iconMap)
+
       }
 
 

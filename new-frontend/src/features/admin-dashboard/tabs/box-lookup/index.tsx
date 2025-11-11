@@ -210,7 +210,6 @@ const BoxLookup: React.FC = () => {
     if (selectedBoxIds.length === 1) {
       // Single box view
       const box = selectedBoxes[0];
-      console.log("box here is " , box)
       return (
         <BoxDetails
           boxName={box.name}

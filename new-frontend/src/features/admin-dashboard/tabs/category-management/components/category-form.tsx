@@ -242,7 +242,6 @@ const CategoryForm: FC<CategoryFormProps> = (
                   //   uploaded_by: null,
                   // });
                   
-                  console.log("newicon"+newIcon)
 
                   setFormData((prev) => ({
                     ...prev,
