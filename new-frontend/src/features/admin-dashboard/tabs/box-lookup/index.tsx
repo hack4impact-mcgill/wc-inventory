@@ -133,10 +133,11 @@ const BoxLookup: React.FC = () => {
         return false;
       }
 
-      // If box has no contents, only apply name filter
-      if (!box.contents || box.contents.length === 0) {
-        return true;
-      }
+      // Empty boxes should not show up (should not even exist in the database)
+      // // If box has no contents, only apply name filter
+      // if (!box.contents || box.contents.length === 0) {
+      //   return true;
+      // }
 
       // Filter by contents
       if (
