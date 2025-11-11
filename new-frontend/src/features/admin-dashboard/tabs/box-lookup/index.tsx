@@ -29,10 +29,10 @@ const genderMapping: Record<string, string> = {
   unisex: "Unisex",
 };
 
-const categoryMapping: Record<string, string> = {
-  tshirts: "T-shirt",
-  pants: "Pants",
-};
+// const categoryMapping: Record<string, string> = {
+//   tshirts: "T-shirt",
+//   pants: "Pants",
+// };
 
 const BoxLookup: React.FC = () => {
   const queryClient = useQueryClient();
@@ -149,10 +149,11 @@ const BoxLookup: React.FC = () => {
         return false;
       }
 
-      // If box has no contents, only apply name filter
-      if (!box.contents || box.contents.length === 0) {
-        return true;
-      }
+      // Empty boxes should not show up (should not even exist in the database)
+      // // If box has no contents, only apply name filter
+      // if (!box.contents || box.contents.length === 0) {
+      //   return true;
+      // }
 
       // Filter by contents
       if (
@@ -162,10 +163,8 @@ const BoxLookup: React.FC = () => {
       ) {
         return box.contents.some((item) => {
           // Filter by category (item type)
-          if (filters.category !== "all") {
-            if (item.type !== categoryMapping[filters.category]) {
-              return false;
-            }
+          if (filters.category !== "all" && item.type !== filters.category) {
+            return false;
           }
 
           // Filter by size
@@ -178,7 +177,7 @@ const BoxLookup: React.FC = () => {
 
           // Filter by gender
           if (filters.gender !== "all") {
-            if (item.gender !== genderMapping[filters.gender]) {
+            if (item.gender !== genderMapping[filters.gender.toLowerCase()]) {
               return false;
             }
           }
