@@ -32,7 +32,7 @@ export const navItems: NavItem[] = [
     description: "Search for boxes or items in boxes",
   },
   {
-    title: "Create boxes",
+    title: "Create/Add to boxes",
     href: "/admin/create-boxes",
     icon: PackagePlus,
     description: "Create or add items to existing boxes",

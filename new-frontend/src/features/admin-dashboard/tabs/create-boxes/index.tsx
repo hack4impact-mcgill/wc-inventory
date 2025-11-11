@@ -106,7 +106,24 @@ const CreateBox: React.FC = () => {
     ]);
   };
 
+  const [error, setError] = useState("");
   const handleCreateBox = async () => {
+
+    const hasEmptyFields = createBoxItems.filter(item =>
+      !(item.box_id || item.box_name) ||
+      !item.category_id ||
+      !item.quantity
+      ||!item.gender ||
+      !item.location_id
+      ||!item.size_id);
+
+    if (hasEmptyFields.length > 0) {
+      setError("Please fill out all required fields before continuing.");
+      return;
+    }
+
+    setError("");
+
     const boxesToCreate = createBoxItems.filter(item => 
       (item.box_id || item.box_name) && 
       item.category_id && 
@@ -167,6 +184,7 @@ const CreateBox: React.FC = () => {
       console.error('Error creating boxes:', error);
     // toast.error('Failed to create boxe');
     }
+
   };
 
   return (
@@ -176,7 +194,7 @@ const CreateBox: React.FC = () => {
           <TableRow>
             <TableHead>Box</TableHead>
             <TableHead>Category</TableHead>
-            <TableHead>Quantity of Items per Box</TableHead>
+            <TableHead>Quantity</TableHead>
             <TableHead>Gender</TableHead>
             <TableHead>Size</TableHead>
             <TableHead>Location</TableHead>
@@ -186,7 +204,7 @@ const CreateBox: React.FC = () => {
           {createBoxItems.map((item, index) => (
             <TableRow key={index}>
               <TableCell>
-                <div className="flex space-x-2">
+                <div className="flex space-x-2"> #Check branch 130
                   <select 
                     value={item.box_id || ''}
                     onChange={(e) => {
@@ -235,11 +253,13 @@ const CreateBox: React.FC = () => {
               <TableCell>
                 <Input 
                   type="number"
-                  value={item.quantity}
-                  onChange={(e) => updateCreateBoxItem(index, { 
-                    quantity: parseInt(e.target.value) || 0 
-                  })}
-                  placeholder="0"
+                  value={item.quantity === null || item.quantity === undefined ? '' : item.quantity}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    updateCreateBoxItem(index, {
+                      quantity: value === '' ? '' : parseInt(value)
+                    });
+                  }}
                 />
               </TableCell>
               <TableCell>
@@ -298,9 +318,11 @@ const CreateBox: React.FC = () => {
           Add Item Row
         </Button>
         <Button onClick={handleCreateBox}>
-          Create Box
+          Create/Add to boxes
         </Button>
       </div>
+      {error && <p className="text-red-500 mt-2">{error}</p>}
+
     </Card>
   );
 };
