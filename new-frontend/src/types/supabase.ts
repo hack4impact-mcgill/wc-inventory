@@ -21,7 +21,7 @@ export type Database = {
           category_id: string
           gender: Database["public"]["Enums"]["gender_enum"]
           quantity: number
-          size_id: string | null
+          size_id: string
         }
         Insert: {
           box_content_id?: string
@@ -29,7 +29,7 @@ export type Database = {
           category_id: string
           gender: Database["public"]["Enums"]["gender_enum"]
           quantity?: number
-          size_id?: string | null
+          size_id?: string
         }
         Update: {
           box_content_id?: string
@@ -37,7 +37,7 @@ export type Database = {
           category_id?: string
           gender?: Database["public"]["Enums"]["gender_enum"]
           quantity?: number
-          size_id?: string | null
+          size_id?: string
         }
         Relationships: [
           {
