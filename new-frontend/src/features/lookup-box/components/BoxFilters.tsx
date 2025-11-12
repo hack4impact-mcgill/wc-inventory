@@ -39,10 +39,10 @@ const BoxFilters = ({
     <>
 
       <h2 className="flex-1 flex flex-col justify-center text-2xl font-bold text-black tracking-wide text-center mb-4">
-        Input Box Name(s)
+        Input Box ID(s)
       </h2>
 
-      <div className="flex-[5] flex flex-col">
+      <div className="flex-[3] flex flex-col">
 
         <Popover open={open} onOpenChange={setOpen}>
 

@@ -2,8 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { boxApi } from "@/lib/api/boxes";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { BoxStatus } from "@/types/enums";
+import BoxDetails from "@/features/admin-dashboard/components/BoxDetails";
+import { BoxItem } from "@/types/box";
+import { useState } from "react";
 
 
 interface BoxItemWithId {
@@ -28,6 +31,7 @@ const ViewContents = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
   const boxIds = state?.boxIds || [];
+  const [toggleTotal, setToggleTotal] = useState<boolean>(true);
 
   // Use React Query to fetch boxes data
   const {
@@ -42,12 +46,47 @@ const ViewContents = () => {
 
   const filteredBoxes = boxes.filter((box) => boxIds.includes(box.id)) as BoxViewWithNewBoxItem[];
 
-  const formatDate = (d: string) =>
-    new Date(d).toLocaleString("en-US", {
-      month: "numeric", day: "numeric", year: "numeric",
-      hour: "numeric", minute: "2-digit", second: "2-digit", hour12: true
+  const getSelectedBoxesContent = () => {
+    if (toggleTotal) {
+      const combinedContents: Record<string, BoxItem> = {};
+      
+      filteredBoxes.forEach((box) => {
+        box.contents?.forEach((item) => {
+          const key = `${item.type}-${item.gender}-${item.size}`;
+          if (!combinedContents[key]) {
+            combinedContents[key] = { ...item, quantity: 0 };
+          }
+          combinedContents[key].quantity += item.quantity;
+        });
+      });
+      
+      return (
+        <BoxDetails
+        boxName={`${filteredBoxes.length} boxes selected`}
+        location=""
+        createdAt=""
+        updatedAt=""
+        contents={Object.values(combinedContents)}
+        isMultiSelect={true}
+        />
+      );
     }
-  );
+    else {
+      return (
+        <>
+          {filteredBoxes.map((box) => (
+              <BoxDetails 
+                boxName={box.name}
+                location={box.location || ""}
+                createdAt={box.createdAt || ""}
+                updatedAt={box.updatedAt || ""}
+                contents={box.contents}
+              />
+          ))}
+        </>
+      );
+    } 
+  };
 
   // Handle loading and error states
   if (isLoadingBoxes) {
@@ -66,74 +105,55 @@ const ViewContents = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col items-center bg-white px-4 overflow-hidden">
+    <div className="h-screen flex flex-col gap-5 items-center bg-white px-4 overflow-hidden">
       
-      <div className="w-full max-w-screen-md mb-6">
-        <div className="flex-[1] basis-0 w-full max-w-screen-md flex flex-col justify-center items-start mb-8">
-          <h1 className="text-2xl font-semibold text-gray-900 tracking-wide text-center mb-8">
-            Content View
-          </h1>
+      <div className="w-full max-w-screen-md mb-8">
+
+        <div className="flex-[1] h-full w-full max-w-screen-md flex items-center justify-start">
           <button 
-            className="p-2 rounded-md border-2 border-gray-900 bg-gray-300 hover:bg-gray-400 mb-3 duration-300 ease-in-out"
+            className="mr-6 p-2 rounded-lg font-bold bg-gray-300 mb-3 duration-300 ease-in-out shadow transform transition-all hover:shadow-xl"
             onClick={() => navigate("/lookup")}
           >
-            <ArrowLeft size={40} />
+            <ArrowLeft size={30} />
           </button>
-      </div>
-        <h2 className="text-xl font-bold text-gray-800">
-          Box Quickview
-        </h2>
+
+          <h1 className="lg:text-2xl text-xl font-bold text-gray-900 tracking-wide text-center mb-8 pt-4">
+            Content View
+          </h1>
+        </div>
+
+        <div className="flex justify-end gap-2">
+          <span>
+            Box
+          </span>
+          <div
+            onClick={() => setToggleTotal(!toggleTotal)}
+            className="relative w-12 h-6 rounded-full cursor-pointer transition-colors bg-blue-500"
+          >
+            <div
+              className={`
+                absolute top-1 left-1 h-4 w-4 rounded-full bg-white shadow transition-transform
+                ${toggleTotal ? "translate-x-6" : "translate-x-0"}
+              `}
+            />
+          </div>
+          <span>
+            Total
+          </span>
+        </div>
+
       </div>
 
       <div className="flex-1 w-full max-w-screen-md overflow-y-auto p-2 space-y-6 border-gray-400 border rounded-lg">
+
         {filteredBoxes.length === 0 && (
           <p className="text-gray-500 text-lg text-center py-6">
             No boxes selected
           </p>
         )}
-        {filteredBoxes.map((box) => (
-          <Card key={box.id} className="w-full max-w-screen-md border-2 border-gray-900 bg-gray-50 shadow-md">
-            <CardHeader>
-              <CardTitle className="text-2xl">
-                {box.name}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-gray-700">
-              <p>
-                Location: {box.location === null ? "—" : box.location}
-              </p>
-              <p>
-                Created on: {formatDate(box.createdAt)}         
-              </p>
-              <p>
-                Updated on: {formatDate(box.updatedAt)}         
-              </p>
-              <div className="pt-4">
-                <p className="font-semibold mb-3 text-black">
-                  Contents:
-                </p>
-                { box.contents.map((content) => (
-                  <Card key={content.id} className="flex justify-between items-center px-4 py-3 mb-2 border border-gray-300">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">👖</span>
-                      <div>
-                        <p className="font-medium">
-                          {content.type}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {content.gender} • Size: {content.size}
-                        </p>
-                      </div>
-                    </div>
-                    <p className="text-sm font-semibold">
-                      Qty: {content.quantity}
-                    </p>
-                  </Card>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+
+        {filteredBoxes.length !== 0 && getSelectedBoxesContent()}
+
       </div>
 
     </div>

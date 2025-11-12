@@ -28,9 +28,9 @@ const BoxDetails = ({
       {!isMultiSelect ? (
         <>
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Box {boxName}</h2>
+            <h2 className="text-xl font-semibold">{boxName}</h2>
           </div>
-          <p className="text-gray-600 mb-2">Location: {location}</p>
+          <p className="text-gray-600 mb-2">Location: {location === "" ? "—" : location}</p>
           <p className="text-gray-600 mb-4">
             Created on: {formatDate(createdAt)}
             <br />
