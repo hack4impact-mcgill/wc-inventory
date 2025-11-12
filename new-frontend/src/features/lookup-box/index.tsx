@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useMemo } from "react";
 import { ArrowLeft } from "lucide-react";
 import MainFilters from "./components/MainFilters"
@@ -18,6 +18,7 @@ import { useSearchFiltersQueries } from "@/features/admin-dashboard/hooks/useSea
 import { buildLocationTree } from "@/features/add-box/utils";
 
 
+type ViewType = "main-filter" | "item-filter" | "box-filter" | "location-filter" | "filter-results"
 type FilterType = "item" | "box-id" | "location";
 
 interface FilterStateItem {
@@ -42,25 +43,31 @@ const genderMapping: Record<string, string> = {
 };
 
 const LookupBox = () => {
-
+  const { state } = useLocation();
   const navigate = useNavigate();
-  const [view, setView] = useState< "main-filter" | "item-filter" | "box-filter" | "location-filter" | "filter-results">("main-filter");
-  const [prevView, setPrevView] = useState< "main-filter" | "item-filter" | "box-filter" | "location-filter" | "filter-results">("main-filter");
+  const [view, setView] = useState<ViewType>(state?.views?.view ?? "main-filter");
+  const [prevView, setPrevView] = useState<ViewType>(state?.views?.prevView ?? "main-filter");
 
-  const [filterType, setFilterType] = useState<FilterType>("item");
-  const [itemFilters, setItemFilters] = useState<FilterStateItem>({
-    category: "all",
-    size: "all",
-    gender: "all",
-    status: "Active",
-  });
-  const [boxIdFilters, setBoxIdFilters] = useState<Record<string, string>>({});
-  const [locationFilters, setLocationFilters] = useState<FilterStateLocation>({
-    room: "default",
-    level: "default",
-    aisle: "default",
-    row: "default",
-  });
+  const [filterType, setFilterType] = useState<FilterType>(state?.filters?.filterType ?? "item");
+  const [itemFilters, setItemFilters] = useState<FilterStateItem>(
+    state?.filters?.itemFilters ?? { 
+      category: "all", 
+      size: "all", 
+      gender: "all", 
+      status: "Active" 
+    }
+  );
+  const [boxIdFilters, setBoxIdFilters] = useState<Record<string, string>>(
+    state?.filters?.boxIdFilters ?? {}
+  );
+  const [locationFilters, setLocationFilters] = useState<FilterStateLocation>(
+    state?.filters?.locationFilters ?? { 
+      room: "default", 
+      level: "default", 
+      aisle: "default", 
+      row: "default" 
+    }
+  );
 
   const queryClient = useQueryClient();
   const { locations, isLoading: isLoadingLocations } = useLocations();
@@ -132,7 +139,7 @@ const LookupBox = () => {
   }, [boxes, filterType, itemFilters, boxIdFilters, locationFilters]);
 
   const title = view === "filter-results"
-    ? "Inventory Management"
+    ? "Box List"
     : view === "item-filter"
       ? "Search Box by Item"
       : view === "box-filter"
@@ -218,8 +225,13 @@ const LookupBox = () => {
   };
 
   const handleSearch = () => {
+    if (view === "box-filter" && Object.entries(boxIdFilters).length === 0) {
+      toast.info("Please select at least one box to search.");
+      return;
+    }
     setPrevView(view);
     setView("filter-results"); 
+    setSelectedBoxIds([]);
   };
 
   const handleItemFilterChange = (filterType: keyof FilterStateItem, value: string) => {
@@ -276,7 +288,14 @@ const LookupBox = () => {
       const isSelected = prev.includes(boxId);
       return isSelected ? prev.filter((id) => id !== boxId) : [...prev, boxId];
     });
-    console.log(selectedBoxIds);
+  };
+
+  const handleSelectAll = () => {
+    setSelectedBoxIds(
+      selectedBoxIds.length === filteredBoxes.length
+        ? []
+        : filteredBoxes.map((box) => box.id),
+    );
   };
 
   const handlePrintLabel = () => {
@@ -330,7 +349,9 @@ const LookupBox = () => {
       toast.info("Please select at least one box to view its contents.");
       return;
     }
-    navigate("/lookup-box/view-contents", { state: { boxIds: selectedBoxIds } });
+    navigate("/lookup-box/view-contents", { state: 
+      { boxIds: selectedBoxIds, filters: { filterType, itemFilters, boxIdFilters, locationFilters, }, views: { view, prevView} } 
+    } );
   };
 
   // Handle loading and error states
@@ -352,16 +373,16 @@ const LookupBox = () => {
   return (
     <div className="h-screen flex flex-col items-center bg-white px-4 overflow-hidden">
       
-      <div className="flex-[1] basis-0 w-full max-w-screen-md flex flex-col justify-center items-start mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900 tracking-wide text-center mb-8">
-          {title}
-        </h1>
+      <div className="flex-[1] h-full w-full max-w-screen-md flex items-center justify-start">
         <button 
-          className="p-2 rounded-md border-2 border-gray-900 bg-gray-300 hover:bg-gray-400 mb-3 duration-300 ease-in-out"
+          className="mr-6 p-2 rounded-lg font-bold bg-gray-300 mb-3 duration-300 ease-in-out shadow transform transition-all hover:shadow-xl"
           onClick={handleGoBack}
         >
-          <ArrowLeft size={40} />
+          <ArrowLeft size={30} />
         </button>
+        <h1 className="lg:text-2xl text-xl font-bold text-gray-900 tracking-wide text-center mb-8 pt-4">
+          {title}
+        </h1>
       </div>
 
       <div className="flex-[4] basis-0 w-full max-w-screen-md flex flex-col justify-center gap-12 overflow-hidden">
@@ -419,13 +440,14 @@ const LookupBox = () => {
               handleMoveClick={handleMoveClick}
               handleDonateClick={handleDonateClick}
               handleBoxSelect={handleBoxSelect}
+              handleSelectAll={handleSelectAll}
               filteredBoxes={filteredBoxes}
               selectedBoxIds={selectedBoxIds}
             />
 
             <div className="flex justify-center">
               <button 
-                className="w-3/4 border-2 border-gray-900 bg-yellow-300 hover:bg-yellow-400 text-black p-4 rounded-3xl shadow font-medium duration-300 ease-in-out"
+                className="w-3/4 bg-gray-300 p-4 mb-2 rounded-lg shadow font-bold duration-300 ease-in-out transform transition-all hover:shadow-lg"
                 onClick={handleViewContents}
               >
                 <p className="text-2xl">
@@ -457,7 +479,7 @@ const LookupBox = () => {
         {["item-filter", "box-filter", "location-filter"].includes(view) && (
           <div className="max-h-[12rem] flex-1 flex justify-center">
             <button 
-              className="w-3/4 border-2 border-gray-900 bg-gray-950 hover:bg-gray-700 text-white p-4 rounded-3xl shadow font-medium duration-300 ease-in-out"
+              className="w-3/4 bg-gray-950 hover:bg-gray-800 text-white p-4 mb-2 rounded-lg shadow font-bold duration-300 ease-in-out transform transition-all hover:shadow-lg"
               onClick={handleSearch}
             >
               <p className="text-2xl">

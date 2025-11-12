@@ -1,4 +1,6 @@
 import { BoxView } from "@/types/box";
+import { Button } from "@/components/ui/button";
+import BoxesTable from "@/features/admin-dashboard/tabs/box-lookup/components/BoxesTable";
 
 
 interface FilterResultsProps {
@@ -6,6 +8,7 @@ interface FilterResultsProps {
   handleMoveClick: () => void;
   handleDonateClick: () => void;
   handleBoxSelect: (boxId: string) => void;
+  handleSelectAll: () => void;
   filteredBoxes: BoxView[];
   selectedBoxIds: string[];
 }
@@ -15,6 +18,7 @@ const FilterResults = ({
   handleMoveClick,
   handleDonateClick,
   handleBoxSelect,
+  handleSelectAll,
   filteredBoxes,
   selectedBoxIds,
 }: FilterResultsProps) => {
@@ -22,71 +26,37 @@ const FilterResults = ({
 
   return (
     <>
-      <div className="flex flex-row gap-5 justify-center flex-wrap">
+      <div className="flex flex-row gap-5 justify-center">
 
-        <button 
-          className="border-2 border-gray-900 bg-gray-300 hover:bg-gray-400 text-black p-4 rounded-lg shadow font-medium duration-300 ease-in-out"
+        <Button variant="outline" 
+          className="xs:max-w-[4rem] max-w-[8rem] xs:p-2 p-4 h-full"
           onClick={handlePrintLabel}
         >
-          <p className="text-2xl">
-            Print Label
-          </p>
-        </button>
+          Print label
+        </Button>      
 
-        <button 
-          className="border-2 border-gray-900 bg-orange-400 hover:bg-orange-500 text-white p-4 rounded-lg shadow font-medium duration-300 ease-in-out"
+        <Button variant="outline" 
+          className="xs:max-w-[4rem] max-w-[8rem] xs:p-2 p-4 h-full"
           onClick={handleMoveClick}
         >
-          <p className="text-2xl">
-            Move
-          </p>
-        </button>
+          Move
+        </Button>     
 
-        <button 
-          className="border-2 border-gray-900 bg-green-500 hover:bg-green-600 text-white p-4 rounded-lg shadow font-medium duration-300 ease-in-out"
+        <Button variant="outline" 
+          className="xs:max-w-[4rem] max-w-[8rem] xs:p-2 p-4 h-full"
           onClick={handleDonateClick}
         >
-          <p className="text-2xl">
-            Donate
-          </p>
-        </button>
+          Donate
+        </Button>     
 
       </div>
 
-      <div className="flex-1 overflow-y-auto border-2 border-gray-300 rounded-lg p-6">
-        {filteredBoxes.length > 0
-          ? (
-              filteredBoxes.map((box) => (
-                <div 
-                  key={box.id}
-                  className={`flex flex-col justify-between border-2 border-gray-900 bg-gray-300 text-black p-2 mb-4 rounded shadow font-medium duration-300 ease-in-out lg:hover:cursor-pointer
-                    ${selectedBoxIds?.includes(box.id) ? "bg-white text-black mb-5" : "bg-gray-300 lg:hover:bg-white text-black lg:hover:mb-5"}`}
-                  onClick={() => handleBoxSelect(box.id)}
-                >
-                  <p className="text-2xl">
-                    {box.name}
-                  </p>
-                  <div className="flex flex-row justify-between flex-wrap text-lg">
-                    <p>
-                      Location: {box.location === null ? "—" : box.location}
-                    </p>
-                    <p>
-                      Qty: {box.contents?.reduce(
-                            (sum, item) => sum + item.quantity,
-                            0,
-                          ) || 0}
-                    </p>
-                  </div>
-                </div>
-              ))
-          )
-          : (
-            <p className="text-2xl text-center text-black">
-              No boxes found matching your filters
-            </p>
-          )
-        }
-      </div>
+      <BoxesTable
+        boxes={filteredBoxes}
+        selectedBoxIds={selectedBoxIds}
+        onBoxSelect={handleBoxSelect}
+        onSelectAll={handleSelectAll}
+      />
 
     </>
   );

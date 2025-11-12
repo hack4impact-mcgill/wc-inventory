@@ -21,7 +21,8 @@ const MainFilters = ({
       </h2>
 
       <button 
-        className="flex-1 flex items-center justify-center gap-3 border-2 border-gray-900 bg-yellow-300 hover:bg-yellow-400 p-4 rounded-lg shadow font-medium duration-300 ease-in-out"
+        className="flex-1 flex items-center justify-center gap-3 bg-yellow-400 hover:bg-yellow-500 text-white p-4 rounded-lg shadow 
+          font-bold duration-300 ease-in-out transform transition-all hover:shadow-xl"
         onClick={handleItemFilter}
       >
         <Shirt size={40} />
@@ -31,7 +32,8 @@ const MainFilters = ({
       </button>
 
       <button 
-        className="flex-1 flex items-center justify-center gap-3 border-2 border-gray-900 bg-orange-400 hover:bg-orange-500 text-white p-4 rounded-lg shadow font-medium duration-300 ease-in-out"
+        className="flex-1 flex items-center justify-center gap-3 bg-orange-400 hover:bg-orange-500 text-white p-4 
+          rounded-lg shadow font-bold duration-300 ease-in-out transform transition-all hover:shadow-xl"
         onClick={handleBoxFilter}
       >
         <Package size={40} /> 
@@ -41,7 +43,8 @@ const MainFilters = ({
       </button>
 
       <button 
-        className="flex-1 flex items-center justify-center gap-3 border-2 border-gray-900 bg-purple-500 hover:bg-purple-600 text-white p-4 rounded-lg shadow font-medium duration-300 ease-in-out"
+        className="flex-1 flex items-center justify-center gap-3 bg-purple-500 hover:bg-purple-600 text-white p-4 
+          rounded-lg shadow-lg font-bold duration-300 ease-in-out transform transition-all hover:shadow-xl"
         onClick={handleLocationFilter}  
       >
         <MapPin size={40} />
@@ -49,6 +52,7 @@ const MainFilters = ({
           By Location
         </p> 
       </button>
+      
 
     </>
   );

@@ -13,6 +13,9 @@ export default {
       fontFamily: {
         poppins: ['Poppins', 'sans-serif'],
       },
+      screens: {
+      'xs': {'max': '360px'},
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

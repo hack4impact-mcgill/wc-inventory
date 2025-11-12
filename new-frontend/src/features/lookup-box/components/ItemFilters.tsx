@@ -92,8 +92,7 @@ const ItemFilters = ({
     <>
 
       <button
-        className={`flex-1 h-14 flex items-center justify-center gap-3 border-2 border-gray-900 p-4 rounded-lg shadow font-medium duration-300 ease-in-out 
-        ${activeItems ? "bg-green-500 hover:bg-green-600 text-white" : "bg-gray-200 hover:bg-gray-300 text-black"}`}
+        className="ml-1 flex-1 h-14 flex items-center justify-center gap-3 p-4 border-2 border-gray-200 rounded-lg w-11/12"
         onClick={() => onStatusChange(activeItems ? "Donated" : "Active")}
       >
         <p className="text-3xl">
@@ -103,8 +102,8 @@ const ItemFilters = ({
 
       <Select value={selectedCategoryId} onValueChange={onCategoryChange}>
         <SelectTrigger 
-          className="flex-1 flex items-center justify-center gap-5 w-full border-2 border-gray-900 bg-gray-200 hover:bg-gray-300 duration-300 ease-in-out 
-            p-4 rounded-lg shadow font-medium text-3xl [&>svg]:h-8 [&>svg]:w-8"
+          className="ml-1 flex-1 flex items-center justify-center gap-5 w-11/12 border-2 p-4 rounded-lg 
+            text-3xl [&>svg]:h-8 [&>svg]:w-8"
         >
           <SelectValue placeholder="Category"/>
         </SelectTrigger>
@@ -123,8 +122,8 @@ const ItemFilters = ({
 
       <Select value={selectedGender} onValueChange={onGenderChange}>
         <SelectTrigger 
-          className="flex-1 flex items-center justify-center gap-5 w-full border-2 border-gray-900 bg-gray-200 hover:bg-gray-300 duration-300 ease-in-out 
-            p-4 rounded-lg shadow font-medium text-3xl [&>svg]:h-8 [&>svg]:w-8"
+          className="ml-1 flex-1 flex items-center justify-center gap-5 w-11/12 border-2 p-4 rounded-lg 
+            text-3xl [&>svg]:h-8 [&>svg]:w-8"
         >
           <SelectValue placeholder="Gender"/>
         </SelectTrigger>
@@ -143,8 +142,8 @@ const ItemFilters = ({
 
       <Select value={selectedSizeId} onValueChange={onSizeChange}>
         <SelectTrigger 
-          className="flex-1 flex items-center justify-center gap-5 w-full border-2 border-gray-900 bg-gray-200 hover:bg-gray-300 duration-300 ease-in-out 
-            p-4 rounded-lg shadow font-medium text-3xl [&>svg]:h-8 [&>svg]:w-8"
+          className="ml-1 flex-1 flex items-center justify-center gap-5 w-11/12 border-2 p-4 rounded-lg 
+            text-3xl [&>svg]:h-8 [&>svg]:w-8"
         >
           <SelectValue placeholder="Size"/>
         </SelectTrigger>
