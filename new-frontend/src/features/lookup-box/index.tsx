@@ -1,4 +1,4 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useState, useMemo } from "react";
 import { ArrowLeft } from "lucide-react";
 import MainFilters from "./components/MainFilters"
@@ -43,31 +43,24 @@ const genderMapping: Record<string, string> = {
 };
 
 const LookupBox = () => {
-  const { state } = useLocation();
   const navigate = useNavigate();
-  const [view, setView] = useState<ViewType>(state?.views?.view ?? "main-filter");
-  const [prevView, setPrevView] = useState<ViewType>(state?.views?.prevView ?? "main-filter");
+  const [view, setView] = useState<ViewType>("main-filter");
+  const [prevView, setPrevView] = useState<ViewType>("main-filter");
 
-  const [filterType, setFilterType] = useState<FilterType>(state?.filters?.filterType ?? "item");
-  const [itemFilters, setItemFilters] = useState<FilterStateItem>(
-    state?.filters?.itemFilters ?? { 
+  const [filterType, setFilterType] = useState<FilterType>("item");
+  const [itemFilters, setItemFilters] = useState<FilterStateItem>({ 
       category: "all", 
       size: "all", 
       gender: "all", 
       status: "Active" 
-    }
-  );
-  const [boxIdFilters, setBoxIdFilters] = useState<Record<string, string>>(
-    state?.filters?.boxIdFilters ?? {}
-  );
-  const [locationFilters, setLocationFilters] = useState<FilterStateLocation>(
-    state?.filters?.locationFilters ?? { 
+  });
+  const [boxIdFilters, setBoxIdFilters] = useState<Record<string, string>>({});
+  const [locationFilters, setLocationFilters] = useState<FilterStateLocation>({ 
       room: "default", 
       level: "default", 
       aisle: "default", 
       row: "default" 
-    }
-  );
+  });
 
   const queryClient = useQueryClient();
   const { locations, isLoading: isLoadingLocations } = useLocations();
@@ -349,7 +342,7 @@ const LookupBox = () => {
       toast.info("Please select at least one box to view its contents.");
       return;
     }
-    navigate("/lookup-box/view-contents", { state: 
+    navigate("/lookup/view-contents", { state: 
       { boxIds: selectedBoxIds, filters: { filterType, itemFilters, boxIdFilters, locationFilters, }, views: { view, prevView} } 
     } );
   };

@@ -167,7 +167,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/lookup-box/view-contents",
+    path: "/lookup/view-contents",
     element: (
       <VolunteerWrapper>
         <ViewContents />

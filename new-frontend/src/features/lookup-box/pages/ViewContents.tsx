@@ -75,7 +75,7 @@ const ViewContents = () => {
           </h1>
           <button 
             className="p-2 rounded-md border-2 border-gray-900 bg-gray-300 hover:bg-gray-400 mb-3 duration-300 ease-in-out"
-            onClick={() => navigate("/lookup", { state })}
+            onClick={() => navigate("/lookup")}
           >
             <ArrowLeft size={40} />
           </button>
