@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import SearchFilters from "@/features/admin-dashboard/components/SearchFilters";
 import BoxDetails from "@/features/admin-dashboard/components/BoxDetails";
 import { BoxItem } from "@/types/box";
@@ -28,13 +29,16 @@ const genderMapping: Record<string, string> = {
   unisex: "Unisex",
 };
 
-const categoryMapping: Record<string, string> = {
-  tshirts: "T-shirt",
-  pants: "Pants",
-};
+// const categoryMapping: Record<string, string> = {
+//   tshirts: "T-shirt",
+//   pants: "Pants",
+// };
 
 const BoxLookup: React.FC = () => {
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedBoxIdParam = searchParams.get('selectedBoxId');
+  
   const [selectedBoxIds, setSelectedBoxIds] = React.useState<string[]>([]);
   const [filters, setFilters] = React.useState<FilterState>({
     searchTerm: "",
@@ -65,6 +69,18 @@ const BoxLookup: React.FC = () => {
   });
 
   const { locations, isLoading: isLoadingLocations } = useLocations();
+
+  // Auto-select box from URL parameter
+  React.useEffect(() => {
+    if (selectedBoxIdParam && boxes.length > 0) {
+      const boxExists = boxes.some(box => box.id === selectedBoxIdParam);
+      if (boxExists) {
+        setSelectedBoxIds([selectedBoxIdParam]);
+        // Clear the URL parameter after selecting
+        setSearchParams({});
+      }
+    }
+  }, [selectedBoxIdParam, boxes, setSearchParams]);
 
   // Organize locations by parent when locations data changes
   // Mutations for box operations
@@ -133,10 +149,11 @@ const BoxLookup: React.FC = () => {
         return false;
       }
 
-      // If box has no contents, only apply name filter
-      if (!box.contents || box.contents.length === 0) {
-        return true;
-      }
+      // Empty boxes should not show up (should not even exist in the database)
+      // // If box has no contents, only apply name filter
+      // if (!box.contents || box.contents.length === 0) {
+      //   return true;
+      // }
 
       // Filter by contents
       if (
@@ -146,10 +163,8 @@ const BoxLookup: React.FC = () => {
       ) {
         return box.contents.some((item) => {
           // Filter by category (item type)
-          if (filters.category !== "all") {
-            if (item.type !== categoryMapping[filters.category]) {
-              return false;
-            }
+          if (filters.category !== "all" && item.type !== filters.category) {
+            return false;
           }
 
           // Filter by size
@@ -162,7 +177,7 @@ const BoxLookup: React.FC = () => {
 
           // Filter by gender
           if (filters.gender !== "all") {
-            if (item.gender !== genderMapping[filters.gender]) {
+            if (item.gender !== genderMapping[filters.gender.toLowerCase()]) {
               return false;
             }
           }
@@ -212,7 +227,9 @@ const BoxLookup: React.FC = () => {
       const box = selectedBoxes[0];
       return (
         <BoxDetails
+          boxId={box.id}
           boxName={box.name}
+          icon={box.icon}
           location={box.location || ""}
           createdAt={box.createdAt || ""}
           updatedAt={box.updatedAt || ""}
@@ -236,6 +253,7 @@ const BoxLookup: React.FC = () => {
       return (
         <BoxDetails
           boxName={`${selectedBoxes.length} boxes selected`}
+          icon=""
           location=""
           createdAt=""
           updatedAt=""

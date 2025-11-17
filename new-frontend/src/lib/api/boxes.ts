@@ -12,7 +12,7 @@ export const boxApi = {
     return data as BoxView[];
   },
 
-  getBox: async (boxId: string) => {
+  getBox: async (boxId: string) => { //this is never used either
     const { data, error } = await supabase
       .from("box_view")
       .select()
@@ -23,7 +23,7 @@ export const boxApi = {
     return data as Box;
   },
 
-  getBoxContents: async (boxId: string) => {
+  getBoxContents: async (boxId: string) => { //This doesnt even exist (the view)?
     const { data, error } = await supabase
       .from("box_contents_view")
       .select()

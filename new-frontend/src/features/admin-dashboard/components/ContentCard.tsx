@@ -35,8 +35,8 @@ const ContentCard = ({ item }: ContentCardProps) => {
 
     loadIcons();
   }, []);
-  const iconSrc = item.type
-    ? iconMap.get(item.type.toLowerCase().trim())
+  const iconSrc = item.icon
+    ? iconMap.get(item.icon.toLowerCase().trim())
     : undefined;
   return (
     <div className="p-4 bg-white rounded-lg border shadow-sm">

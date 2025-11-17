@@ -1,8 +1,12 @@
-import { BoxItem } from "@/types/box";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import ContentCard from "./ContentCard";
+import { BoxItem } from "@/types/box";
 
 interface BoxDetailsProps {
+  boxId?: string;
   boxName: string;
+  icon:string;
   location: string;
   createdAt: string;
   updatedAt: string;
@@ -11,6 +15,7 @@ interface BoxDetailsProps {
 }
 
 const BoxDetails = ({
+  boxId,
   boxName,
   location,
   createdAt,
@@ -18,9 +23,16 @@ const BoxDetails = ({
   contents,
   isMultiSelect = false,
 }: BoxDetailsProps) => {
+  const navigate = useNavigate();
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString();
+  };
+
+  const handleEdit = () => {
+    // Redirect to the create page with the box ID and name as query parameters
+    navigate(`/create?boxId=${boxId}&boxName=${boxName}`);
   };
 
   return (
@@ -41,8 +53,20 @@ const BoxDetails = ({
         <h2 className="text-xl font-semibold mb-4">Contents selected</h2>
       )}
 
-      <h3 className="font-medium mb-3">Contents:</h3>
-      <div className="space-y-3">
+      <div className="flex justify-between items-center mb-3">
+        <h3 className="font-medium">Contents:</h3>
+        {!isMultiSelect && (
+          <Button 
+            variant="link" 
+            className="text-blue-600"
+            onClick={handleEdit}
+          >
+            Edit
+          </Button>
+        )}
+      </div>
+
+      <div className="space-y-3 overflow-auto max-h-[65vh]">
         {contents.map((item, idx) => {
           return <ContentCard key={idx} item={item} />;
         })} 

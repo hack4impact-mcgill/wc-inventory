@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,14 +17,19 @@ import { GenderEnum } from "@/types/enums";
 import { BoxContent, InsertBoxContent } from "@/types/boxContent";
 import { buildLocationTree } from "./utils";
 import { useToast } from "@/hooks/use-toast";
-
-
-
+import { supabase } from "@/lib/supabaseClient";
 import { useMobile } from "./hooks/useMobile";
 import { getSpecificIcon, getAllIcons, getIconCache } from '@/lib/iconLoader';
 
 
 const AddBox = () => {
+  // Get URL search params to check if we're in update mode
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const boxIdParam = searchParams.get('boxId');
+  const boxNameParam = searchParams.get('boxName');
+  const isUpdateMode = !!boxIdParam;
+
   // Add toast for notifications
   const { toast } = useToast();
 
@@ -32,7 +38,7 @@ const AddBox = () => {
   const [categoryId, setCategoryId] = useState<string>("");
   const [sizeId, setSizeId] = useState<string>("");
   const [gender, setGender] = useState<GenderEnum | "">("");
-  const [quantity, setQuantity] = useState<number>(1);
+  const [quantity, setQuantity] = useState<number>(0);
   const [location, setLocation] = useState<{
     room: string;
     level: string;
@@ -55,13 +61,122 @@ const AddBox = () => {
   // Use existing queries
   const { locations, categories, sizes, boxCount } = useAddBoxQueries();
 
+  // Fetch box data when in update mode
+  useEffect(() => {
+    const fetchBoxData = async () => {
+      if (!isUpdateMode || !boxIdParam) return;
+
+      try {
+        // Fetch box info including location
+        const { data: boxInfo, error: boxError } = await supabase
+          .from('boxes')
+          .select('*, locations(*)')
+          .eq('box_id', boxIdParam)
+          .single();
+
+        if (boxError) {
+          console.error('Error fetching box info:', boxError);
+          toast({
+            title: "Error",
+            description: "Failed to load box information",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Set the location if it exists
+        if (boxInfo && boxInfo.location_id) {
+          // We need to traverse the location hierarchy to set all levels
+          const locationId = boxInfo.location_id;
+          
+          // Function to build location hierarchy
+          const buildLocationHierarchy = async (locId: string) => {
+            const hierarchy: string[] = [];
+            let currentId: string | null = locId;
+            
+            while (currentId) {
+              const { data: loc } = await supabase
+                .from('locations')
+                .select('*')
+                .eq('location_id', currentId)
+                .single();
+                
+              if (loc && typeof loc === 'object' && 'location_id' in loc) {
+                hierarchy.unshift(currentId); // Add to beginning
+                currentId = (loc as any).parent_id || null;
+              } else {
+                break;
+              }
+            }
+            
+            return hierarchy;
+          };
+          
+          const hierarchy = await buildLocationHierarchy(locationId);
+          
+          // Set location based on hierarchy depth
+          if (hierarchy.length >= 1) {
+            setLocation(prev => ({ ...prev, room: hierarchy[0] }));
+          }
+          if (hierarchy.length >= 2) {
+            setLocation(prev => ({ ...prev, level: hierarchy[1] }));
+          }
+          if (hierarchy.length >= 3) {
+            setLocation(prev => ({ ...prev, aisle: hierarchy[2] }));
+          }
+          if (hierarchy.length >= 4) {
+            setLocation(prev => ({ ...prev, row: hierarchy[3] }));
+          }
+        }
+
+        // Fetch box contents
+        const { data: boxData, error } = await supabase
+          .from('box_contents')
+          .select(`
+            *,
+            categories(name),
+            sizes(name)
+          `)
+          .eq('box_id', boxIdParam);
+
+        if (error) {
+          console.error('Error fetching box data:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load box data",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        if (boxData && boxData.length > 0) {
+          // Transform the data to match the items format
+          const transformedItems: BoxContent[] = boxData.map((item: any) => ({
+            box_content_id: item.box_content_id,
+            box_id: item.box_id,
+            category_id: item.category_id,
+            size_id: item.size_id,
+            gender: item.gender,
+            quantity: item.quantity,
+          }));
+
+          setItems(transformedItems);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+
+    fetchBoxData();
+  }, [isUpdateMode, boxIdParam]);
+
   // Reset all state to default values
   const resetForm = () => {
     setItems([]);
     setCategoryId("");
     setSizeId("");
     setGender("");
-    setQuantity(1);
+    setQuantity(0);
     setLocation({
       room: "",
       level: "",
@@ -101,7 +216,7 @@ const AddBox = () => {
         setCategoryId("");
         setSizeId("");
         setGender("");
-        setQuantity(1);
+        setQuantity(0);
         setIsEditing(false);
       }
     }
@@ -151,19 +266,32 @@ const AddBox = () => {
     items,
     boxCount,
     location,
-    onAddSuccess: () => {
-      // Show success notification
-      toast({
-        title: "Box Created Successfully",
-        description: "Box has been created and saved to inventory.",
-      });
+    boxId: boxIdParam,
+    isUpdateMode,
+    onAddSuccess: (data) => {
+      if (isUpdateMode) {
+        // Show update success notification
+        toast({
+          title: "Box Updated Successfully",
+          description: "Box contents have been updated.",
+        });
 
-      // Reset the form
-      resetForm();
+        // Navigate back to box lookup with the box selected
+        navigate(`/box-lookup?selectedBoxId=${boxIdParam}`);
+      } else {
+        // Show create success notification
+        toast({
+          title: "Box Created Successfully",
+          description: "Box has been created and saved to inventory.",
+        });
 
-      // Update the next box ID after saving
-      if (nextBoxId !== null) {
-        setNextBoxId(nextBoxId + 1);
+        // Reset the form
+        resetForm();
+
+        // Update the next box ID after saving
+        if (nextBoxId !== null) {
+          setNextBoxId(nextBoxId + 1);
+        }
       }
     },
   });
@@ -269,7 +397,7 @@ const AddBox = () => {
     setCategoryId("");
     setSizeId("");
     setGender("");
-    setQuantity(1);
+    setQuantity(0);
     setIsEditing(false);
   };
 
@@ -284,7 +412,7 @@ const AddBox = () => {
       setCategoryId("");
       setSizeId("");
       setGender("");
-      setQuantity(1);
+      setQuantity(0);
       setIsEditing(false);
     }
   };
@@ -292,6 +420,7 @@ const AddBox = () => {
   // Function to handle clicking on an item to edit
   const handleEditItem = (index: number) => {
     setEditingItemIndex(index);
+    setShowSidebar(true); // Open the sidebar when clicking an item
   };
 
   // Function to cancel editing
@@ -300,7 +429,7 @@ const AddBox = () => {
     setCategoryId("");
     setSizeId("");
     setGender("");
-    setQuantity(1);
+    setQuantity(0);
     setIsEditing(false);
   };
 
@@ -419,7 +548,7 @@ const AddBox = () => {
       setCategoryId("");
       setSizeId("");
       setGender("");
-      setQuantity(1);
+      setQuantity(0);
       setIsEditing(false);
     }
   };
@@ -432,7 +561,7 @@ const AddBox = () => {
           <Card className="shadow-sm h-full">
             <CardContent className="p-6">
               <h2 className="text-2xl font-bold mb-6">
-                Creating Box {nextBoxId || "456"}
+                {isUpdateMode ? `Updating ${boxNameParam || 'Box'}` : `Creating Box ${nextBoxId || "456"}`}
               </h2>
 
               <div className="bg-gray-50 p-4 rounded-md mb-6">
@@ -556,7 +685,9 @@ const AddBox = () => {
                   >
                     <Package size={20} />
                     <span>
-                      {saveBoxMutation.isPending ? "Creating..." : "Create box"}
+                      {saveBoxMutation.isPending 
+                        ? (isUpdateMode ? "Updating..." : "Creating...") 
+                        : (isUpdateMode ? "Update box" : "Create box")}
                     </span>
                   </Button>
                 )}
@@ -576,7 +707,7 @@ const AddBox = () => {
                   >
                     <X size={20} />
                   </button>
-                          <div className="mb-6 mt-4">
+                    <div className="mb-6 mt-4">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-medium">
                           {isEditing ? "Edit item" : "Add items"}
@@ -591,101 +722,70 @@ const AddBox = () => {
                           </button>
                         )}
                       </div>
-
-                      <div className="space-y-4">
-                        <Select value={categoryId} onValueChange={setCategoryId}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Category" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {leafCategories?.map((category) => (
-                              <SelectItem
-                                key={category.category_id}
-                                value={category.category_id}
-                              >
-                                {category.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-
-                        <Select
-                          value={gender}
-                          onValueChange={(val) => setGender(val as GenderEnum)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Gender" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {["Male", "Female", "Unisex", "Kids"].map((g) => (
-                              <SelectItem key={g} value={g}>
-                                {g}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-
-                        <Select value={sizeId} onValueChange={setSizeId}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Size" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {sizes?.map((size) => (
-                              <SelectItem key={size.size_id} value={size.size_id}>
-                                {size.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Quantity
-                          </label>
-                          <Input
-                          type="number"
-                          min={1}
-                          value={quantity}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            if (val === '') {
-                              setQuantity(val);
-                            } else {
-                              const num = Number(val);
-                              if (!isNaN(num)) {
-                                setQuantity(num);
-                              }
-                            }
-                          }}
-                          onBlur={() => {
-                            if (quantity === '' || quantity < 1) {
-                              setQuantity(1);
-                            }
-                          }}
-                          />
-                        </div>
-
-                        <div className="flex gap-2">
-                          {isEditing && (
-                            <Button
-                              className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800"
-                              onClick={handleCancelEdit}
-                            >
-                              Cancel
-                            </Button>
-                          )}
-                          <Button
-                            className={`${
-                              isEditing ? "flex-1" : "w-full"
-                            } bg-blue-600 hover:bg-blue-700`}
-                            onClick={handleAdd}
-                            disabled={!categoryId || !sizeId || !gender}
-                          >
-                            {isEditing ? "Update" : "Add item"}
-                          </Button>
-                        </div>
-                      </div>
                     </div>
+                  </div>
+
+              <div className="space-y-4">
+                <Select value={categoryId} onValueChange={setCategoryId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {leafCategories?.map((category) => (
+                      <SelectItem
+                        key={category.category_id}
+                        value={category.category_id}
+                      >
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select
+                  value={gender}
+                  onValueChange={(val) => setGender(val as GenderEnum)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {["Male", "Female", "Unisex", "Kids"].map((g) => (
+                      <SelectItem key={g} value={g}>
+                        {g}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={sizeId} onValueChange={setSizeId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Size" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sizes?.map((size) => (
+                      <SelectItem key={size.size_id} value={size.size_id}>
+                        {size.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Quantity
+                  </label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={quantity || ''}
+                    placeholder="Enter quantity"
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setQuantity(value === '' ? 0 : Number(value));
+                    }}
+                  />
+                </div>
 
                     <Button
                       className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 flex justify-center items-center gap-2 mb-4"
@@ -818,19 +918,19 @@ const AddBox = () => {
                 </div>
               </div>
 
-              <Button
-                className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 flex justify-center items-center gap-2 mb-4"
-                onClick={handleCreateBox}
-                disabled={items.length === 0 || saveBoxMutation.isPending}
-              >
-                <span>
-                  {saveBoxMutation.isPending ? "Creating..." : "Create box"}
-                </span>
-              </Button>
-            </div>
-          )
-        )}
-        
+            <Button
+              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 flex justify-center items-center gap-2 mb-4"
+              onClick={handleCreateBox}
+              disabled={items.length === 0 || saveBoxMutation.isPending}
+            >
+              <span>
+                {saveBoxMutation.isPending 
+                ? (isUpdateMode ? "Updating..." : "Creating...") 
+                : (isUpdateMode ? "Update box" : "Create box")}
+              </span>
+            </Button>
+          </div>
+        ))}
       </div>
     </div>
   );
