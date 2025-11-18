@@ -49,9 +49,7 @@ const BoxLookup: React.FC = () => {
   const [isMoveDialogOpen, setIsMoveDialogOpen] = React.useState(false);
 
   // Location selection states
-  const [, setSelectedLocations] = React.useState<string[]>(
-    [],
-  );
+  const [, setSelectedLocations] = React.useState<string[]>([]);
 
   // Use React Query to fetch boxes data
   const {
@@ -204,7 +202,7 @@ const BoxLookup: React.FC = () => {
     if (selectedBoxIds.length === 0) return null;
 
     const selectedBoxes = boxes.filter((box) =>
-      selectedBoxIds.includes(box.id)
+      selectedBoxIds.includes(box.id),
     );
 
     if (selectedBoxIds.length === 1) {
@@ -283,7 +281,7 @@ const BoxLookup: React.FC = () => {
 
   const handlePrintLabel = () => {
     const selectedBoxes = boxes.filter((box) =>
-      selectedBoxIds.includes(box.id)
+      selectedBoxIds.includes(box.id),
     );
     printBoxLabels(selectedBoxes);
   };
@@ -291,7 +289,8 @@ const BoxLookup: React.FC = () => {
   // Action buttons for selected boxes
   const actionButtons = (
     <div className="flex gap-4">
-      <Button variant="outline" 
+      <Button
+        variant="outline"
         onClick={handlePrintLabel}
         disabled={selectedBoxIds.length === 0}
       >

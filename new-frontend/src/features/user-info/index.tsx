@@ -1,5 +1,12 @@
-import React, { useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -8,27 +15,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { activityLogApi } from "@/lib/api/activity-log";
 import { queryKeys } from "@/lib/api/queryKeys";
 import { userApi } from "@/lib/api/users";
-import { format } from "date-fns";
 import { BoxMovementView } from "@/types/activity-log";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 const UserInfo: React.FC = () => {
   const { id } = useParams<{ id: string }>();
 
   if (!id) return <div>No user id provided</div>;
 
-  const [accountStatus, setAccountStatus] = useState("active");
+  const qc = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: queryKeys.users.detail(id!),
@@ -40,7 +43,56 @@ const UserInfo: React.FC = () => {
     queryFn: () => activityLogApi.getActivityLogByUserId(id!),
   });
 
+  const setActiveMutation = useMutation({
+    mutationFn: async (next: "active" | "inactive") => {
+      // Hard guard: both user and user.id must be present and non-null
+      if (!user || !user.id) throw new Error("User or user.id is missing");
+      return userApi.setUserActive(user.id, next === "active");
+    },
+    onSuccess: async () => {
+      // Re-fetch the user row so the UI stays in sync
+      await qc.invalidateQueries({ queryKey: queryKeys.users.detail(id) });
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: async () => {
+      if (!userId) throw new Error("User ID missing");
+      return userApi.deleteUser(userId);
+    },
+    onSuccess: async () => {
+      // Invalidate any queries that depend on this user
+      // ensure authoritative data
+      await qc.invalidateQueries({ queryKey: ["users"] });
+
+      // clean up per-user caches
+      qc.removeQueries({ queryKey: queryKeys.users.detail(userId!) });
+      await qc.invalidateQueries({
+        queryKey: queryKeys.activityLog.byUser(userId!),
+      });
+
+      toast.success("User deleted");
+      // navigate away after delete
+      navigate("/admin/users");
+    },
+    onError: async () => {
+      toast.error("Error deleting user");
+    },
+  });
+
+  const onChangeAccountStatus = (value: string) => {
+    const v = value === "active" ? "active" : "inactive";
+    setActiveMutation.mutate(v);
+  };
+
   if (userLoading || activityLoading || !user) return <div>Loading...</div>;
+
+  const userId = user.id ?? null;
+  if (!userId) return <div>Invalid user record (missing id)</div>;
+
+  const statusValue: "active" | "inactive" = user.is_active
+    ? "active"
+    : "inactive";
 
   return (
     <Card className="max-w mx-auto">
@@ -69,8 +121,9 @@ const UserInfo: React.FC = () => {
             <div className="mb-4">
               <label className="font-semibold">Account Status:</label>
               <Select
-                onValueChange={(value) => setAccountStatus(value)}
-                defaultValue={accountStatus}
+                value={statusValue}
+                onValueChange={onChangeAccountStatus}
+                disabled={setActiveMutation.isPending}
               >
                 <SelectTrigger className="mt-1 w-full">
                   <SelectValue placeholder="Select status" />
@@ -90,6 +143,24 @@ const UserInfo: React.FC = () => {
                 ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
                 : "Unknown"}
             </h2>
+            {
+              <>
+                <Button
+                  variant="destructive"
+                  disabled={deleteUserMutation.isPending}
+                  onClick={() => deleteUserMutation.mutate()}
+                >
+                  {deleteUserMutation.isPending ? "Deleting..." : "Delete"}
+                </Button>
+                <br />
+                <Button
+                  variant="destructive"
+                  onClick={() => userApi.deleteUser(userId)}
+                >
+                  New Delete
+                </Button>
+              </>
+            }
             <div className="space-y-2">
               {/* {Object.keys(permissions).map((key) => (
                 <label key={key} className="flex items-center space-x-2">
@@ -136,7 +207,7 @@ const UserInfo: React.FC = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={3}>No activity found</TableCell>
+                  <TableCell colSpan={4}>No activity found</TableCell>
                 </TableRow>
               )}
             </TableBody>

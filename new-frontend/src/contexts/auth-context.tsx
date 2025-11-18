@@ -30,6 +30,8 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           ...session!.user,
           role: jwt["user_role"]!,
         };
+        console.log("jwt:", jwt);
+        console.log("user:", user);
         setUser(session?.user ? user : null);
       } else {
         setUser(session?.user ? user : null);
@@ -48,6 +50,8 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           ...session!.user,
           role: jwt["user_role"]!,
         };
+        console.log("jwt:", jwt);
+        console.log("user:", user);
         setUser(session?.user ? user : null);
       } else {
         setUser(session?.user ? user : null);
