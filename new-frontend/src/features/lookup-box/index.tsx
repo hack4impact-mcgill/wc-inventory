@@ -364,126 +364,128 @@ const LookupBox = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col items-center bg-white px-4 overflow-hidden">
-      
-      <div className="flex-[1] h-full w-full max-w-screen-md flex items-center justify-start">
-        <button 
-          className="mr-6 p-2 rounded-lg font-bold bg-gray-300 mb-3 duration-300 ease-in-out shadow transform transition-all hover:shadow-xl"
-          onClick={handleGoBack}
-        >
-          <ArrowLeft size={30} />
-        </button>
-        <h1 className="lg:text-2xl text-xl font-bold text-gray-900 tracking-wide text-center mb-8 pt-4">
-          {title}
-        </h1>
-      </div>
+    <div className="h-screen">
+      <div className="h-[88vh] flex flex-col items-center bg-white px-4 overflow-hidden">
+        
+        <div className="flex-[1] w-full max-w-screen-md flex items-center justify-start">
+          <button 
+            className="mr-6 p-2 rounded-lg font-bold bg-gray-300 mb-3 duration-300 ease-in-out shadow transform transition-all hover:shadow-xl"
+            onClick={handleGoBack}
+          >
+            <ArrowLeft size={30} />
+          </button>
+          <h1 className="lg:text-2xl text-xl font-bold text-gray-900 tracking-wide text-center mb-8 pt-4">
+            {title}
+          </h1>
+        </div>
 
-      <div className="flex-[4] basis-0 w-full max-w-screen-md flex flex-col justify-center gap-12 overflow-hidden">
+        <div className="flex-[4] basis-0 w-full max-w-screen-md flex flex-col justify-center gap-12 overflow-hidden">
 
-        {view === "main-filter" && (
-          <MainFilters
-            handleItemFilter={handleItemFilter}
-            handleBoxFilter={handleBoxFilter} 
-            handleLocationFilter={handleLocationFilter}
-          /> 
-        )}
+          {view === "main-filter" && (
+            <MainFilters
+              handleItemFilter={handleItemFilter}
+              handleBoxFilter={handleBoxFilter} 
+              handleLocationFilter={handleLocationFilter}
+            /> 
+          )}
 
-        {view === "item-filter" && (
-          <ItemFilters
-            categories={categories}
-            sizes={sizes}
-            selectedCategoryId={itemFilters.category}
-            selectedSizeId={itemFilters.size}
-            selectedGender={itemFilters.gender}
-            selectedStatus={itemFilters.status}
-            onCategoryChange={(value) => handleItemFilterChange("category", value)}
-            onSizeChange={(value) => handleItemFilterChange("size", value)}
-            onGenderChange={(value) => handleItemFilterChange("gender", value)}
-            onStatusChange={(value) => handleItemFilterChange("status", value)}
-          />
-        )}
-
-        {view === "box-filter" && (
-          <BoxFilters
-            boxes={boxes}
-            boxIdFilters={boxIdFilters}
-            handleBoxIdFilterChange={handleBoxIdFilterChange}
-            clearAllBoxIds={clearAllBoxIds}
-          /> 
-        )}
-
-        {view === "location-filter" && (
-          <LocationFilters
-            locationTree={locationTree}
-            selectedRoom={locationFilters.room}
-            selectedLevel={locationFilters.level}
-            selectedAisle={locationFilters.aisle}
-            selectedRow={locationFilters.row}
-            onRoomChange={(value) => handleLocationFilterChange("room", value)}
-            onLevelChange={(value) => handleLocationFilterChange("level", value)}
-            onAisleChange={(value) => handleLocationFilterChange("aisle", value)}
-            onRowChange={(value) => handleLocationFilterChange("row", value)}
-          /> 
-        )}
-
-        {view === "filter-results" && (
-          <>
-            <FilterResults
-              handlePrintLabel={handlePrintLabel}
-              handleMoveClick={handleMoveClick}
-              handleDonateClick={handleDonateClick}
-              handleBoxSelect={handleBoxSelect}
-              handleSelectAll={handleSelectAll}
-              filteredBoxes={filteredBoxes}
-              selectedBoxIds={selectedBoxIds}
+          {view === "item-filter" && (
+            <ItemFilters
+              categories={categories}
+              sizes={sizes}
+              selectedCategoryId={itemFilters.category}
+              selectedSizeId={itemFilters.size}
+              selectedGender={itemFilters.gender}
+              selectedStatus={itemFilters.status}
+              onCategoryChange={(value) => handleItemFilterChange("category", value)}
+              onSizeChange={(value) => handleItemFilterChange("size", value)}
+              onGenderChange={(value) => handleItemFilterChange("gender", value)}
+              onStatusChange={(value) => handleItemFilterChange("status", value)}
             />
+          )}
 
-            <div className="flex justify-center">
+          {view === "box-filter" && (
+            <BoxFilters
+              boxes={boxes}
+              boxIdFilters={boxIdFilters}
+              handleBoxIdFilterChange={handleBoxIdFilterChange}
+              clearAllBoxIds={clearAllBoxIds}
+            /> 
+          )}
+
+          {view === "location-filter" && (
+            <LocationFilters
+              locationTree={locationTree}
+              selectedRoom={locationFilters.room}
+              selectedLevel={locationFilters.level}
+              selectedAisle={locationFilters.aisle}
+              selectedRow={locationFilters.row}
+              onRoomChange={(value) => handleLocationFilterChange("room", value)}
+              onLevelChange={(value) => handleLocationFilterChange("level", value)}
+              onAisleChange={(value) => handleLocationFilterChange("aisle", value)}
+              onRowChange={(value) => handleLocationFilterChange("row", value)}
+            /> 
+          )}
+
+          {view === "filter-results" && (
+            <>
+              <FilterResults
+                handlePrintLabel={handlePrintLabel}
+                handleMoveClick={handleMoveClick}
+                handleDonateClick={handleDonateClick}
+                handleBoxSelect={handleBoxSelect}
+                handleSelectAll={handleSelectAll}
+                filteredBoxes={filteredBoxes}
+                selectedBoxIds={selectedBoxIds}
+              />
+
+              <div className="flex justify-center">
+                <button 
+                  className="w-3/4 bg-gray-300 p-4 mb-2 rounded-lg shadow font-bold duration-300 ease-in-out transform transition-all hover:shadow-lg"
+                  onClick={handleViewContents}
+                >
+                  <p className="text-2xl">
+                    View Contents
+                  </p>
+                </button>
+              </div>
+
+              {/* Donation Confirmation Dialog */}
+              <DonateDialog
+                open={isDonateDialogOpen}
+                onOpenChange={setIsDonateDialogOpen}
+                onConfirm={handleConfirmDonation}
+                boxCount={selectedBoxIds.length}
+                isProcessing={donateBoxesMutation.isPending}
+              />
+              {/* Move Location Dialog */}
+              <MoveDialog
+                open={isMoveDialogOpen}
+                onOpenChange={setIsMoveDialogOpen}
+                onConfirm={handleConfirmMove}
+                locations={locations}
+                isLoading={isLoadingLocations}
+                isProcessing={moveBoxesMutation.isPending}
+              />
+            </>
+          )}
+
+          {["item-filter", "box-filter", "location-filter"].includes(view) && (
+            <div className="max-h-[12rem] flex-1 flex justify-center">
               <button 
-                className="w-3/4 bg-gray-300 p-4 mb-2 rounded-lg shadow font-bold duration-300 ease-in-out transform transition-all hover:shadow-lg"
-                onClick={handleViewContents}
+                className="w-3/4 bg-gray-950 hover:bg-gray-800 text-white p-4 mb-2 rounded-lg shadow font-bold duration-300 ease-in-out transform transition-all hover:shadow-lg"
+                onClick={handleSearch}
               >
                 <p className="text-2xl">
-                  View Contents
+                  Search
                 </p>
               </button>
             </div>
+          )}
 
-            {/* Donation Confirmation Dialog */}
-            <DonateDialog
-              open={isDonateDialogOpen}
-              onOpenChange={setIsDonateDialogOpen}
-              onConfirm={handleConfirmDonation}
-              boxCount={selectedBoxIds.length}
-              isProcessing={donateBoxesMutation.isPending}
-            />
-            {/* Move Location Dialog */}
-            <MoveDialog
-              open={isMoveDialogOpen}
-              onOpenChange={setIsMoveDialogOpen}
-              onConfirm={handleConfirmMove}
-              locations={locations}
-              isLoading={isLoadingLocations}
-              isProcessing={moveBoxesMutation.isPending}
-            />
-          </>
-        )}
-
-        {["item-filter", "box-filter", "location-filter"].includes(view) && (
-          <div className="max-h-[12rem] flex-1 flex justify-center">
-            <button 
-              className="w-3/4 bg-gray-950 hover:bg-gray-800 text-white p-4 mb-2 rounded-lg shadow font-bold duration-300 ease-in-out transform transition-all hover:shadow-lg"
-              onClick={handleSearch}
-            >
-              <p className="text-2xl">
-                Search
-              </p>
-            </button>
-          </div>
-        )}
+        </div>
 
       </div>
-
     </div>
   );
 
