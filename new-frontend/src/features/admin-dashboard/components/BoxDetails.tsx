@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import ContentCard from "./ContentCard";
 import { BoxItem } from "@/types/box";
 
-import { useNavigate } from 'react-router-dom';
-
 
 interface BoxDetailsProps {
   boxId?: string;
