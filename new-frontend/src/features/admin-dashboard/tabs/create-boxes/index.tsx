@@ -8,10 +8,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabaseClient";
 import { Tables, Enums } from "@/types/supabase";
+import { GenderEnum } from "@/types/enums";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { buildLocationTree } from "./utils";
+
 // import { ToastContainer, toast } from 'react-toastify';
 // import 'react-toastify/dist/ReactToastify.css';
 
@@ -30,6 +40,17 @@ const CreateBox: React.FC = () => {
   const [sizes, setSizes] = useState<Tables<'sizes'>[]>([]);
   const [existingBoxes, setExistingBoxes] = useState<Tables<'boxes'>[]>([]);
   const [locations, setLocations] = useState<Tables<'locations'>[]>([]);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [activeRowIndex, setActiveRowIndex] = useState<number | null>(null);
+  const [categoryId, setCategoryId] = useState<string>("");
+  const [gender, setGender] = useState<GenderEnum | "">("");
+  const [sizeId, setSizeId] = useState<string>("");
+  const [tempLocation, setTempLocation] = useState({
+    room: "",
+    level: "",
+    aisle: "",
+    row: "",
+  });
   const [createBoxItems, setCreateBoxItems] = useState<CreateBoxItem[]>([
     { 
       box_id: null,
@@ -41,6 +62,225 @@ const CreateBox: React.FC = () => {
       location_id: null
     }
   ]);
+  const getNextBoxName = () => {
+    const numbers = existingBoxes
+      .map(b => parseInt(b.name.replace(/\D/g, ""), 10))
+      .filter(n => !isNaN(n));
+
+    const nextNum = numbers.length > 0 ? Math.max(...numbers) + 1 : 1;
+
+    return `Box ${nextNum}`;
+  };
+
+  const handleNewBoxSelection = (index: number) => {
+    const newBoxName = getNextBoxName();
+    updateCreateBoxItem(index, { 
+      box_id: null,
+      box_name: newBoxName 
+    });
+  };
+
+  const locationTree = locations
+    ? buildLocationTree(locations.map((loc) => ({ ...loc, children: [] })))
+    : [];
+
+  // Filter out any parent categories
+  const leafCategories = categories?.filter((category) =>
+    !categories.some((c) => c.parent_id === category.category_id)
+  );
+
+  const findChildren = (parentId: string | null) => {
+    if (!locationTree.length) return [];
+
+    if (!parentId) return locationTree;
+
+    const findNode = (nodes) => {
+      for (const node of nodes) {
+        if (node.location_id === parentId) return node;
+        const found = findNode(node.children);
+        if (found) return found;
+      }
+      return null;
+    };
+
+    return findNode(locationTree)?.children || [];
+  };
+
+  const filteredSizes = sizes?.filter((s) => {
+    if (!categoryId) return false;
+    
+    const matchesCategory = s.category === categoryId;
+    const matchesGender =
+      !s.gender || s.gender === gender || s.gender === "Unisex";
+
+    return matchesCategory && matchesGender;
+  });
+
+  const getLocationPath = (locationId: string | null) => {
+    if (!locationId) return "";
+
+    let path = [];
+    let curr = locations.find((l) => l.location_id === locationId);
+
+    while (curr) {
+      path.unshift(curr.name);
+      curr = locations.find((l) => l.location_id === curr.parent_id);
+    }
+
+    return path.join(" > ");
+  };
+
+  const LocationSelector = () => (
+    <Card className="shadow-sm mt-4">
+      <CardContent className="p-6 space-y-4">
+        <p className="font-semibold">Location</p>
+
+        {/* ROOM */}
+        {findChildren(null).length > 0 && (
+          <Select
+            value={tempLocation.room}
+            onValueChange={(value) =>
+              setTempLocation({
+                room: value,
+                level: "",
+                aisle: "",
+                row: "",
+              })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select Room" />
+            </SelectTrigger>
+            <SelectContent>
+              {findChildren(null).map((room) => (
+                <SelectItem key={room.location_id} value={room.location_id}>
+                  {room.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+
+        {/* LEVEL */}
+        {tempLocation.room && findChildren(tempLocation.room).length > 0 && (
+          <Select
+            value={tempLocation.level}
+            onValueChange={(value) =>
+              setTempLocation({
+                ...tempLocation,
+                level: value,
+                aisle: "",
+                row: "",
+              })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select Level" />
+            </SelectTrigger>
+            <SelectContent>
+              {findChildren(tempLocation.room).map((level) => (
+                <SelectItem key={level.location_id} value={level.location_id}>
+                  {level.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+
+        {/* AISLE */}
+        {tempLocation.level &&
+          findChildren(tempLocation.level).length > 0 && (
+            <Select
+              value={tempLocation.aisle}
+              onValueChange={(value) =>
+                setTempLocation({
+                  ...tempLocation,
+                  aisle: value,
+                  row: "",
+                })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Aisle" />
+              </SelectTrigger>
+              <SelectContent>
+                {findChildren(tempLocation.level).map((aisle) => (
+                  <SelectItem key={aisle.location_id} value={aisle.location_id}>
+                    {aisle.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+        {/* ROW */}
+        {tempLocation.aisle &&
+          findChildren(tempLocation.aisle).length > 0 && (
+            <Select
+              value={tempLocation.row}
+              onValueChange={(value) =>
+                setTempLocation({
+                  ...tempLocation,
+                  row: value,
+                })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Row" />
+              </SelectTrigger>
+              <SelectContent>
+                {findChildren(tempLocation.aisle).map((row) => (
+                  <SelectItem key={row.location_id} value={row.location_id}>
+                    {row.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+        {/* Save button */}
+        <Button
+          className="w-full"
+          onClick={() => {
+            const finalLocation =
+              tempLocation.row ||
+              tempLocation.aisle ||
+              tempLocation.level ||
+              tempLocation.room;
+
+            updateCreateBoxItem(activeRowIndex!, {
+              location_id: finalLocation,
+            });
+
+            setShowLocationModal(false);
+          }}
+        >
+          Save Location
+        </Button>
+      </CardContent>
+    </Card>
+  );
+
+  const getSizeCategoryForItem = (categoryId: string) => {
+    const category = categories.find(c => c.category_id === categoryId);
+    if (!category) return null;
+    
+    if (category.name.toLowerCase().includes('shoe')) return 'Shoe';
+    if (category.name.toLowerCase().includes('kid') || category.name.toLowerCase().includes('child')) return 'Kid';
+    return 'Adult';
+  };
+
+    const filterSizesForItem = (item: CreateBoxItem) => {
+    if (!item.category_id) return [];
+    const expectedCategory = getSizeCategoryForItem(item.category_id);
+    if (!expectedCategory) return [];
+
+    return sizes.filter((s) => {
+      const matchesCategory = s.category === expectedCategory;
+      const matchesGender = !s.gender || s.gender === item.gender || s.gender === "Unisex";
+      return matchesCategory && matchesGender;
+    });
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,6 +324,10 @@ const CreateBox: React.FC = () => {
 
     fetchData();
   }, []);
+
+    useEffect(() => {
+    setSizeId("");
+  }, [categoryId, gender]);
 
   const updateCreateBoxItem = (index: number, updates: Partial<CreateBoxItem>) => {
     const newItems = [...createBoxItems];
@@ -138,7 +382,7 @@ const CreateBox: React.FC = () => {
           const { data: newBox, error: boxError } = await supabase
             .from('boxes')
             .insert({
-              name: item.box_name || `${categories.find(c => c.category_id === item.category_id)?.name || 'Box'}-${Date.now()}`,
+              name: item.box_name,
               description: `${item.quantity} items`,
               location_id: item.location_id
             })
@@ -180,6 +424,7 @@ const CreateBox: React.FC = () => {
 
       const { data: boxesData } = await supabase.from('boxes').select('*');
       setExistingBoxes(boxesData || []);
+      console.log("BOXES:", boxesData);
     } catch (error) {
       console.error('Error creating boxes:', error);
     // toast.error('Failed to create boxe');
@@ -204,13 +449,13 @@ const CreateBox: React.FC = () => {
           {createBoxItems.map((item, index) => (
             <TableRow key={index}>
               <TableCell>
-                <div className="flex space-x-2"> #Check branch 130
+                <div className="flex space-x-2 items-center">
                   <select 
                     value={item.box_id || ''}
                     onChange={(e) => {
                       const selectedBoxId = e.target.value;
                       updateCreateBoxItem(index, { 
-                        box_id: selectedBoxId ? selectedBoxId : null,
+                        box_id: selectedBoxId || null,
                         box_name: selectedBoxId ? '' : item.box_name
                       });
                     }}
@@ -223,18 +468,19 @@ const CreateBox: React.FC = () => {
                       </option>
                     ))}
                   </select>
-                  <Input 
-                    placeholder="Or enter new box name"
-                    value={item.box_name}
-                    onChange={(e) => {
-                      updateCreateBoxItem(index, { 
-                        box_name: e.target.value,
-                        box_id: null 
-                      });
-                    }}
+                  <Button
                     className="w-1/2"
-                  />
+                    variant="secondary"
+                    onClick={() => handleNewBoxSelection(index)}
+                  >
+                    + New Box
+                  </Button>
                 </div>
+                {item.box_name && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    New: <strong>{item.box_name}</strong>
+                  </p>
+                )}
               </TableCell>
               <TableCell>
                 <select 
@@ -278,36 +524,60 @@ const CreateBox: React.FC = () => {
                 </select>
               </TableCell>
               <TableCell>
-                <select 
-                  value={item.size_id || ''}
-                  onChange={(e) => updateCreateBoxItem(index, { 
-                    size_id: e.target.value || null 
-                  })}
-                  className="w-full p-2 border rounded"
+                <Select
+                  value={item.size_id || ""}
+                  onValueChange={(value) => updateCreateBoxItem(index, { size_id: value })}
+                  disabled={!item.category_id}
                 >
-                  <option value="">Select Size (Optional)</option>
-                  {sizes.map((size) => (
-                    <option key={size.size_id} value={size.size_id}>
-                      {size.name} ({size.region})
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select size" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filterSizesForItem(item).length > 0 ? (
+                      filterSizesForItem(item).map((size) => (
+                        <SelectItem key={size.size_id} value={size.size_id}>
+                          {size.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <div className="px-3 py-2 text-sm text-gray-500">
+                        No sizes available for this category / gender.
+                      </div>
+                    )}
+                  </SelectContent>
+                </Select>
               </TableCell>
               <TableCell>
-                <select
-                  value={item.location_id || ''}
-                  onChange={(e) => updateCreateBoxItem(index, {
-                    location_id: e.target.value || null
-                  })}
-                  className="w-full p-2 border rounded"
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    setActiveRowIndex(index);
+
+                    const selectedId = item.location_id;
+                    if (selectedId) {
+                      const path: any = [];
+                      let curr = locations.find((l) => l.location_id === selectedId);
+                      while (curr) {
+                        path.unshift(curr.location_id);
+                        curr = locations.find((l) => l.location_id === curr.parent_id);
+                      }
+
+                      setTempLocation({
+                        room: path[0] || "",
+                        level: path[1] || "",
+                        aisle: path[2] || "",
+                        row: path[3] || "",
+                      });
+                    } else {
+                      setTempLocation({ room: "", level: "", aisle: "", row: "" });
+                    }
+
+                    setShowLocationModal(true);
+                  }}
                 >
-                  <option value="">Select Location</option>
-                  {locations.map((location) => (
-                    <option key={location.location_id} value={location.location_id}>
-                      {location.name}
-                    </option>
-                  ))}
-                </select>
+                  {item.location_id ? getLocationPath(item.location_id) : "Select Location"}
+                </Button>
               </TableCell>
             </TableRow>
           ))}
@@ -323,6 +593,13 @@ const CreateBox: React.FC = () => {
       </div>
       {error && <p className="text-red-500 mt-2">{error}</p>}
 
+      {showLocationModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-lg w-[400px] max-h-[90vh] overflow-auto p-4">
+          <LocationSelector />
+        </div>
+      </div>
+    )}
     </Card>
   );
 };
