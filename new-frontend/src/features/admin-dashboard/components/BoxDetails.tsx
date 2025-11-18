@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ContentCard from "./ContentCard";
 import { BoxItem } from "@/types/box";
 
+
 interface BoxDetailsProps {
   boxId?: string;
   boxName: string;
@@ -28,6 +29,9 @@ const BoxDetails = ({
     const date = new Date(dateString);
     return date.toLocaleString();
   };
+  const LogClick = () => {
+    navigate(`/admin/activity-log?box=${encodeURIComponent(boxName)}`)
+  };
 
   const handleEdit = () => {
     // Redirect to the create page with the box ID and name as query parameters
@@ -40,6 +44,9 @@ const BoxDetails = ({
         <>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Box {boxName}</h2>
+            <button className="text-[#00559B] cursor-pointer hover:text-[#003f70] underline decoration-[#00559B]" onClick={LogClick}>
+              Log
+            </button>
           </div>
           <p className="text-gray-600 mb-2">Location: {location}</p>
           <p className="text-gray-600 mb-4">
