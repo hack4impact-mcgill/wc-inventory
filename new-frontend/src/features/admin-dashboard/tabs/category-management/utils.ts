@@ -18,25 +18,33 @@ export const matchesFilter = (category: CategoryWithChildren, filter: string): b
     return directMatch;
   };
 
-  export const buildHierarchy = (categories: Category[]): CategoryWithChildren[] => {
+  export function buildHierarchy(categories: Category[]): CategoryWithChildren[] {
     const categoryMap = new Map<string, CategoryWithChildren>();
-    const roots: CategoryWithChildren[] = [];
-
-    categories.forEach((category) => {
-      categoryMap.set(category.category_id, { ...category, children: [] });
+  
+    // Initialize map
+    categories.forEach((cat) => {
+      categoryMap.set(cat.category_id, { ...cat, children: [] });
     });
-
-    categories.forEach((category) => {
-      const node = categoryMap.get(category.category_id)!;
-      if (category.parent_id) {
-        const parent = categoryMap.get(category.parent_id);
-        if (parent) {
-          parent.children?.push(node);
-        }
+  
+    // Build relationships
+    const roots: CategoryWithChildren[] = [];
+    categories.forEach((cat) => {
+      const node = categoryMap.get(cat.category_id)!;
+      if (cat.parent_id) {
+        const parent = categoryMap.get(cat.parent_id);
+        if (parent) parent.children.push(node);
       } else {
         roots.push(node);
       }
     });
-
+  
+    // Recursively assign levels
+    const assignLevels = (node: CategoryWithChildren, level = 1) => {
+      node.level = level;
+      node.children.forEach((child) => assignLevels(child, level + 1));
+    };
+    roots.forEach((root) => assignLevels(root, 1));
+  
     return roots;
-  };
+  }
+  
