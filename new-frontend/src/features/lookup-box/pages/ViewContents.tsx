@@ -1,12 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { boxApi } from "@/lib/api/boxes";
-import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { BoxStatus } from "@/types/enums";
 import BoxDetails from "@/features/admin-dashboard/components/BoxDetails";
 import { BoxItem } from "@/types/box";
 import { useState } from "react";
+import { useNavigate, } from "react-router-dom";
+// import { useLocation } from "react-router-dom";
+import { useLookupState } from "..";
 
 
 interface BoxItemWithId {
@@ -29,9 +30,11 @@ interface BoxViewWithNewBoxItem {
 
 const ViewContents = () => {
   const navigate = useNavigate();
-  const { state } = useLocation();
-  const boxIds = state?.boxIds || [];
   const [toggleTotal, setToggleTotal] = useState<boolean>(true);
+
+  // const { state } = useLocation();
+  // const selectedBoxIds = state?.boxIds || []; // useLocation state if you want it to persist across refresh
+  const { selectedBoxIds, } = useLookupState();
 
   // Use React Query to fetch boxes data
   const {
@@ -44,7 +47,7 @@ const ViewContents = () => {
     queryFn: async () => boxApi.getBoxes(),
   });
 
-  const filteredBoxes = boxes.filter((box) => boxIds.includes(box.id)) as BoxViewWithNewBoxItem[];
+  const filteredBoxes = boxes.filter((box) => selectedBoxIds.includes(box.id)) as BoxViewWithNewBoxItem[];
 
   const getSelectedBoxesContent = () => {
     if (toggleTotal) {
@@ -88,6 +91,10 @@ const ViewContents = () => {
     } 
   };
 
+  const handleGoBack = () => {
+    navigate("/lookup/filter-results");
+  };
+
   // Handle loading and error states
   if (isLoadingBoxes) {
     return (
@@ -112,7 +119,7 @@ const ViewContents = () => {
         <div className="flex-[1] h-full w-full max-w-screen-md flex items-center justify-start">
           <button 
             className="mr-6 p-2 rounded-lg font-bold bg-gray-300 mb-3 duration-300 ease-in-out shadow transform transition-all hover:shadow-xl"
-            onClick={() => navigate("/lookup")}
+            onClick={handleGoBack}
           >
             <ArrowLeft size={30} />
           </button>

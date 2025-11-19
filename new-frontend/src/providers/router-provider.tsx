@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import Layout from "@/components/layout";
 import { useAuthContext } from "@/contexts/auth-context";
 import LoadingScreen from "@/components/loading";
@@ -19,8 +19,10 @@ import CreateBoxes from "@/features/admin-dashboard/tabs/create-boxes";
 import BoxLookup from "@/features/admin-dashboard/tabs/box-lookup";
 import Donations from "@/features/admin-dashboard/tabs/donations";
 import AdminOverview from "@/features/admin-dashboard/components/AdminOverview.tsx";
-import LookupBox from "@/features/lookup-box";
+import { LookupStateProvider } from "@/features/lookup-box";
+import LookupBox from "@/features/lookup-box/pages/LookupBox";
 import ViewContents from "@/features/lookup-box/pages/ViewContents";
+import FilterResults from "@/features/lookup-box/pages/FilterResults";
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
@@ -162,18 +164,17 @@ const router = createBrowserRouter([
     path: "/lookup",
     element: (
       <VolunteerWrapper>
-        <LookupBox />
+        <LookupStateProvider>
+          <Outlet />
+        </LookupStateProvider>
       </VolunteerWrapper>
     ),
-  },
-  {
-    path: "/lookup/view-contents",
-    element: (
-      <VolunteerWrapper>
-        <ViewContents />
-      </VolunteerWrapper>
-    ),
-  },
+    children: [
+      { index: true, element: <LookupBox /> },
+      { path: "filter-results", element: <FilterResults /> },
+      { path: "filter-results/view-contents", element: <ViewContents /> }
+    ],
+  }
 ]);
 
 export default router;
