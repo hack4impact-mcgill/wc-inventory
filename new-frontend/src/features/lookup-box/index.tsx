@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useRef, useEffect } from "react";
+import { createContext, useContext, useState, } from "react";
 import { BoxStatus } from "@/types/enums";
 
 interface Props {
@@ -59,17 +59,6 @@ export function LookupStateProvider({ children }: Props) {
       aisle: "default", 
       row: "default" 
   });
-  
-  // detect browser refresh (before react re-renders)
-  const entry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
-  const didRefresh = useRef(entry?.type === "reload");
-
-  // clear all provider state on refresh
-  useEffect(() => {
-    if (didRefresh.current) {
-      // setSelectedBoxIds([]); // reset to empty
-    }
-  }, []);
 
   return (
     <LookupStateContext.Provider value={{ 

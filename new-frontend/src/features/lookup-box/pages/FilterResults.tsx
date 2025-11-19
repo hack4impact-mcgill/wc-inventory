@@ -211,9 +211,10 @@ const FilterResults = () => {
         toast.info("Please select at least one box to view its contents.");
         return;
     }
-    navigate("/lookup/filter-results/view-contents", { state: 
-     { boxIds: selectedBoxIds, }
-    });
+    navigate("/lookup/filter-results/view-contents");
+    // navigate("/lookup/filter-results/view-contents", { state: 
+    //  { boxIds: selectedBoxIds, }
+    // });
   };
 
   const handleGoBack = () => {
