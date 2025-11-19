@@ -62,22 +62,6 @@ const CreateBox: React.FC = () => {
         .from('locations')
         .select('*');
 
-      if (categoriesError) {
-        console.error('Error fetching categories:', categoriesError);
-      }
-
-      if (sizesError) {
-        console.error('Error fetching sizes:', sizesError);
-      }
-
-      if (boxesError) {
-        console.error('Error fetching boxes:', boxesError);
-      }
-
-      if (locationsError) {
-        console.error('Error fetching locations:', locationsError);
-      }
-
       setCategories(categoriesData || []);
       setSizes(sizesData || []);
       setExistingBoxes(boxesData || []);
@@ -110,7 +94,6 @@ const CreateBox: React.FC = () => {
   };
 
   const handleCreateBox = async () => {
-    console.log('[handleCreateBox] Starting box creation process');
     const currentUser = await supabase.auth.getUser();
     const userId = currentUser.data.user?.id;
     const boxesToCreate = createBoxItems.filter(item => 
@@ -118,15 +101,12 @@ const CreateBox: React.FC = () => {
       item.category_id && 
       item.quantity > 0
     );
-    console.log('[handleCreateBox] Filtered boxes to create:', boxesToCreate);
   
     try {
       for (const item of boxesToCreate) {
-        console.log('[handleCreateBox] Processing item:', item);
         let targetBoxId: string;
 
         if (!item.box_id) {
-          console.log('[handleCreateBox] Creating new box');
           const { data: newBox, error: boxError } = await supabase
             .from('boxes')
             .insert({
@@ -138,17 +118,13 @@ const CreateBox: React.FC = () => {
             .single();
   
           if (boxError) {
-            console.error('[handleCreateBox] Error creating box:', boxError);
             throw boxError;
           }
-          console.log('[handleCreateBox] Box created:', newBox);
           targetBoxId = newBox.box_id;
         } else {
-          console.log('[handleCreateBox] Using existing box:', item.box_id);
           targetBoxId = item.box_id;
         }
 
-        console.log('[handleCreateBox] Adding box contents for box:', targetBoxId);
         const { error: contentsError } = await supabase
           .from('box_contents')
           .insert({
@@ -160,13 +136,10 @@ const CreateBox: React.FC = () => {
           });
   
         if (contentsError) {
-          console.error('[handleCreateBox] Error adding contents:', contentsError);
           throw contentsError;
         }
-        console.log('[handleCreateBox] Box contents added successfully');
 
         // Create box movement entry
-        console.log('[handleCreateBox] Creating box movement entry');
         const { error: movementError } = await supabase
           .from('box_movements')
           .insert({
@@ -178,13 +151,10 @@ const CreateBox: React.FC = () => {
           });
 
         if (movementError) {
-          console.error('[handleCreateBox] Error creating movement:', movementError);
           throw movementError;
         }
-        console.log('[handleCreateBox] Box movement created successfully');
       }
   
-      console.log('[handleCreateBox] All boxes created successfully, resetting form');
       setCreateBoxItems([
         { 
           box_id: null,
@@ -203,7 +173,6 @@ const CreateBox: React.FC = () => {
       const { data: boxesData } = await supabase.from('boxes').select('*');
       setExistingBoxes(boxesData || []);
     } catch (error) {
-      console.error('[handleCreateBox] Error creating boxes:', error);
     // toast.error('Failed to create boxe');
     }
   };
