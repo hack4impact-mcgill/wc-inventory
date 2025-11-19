@@ -23,6 +23,7 @@ interface CreateBoxItem {
   gender: string;
   size_id?: string | null;
   location_id?: string | null;
+  note?: string;
 }
 
 const CreateBox: React.FC = () => {
@@ -38,7 +39,8 @@ const CreateBox: React.FC = () => {
       quantity: 0,
       gender: 'Unisex',
       size_id: null,
-      location_id: null
+      location_id: null,
+      note: ''
     }
   ]);
 
@@ -101,39 +103,52 @@ const CreateBox: React.FC = () => {
         quantity: 0,
         gender: 'Unisex',
         size_id: null,
-        location_id: null
+        location_id: null,
+        note: ''
       }
     ]);
   };
 
   const handleCreateBox = async () => {
+    console.log('[handleCreateBox] Starting box creation process');
+    const currentUser = await supabase.auth.getUser();
+    const userId = currentUser.data.user?.id;
     const boxesToCreate = createBoxItems.filter(item => 
       (item.box_id || item.box_name) && 
       item.category_id && 
       item.quantity > 0
     );
+    console.log('[handleCreateBox] Filtered boxes to create:', boxesToCreate);
   
     try {
       for (const item of boxesToCreate) {
+        console.log('[handleCreateBox] Processing item:', item);
         let targetBoxId: string;
 
         if (!item.box_id) {
+          console.log('[handleCreateBox] Creating new box');
           const { data: newBox, error: boxError } = await supabase
             .from('boxes')
             .insert({
               name: item.box_name || `${categories.find(c => c.category_id === item.category_id)?.name || 'Box'}-${Date.now()}`,
-              description: `${item.quantity} items`,
+              description: item.note || null,
               location_id: item.location_id
             })
             .select()
             .single();
   
-          if (boxError) throw boxError;
+          if (boxError) {
+            console.error('[handleCreateBox] Error creating box:', boxError);
+            throw boxError;
+          }
+          console.log('[handleCreateBox] Box created:', newBox);
           targetBoxId = newBox.box_id;
         } else {
+          console.log('[handleCreateBox] Using existing box:', item.box_id);
           targetBoxId = item.box_id;
         }
 
+        console.log('[handleCreateBox] Adding box contents for box:', targetBoxId);
         const { error: contentsError } = await supabase
           .from('box_contents')
           .insert({
@@ -144,9 +159,32 @@ const CreateBox: React.FC = () => {
             size_id: item.size_id
           });
   
-        if (contentsError) throw contentsError;
+        if (contentsError) {
+          console.error('[handleCreateBox] Error adding contents:', contentsError);
+          throw contentsError;
+        }
+        console.log('[handleCreateBox] Box contents added successfully');
+
+        // Create box movement entry
+        console.log('[handleCreateBox] Creating box movement entry');
+        const { error: movementError } = await supabase
+          .from('box_movements')
+          .insert({
+            moved_by: userId || null,
+            box_id: targetBoxId,
+            to_location_id: item.location_id || null,
+            action: "Created",
+            note: item.note || 'Box created',
+          });
+
+        if (movementError) {
+          console.error('[handleCreateBox] Error creating movement:', movementError);
+          throw movementError;
+        }
+        console.log('[handleCreateBox] Box movement created successfully');
       }
   
+      console.log('[handleCreateBox] All boxes created successfully, resetting form');
       setCreateBoxItems([
         { 
           box_id: null,
@@ -155,7 +193,8 @@ const CreateBox: React.FC = () => {
           quantity: 0,
           gender: 'Unisex',
           size_id: null,
-          location_id: null
+          location_id: null,
+          note: ''
         }
       ]);
 
@@ -164,7 +203,7 @@ const CreateBox: React.FC = () => {
       const { data: boxesData } = await supabase.from('boxes').select('*');
       setExistingBoxes(boxesData || []);
     } catch (error) {
-      console.error('Error creating boxes:', error);
+      console.error('[handleCreateBox] Error creating boxes:', error);
     // toast.error('Failed to create boxe');
     }
   };
@@ -180,6 +219,7 @@ const CreateBox: React.FC = () => {
             <TableHead>Gender</TableHead>
             <TableHead>Size</TableHead>
             <TableHead>Location</TableHead>
+            <TableHead>Note (Optional)</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -288,6 +328,16 @@ const CreateBox: React.FC = () => {
                     </option>
                   ))}
                 </select>
+              </TableCell>
+              <TableCell>
+                <Input 
+                  placeholder="Add a note (optional)"
+                  value={item.note || ''}
+                  onChange={(e) => updateCreateBoxItem(index, { 
+                    note: e.target.value 
+                  })}
+                  className="w-full"
+                />
               </TableCell>
             </TableRow>
           ))}
