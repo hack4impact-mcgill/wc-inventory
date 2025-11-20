@@ -89,78 +89,72 @@ const ItemFilters = ({
 
   return (
 
-    <>
+    <div className="h-full w-full flex flex-col justify-center">
 
-      <button
-        className="ml-1 flex-1 h-14 flex items-center justify-center gap-3 p-4 border-2 border-gray-200 rounded-lg w-11/12"
-        onClick={() => onStatusChange(activeItems ? "Donated" : "Active")}
-      >
-        <p className="text-3xl">
+      <div className="h-[45vh] flex flex-col justify-start gap-6">
+
+        <button
+          className="w-[92%] h-14 mx-auto flex items-center justify-center border-2 border-gray-200 
+                    rounded-lg text-xl font-medium"
+          onClick={() => onStatusChange(activeItems ? "Donated" : "Active")}
+        >
           {activeItems ? "Active" : "Donated"}
-        </p>
-      </button>
+        </button>
 
-      <Select value={selectedCategoryId} onValueChange={onCategoryChange}>
-        <SelectTrigger 
-          className="ml-1 flex-1 flex items-center justify-center gap-5 w-11/12 border-2 p-4 rounded-lg 
-            text-3xl [&>svg]:h-8 [&>svg]:w-8"
-        >
-          <SelectValue placeholder="Category"/>
-        </SelectTrigger>
+        <Select value={selectedCategoryId} onValueChange={onCategoryChange}>
+          <SelectTrigger
+            className="w-[92%] h-14 mx-auto flex items-center justify-between border-2 
+                      rounded-lg text-xl px-4 [&>svg]:h-6 [&>svg]:w-6"
+          >
+            <SelectValue placeholder="All Items" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem className="text-lg text-black" value="all">All Items</SelectItem>
+            {filteredCategories?.map(c => (
+              <SelectItem className="text-lg text-black" key={c.category_id} value={c.category_id}>
+                {c.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-        <SelectContent>
-          <SelectItem className="text-2xl text-black" value="all">
-            All Items
-          </SelectItem>
-          {filteredCategories?.map((c) => (
-            <SelectItem className="text-2xl text-black" key={c.category_id} value={c.category_id}>
-              {c.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        <Select value={selectedGender} onValueChange={onGenderChange}>
+          <SelectTrigger
+            className="w-[92%] h-14 mx-auto flex items-center justify-between border-2 
+                      rounded-lg text-xl px-4 [&>svg]:h-6 [&>svg]:w-6"
+          >
+            <SelectValue placeholder="All Genders" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem className="text-lg text-black" value="all">All Genders</SelectItem>
+            {filteredGenders.map(g => (
+              <SelectItem className="text-lg text-black" key={g} value={g}>
+                {g}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      <Select value={selectedGender} onValueChange={onGenderChange}>
-        <SelectTrigger 
-          className="ml-1 flex-1 flex items-center justify-center gap-5 w-11/12 border-2 p-4 rounded-lg 
-            text-3xl [&>svg]:h-8 [&>svg]:w-8"
-        >
-          <SelectValue placeholder="Gender"/>
-        </SelectTrigger>
+        <Select value={selectedSizeId} onValueChange={onSizeChange}>
+          <SelectTrigger
+            className="w-[92%] h-14 mx-auto flex items-center justify-between border-2 
+                      rounded-lg text-xl px-4 [&>svg]:h-6 [&>svg]:w-6"
+          >
+            <SelectValue placeholder="All Sizes" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem className="text-lg text-black" value="all">All Sizes</SelectItem>
+            {filteredSizes?.map(s => (
+              <SelectItem className="text-lg text-black" key={s.size_id} value={s.size_id}>
+                {s.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-        <SelectContent>
-          <SelectItem className="text-2xl text-black" key="all" value="all">
-            All Genders
-          </SelectItem>
-          {filteredGenders.map((g) => (
-            <SelectItem className="text-2xl text-black" key={g} value={g}>
-              {g}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      </div>
 
-      <Select value={selectedSizeId} onValueChange={onSizeChange}>
-        <SelectTrigger 
-          className="ml-1 flex-1 flex items-center justify-center gap-5 w-11/12 border-2 p-4 rounded-lg 
-            text-3xl [&>svg]:h-8 [&>svg]:w-8"
-        >
-          <SelectValue placeholder="Size"/>
-        </SelectTrigger>
-
-        <SelectContent>
-          <SelectItem className="text-2xl text-black" value="all">
-            All Sizes
-          </SelectItem>
-          {filteredSizes?.map((s) => (
-            <SelectItem className="text-2xl text-black" key={s.size_id} value={s.size_id}>
-              {s.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-    </>
+    </div>
 
   );
 

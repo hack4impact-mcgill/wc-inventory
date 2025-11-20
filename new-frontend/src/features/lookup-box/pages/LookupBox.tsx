@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
 import MainFilters from "../components/MainFilters";
 import ItemFilters from "../components/ItemFilters";
 import BoxFilters from "../components/BoxFilters";
@@ -12,6 +11,7 @@ import { useLookupState } from "..";
 import { BoxStatus } from "@/types/enums";
 import { boxApi } from "@/lib/api/boxes";
 import { useQuery } from "@tanstack/react-query";
+import Header from "../components/Header";
 
 
 interface FilterStateItem {
@@ -168,22 +168,13 @@ const LookupBox = () => {
   }
 
   return (
-    <div className="h-screen">
-      <div className="h-[88vh] flex flex-col items-center bg-white px-4 overflow-hidden">
-        
-        <div className="flex-[1] w-full max-w-screen-md flex items-center justify-start">
-          <button 
-            className="mr-6 p-2 rounded-lg font-bold bg-gray-300 mb-3 duration-300 ease-in-out shadow transform transition-all hover:shadow-xl"
-            onClick={handleGoBack}
-          >
-            <ArrowLeft size={30} />
-          </button>
-          <h1 className="lg:text-2xl text-xl font-bold text-gray-900 tracking-wide text-center mb-8 pt-4">
-            {title}
-          </h1>
-        </div>
+    <div className="h-screen w-full flex flex-col bg-white">
 
-        <div className="flex-[4] basis-0 w-full max-w-screen-md flex flex-col justify-center gap-12 overflow-hidden">
+      <Header handleGoBack={handleGoBack} title={title} />
+
+      <div className="h-[70vh] w-full max-w-screen-md mx-auto flex flex-col px-4">
+
+        <div className="h-full w-full flex flex-col">
 
           {view === "main-filter" && (
             <MainFilters
@@ -231,23 +222,25 @@ const LookupBox = () => {
             /> 
           )}
 
-          {["item-filter", "box-filter", "location-filter"].includes(view) && (
-            <div className="max-h-[12rem] flex-1 flex justify-center">
-              <button 
-                className="w-3/4 bg-gray-950 hover:bg-gray-800 text-white p-4 mb-2 rounded-lg shadow font-bold duration-300 ease-in-out transform transition-all hover:shadow-lg"
-                onClick={handleSearch}
-              >
-                <p className="text-2xl">
-                  Search
-                </p>
-              </button>
-            </div>
-          )}
-
         </div>
 
+        {["item-filter", "box-filter", "location-filter"].includes(view) && (
+          <div className="h-[10vh] w-full flex items-center justify-center">
+            <button 
+              className="w-3/4 bg-gray-950 hover:bg-gray-800 text-white p-4 rounded-lg shadow font-bold transition-all"
+              onClick={handleSearch}
+            >
+              <p className="text-2xl">
+                Search
+              </p>
+            </button>
+          </div>
+        )}
+
       </div>
+
     </div>
+
   );
 
 };

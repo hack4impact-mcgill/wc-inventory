@@ -8,6 +8,7 @@ import { useState } from "react";
 import { useNavigate, } from "react-router-dom";
 // import { useLocation } from "react-router-dom";
 import { useLookupState } from "..";
+import Header from "../components/Header";
 
 
 interface BoxItemWithId {
@@ -112,24 +113,16 @@ const ViewContents = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col gap-5 items-center bg-white px-4 overflow-hidden">
+    <div className="h-screen flex flex-col gap-5 items-center bg-white overflow-hidden">
       
-      <div className="w-full max-w-screen-md mb-8">
+      <div className="w-full max-w-screen-md mb-2">
 
-        <div className="flex-[1] h-full w-full max-w-screen-md flex items-center justify-start">
-          <button 
-            className="mr-6 p-2 rounded-lg font-bold bg-gray-300 mb-3 duration-300 ease-in-out shadow transform transition-all hover:shadow-xl"
-            onClick={handleGoBack}
-          >
-            <ArrowLeft size={30} />
-          </button>
+        <Header
+          handleGoBack={handleGoBack}
+          title={"Content View"}
+        />
 
-          <h1 className="lg:text-2xl text-xl font-bold text-gray-900 tracking-wide text-center mb-8 pt-4">
-            Content View
-          </h1>
-        </div>
-
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2 px-4">
           <span>
             Box
           </span>
@@ -151,7 +144,7 @@ const ViewContents = () => {
 
       </div>
 
-      <div className="flex-1 w-full max-w-screen-md overflow-y-auto p-2 space-y-6 border-gray-400 border rounded-lg">
+      <div className="flex-1 w-full max-w-screen-md overflow-y-auto p-2 space-y-6">
 
         {filteredBoxes.length === 0 && (
           <p className="text-gray-500 text-lg text-center py-6">

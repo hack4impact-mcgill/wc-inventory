@@ -6,12 +6,12 @@ import MoveDialog from "@/features/admin-dashboard/tabs/box-lookup/components/Mo
 import { printBoxLabels } from "@/features/admin-dashboard/tabs/box-lookup/utils";
 import { useNavigate } from "react-router-dom";
 import { useState, useMemo } from "react";
-import { ArrowLeft } from "lucide-react";
 import { boxApi } from "@/lib/api/boxes";
 import { useLocations } from "@/features/admin-dashboard/tabs/location-management/hooks/use-locations.ts";
 import { useSearchFiltersQueries } from "@/features/admin-dashboard/hooks/useSearchFiltersQueries";3
 import { toast } from "sonner";
 import { useLookupState } from "..";
+import Header from "../components/Header";
 
 const genderMapping: Record<string, string> = {
   male: "Men",
@@ -239,89 +239,84 @@ const FilterResults = () => {
 
   return (
 
-    <div className="h-screen">
-      <div className="h-[90vh] flex flex-col gap-5 items-center bg-white px-4 overflow-hidden">
+    <div className="h-screen w-full flex flex-col bg-white gap-2">
 
-        <div className="flex-1 h-full w-full max-w-screen-md flex items-center justify-start">
-          <button 
-            className="mr-6 p-2 rounded-lg font-bold bg-gray-300 mb-3 duration-300 ease-in-out shadow transform transition-all hover:shadow-xl"
-            onClick={handleGoBack}
-          >
-            <ArrowLeft size={30} />
-          </button>
-
-          <h1 className="lg:text-2xl text-xl font-bold text-gray-900 tracking-wide text-center mb-8 pt-4">
-            Box List
-          </h1>
-        </div>
-
-        <div className="flex flex-row gap-5 justify-center">
-
-          <Button variant="outline" 
-            className="xs:max-w-[4rem] max-w-[8rem] xs:p-2 p-4 h-full"
-            onClick={handlePrintLabel}
-          >
-            Print label
-          </Button>      
-
-          <Button variant="outline" 
-            className="xs:max-w-[4rem] max-w-[8rem] xs:p-2 p-4 h-full"
-            onClick={handleMoveClick}
-          >
-            Move
-          </Button>     
-
-          <Button variant="outline" 
-            className="xs:max-w-[4rem] max-w-[8rem] xs:p-2 p-4 h-full"
-            onClick={handleDonateClick}
-          >
-            Donate
-          </Button>     
-
-        </div>
-
-        <BoxesTable
-          boxes={filteredBoxes}
-          selectedBoxIds={selectedBoxIds}
-          onBoxSelect={handleBoxSelect}
-          onSelectAll={handleSelectAll}
+      <div className="h-[10vh] w-full flex items-center justify-center">
+        <Header
+          handleGoBack={handleGoBack}
+          title={"Box List"}
         />
+      </div>
 
-        <div className="mt-1 flex-1 flex justify-center">
-          <button 
-            className="bg-gray-300 p-4 mb-2 rounded-lg shadow font-bold duration-300 ease-in-out transform transition-all hover:shadow-lg"
-            onClick={handleViewContents}
-          >
-            <p className="text-xl">
-              View Contents
-            </p>
-          </button>
-        </div>
+      <div className="h-[7vh] w-full flex items-center justify-center gap-3">
 
-        {/* Donation Confirmation Dialog */}
-        <DonateDialog
-          open={isDonateDialogOpen}
-          onOpenChange={setIsDonateDialogOpen}
-          onConfirm={handleConfirmDonation}
-          boxCount={selectedBoxIds.length}
-          isProcessing={donateBoxesMutation.isPending}
-        />
-        {/* Move Location Dialog */}
-        <MoveDialog
-          open={isMoveDialogOpen}
-          onOpenChange={setIsMoveDialogOpen}
-          onConfirm={handleConfirmMove}
-          locations={locations}
-          isLoading={isLoadingLocations}
-          isProcessing={moveBoxesMutation.isPending}
-        />
+        <Button variant="outline" 
+          className="px-3 py-1 rounded-md text-sm font-medium"
+          onClick={handlePrintLabel}
+        >
+          Print label
+        </Button>      
+
+        <Button variant="outline" 
+          className="px-3 py-1 rounded-md text-sm font-medium"
+          onClick={handleMoveClick}
+        >
+          Move
+        </Button>     
+
+        <Button variant="outline" 
+          className="px-3 py-1 rounded-md text-sm font-medium"
+          onClick={handleDonateClick}
+        >
+          Donate
+        </Button>     
 
       </div>
+    
+      <div className="max-h-[30rem] h-lg:max-h-[33rem] h-sm:max-h-[22rem] 
+                      flex-1 w-full px-2 overflow-y-auto [&_table]:table-fixed [&_table]:w-full [&_td]:break-words [&_th]:break-words [&_th]:whitespace-normal">
+        <div className="w-full max-w-screen-md mx-auto">
+          <BoxesTable
+            boxes={filteredBoxes}
+            selectedBoxIds={selectedBoxIds}
+            onBoxSelect={handleBoxSelect}
+            onSelectAll={handleSelectAll}
+          />
+        </div>
+      </div>
+
+      <div className="h-[10vh] w-full flex items-center justify-center mt-1 h-sm:mt-3">
+        <button 
+          className="w-3/4 lg:w-1/2 bg-gray-300 p-3 rounded-lg shadow text-lg font-medium"
+          onClick={handleViewContents}
+        >
+          View Contents
+        </button>
+      </div>
+
+      {/* Donation Confirmation Dialog */}
+      <DonateDialog
+        open={isDonateDialogOpen}
+        onOpenChange={setIsDonateDialogOpen}
+        onConfirm={handleConfirmDonation}
+        boxCount={selectedBoxIds.length}
+        isProcessing={donateBoxesMutation.isPending}
+      />
+      {/* Move Location Dialog */}
+      <MoveDialog
+        open={isMoveDialogOpen}
+        onOpenChange={setIsMoveDialogOpen}
+        onConfirm={handleConfirmMove}
+        locations={locations}
+        isLoading={isLoadingLocations}
+        isProcessing={moveBoxesMutation.isPending}
+      />
+
     </div>
+
   );
 
 };
 
 export default FilterResults;
-
 

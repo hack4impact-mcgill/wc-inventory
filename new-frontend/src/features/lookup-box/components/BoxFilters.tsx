@@ -38,7 +38,7 @@ const BoxFilters = ({
 
     <>
 
-      <h2 className="flex-1 flex flex-col justify-center text-2xl font-bold text-black tracking-wide text-center mb-4">
+      <h2 className="flex-1 flex flex-col justify-center text-2xl text-black tracking-wide text-center mb-4">
         Input Box ID(s)
       </h2>
 
@@ -48,7 +48,7 @@ const BoxFilters = ({
 
           <PopoverTrigger asChild>
             <div
-              className="w-full min-h-[4rem] max-h-[10rem] lg:max-h-[16rem] overflow-y-auto flex-1 flex flex-wrap content-start items-start gap-3 rounded-lg border-2 border-black bg-gray-200 hover:bg-gray-300 text-lg mb-10 p-5 font-medium text-gray-800 shadow duration-300 ease-in-out cursor-text"
+              className="w-full min-h-[4rem] max-h-[16rem] h-sm:max-h-[10rem] lg:max-h-[25rem] overflow-y-auto flex-1 flex flex-wrap content-start items-start gap-3 rounded-lg border-2 border-black bg-gray-200 hover:bg-gray-300 text-lg mb-10 p-5 font-medium text-gray-800 shadow duration-300 ease-in-out cursor-text"
               onClick={() => setOpen(true)}
             >
               {Object.entries(boxIdFilters).length > 0 ? (
@@ -129,7 +129,7 @@ const BoxFilters = ({
         </Popover>
 
         {Object.entries(boxIdFilters).length > 0 && (
-          <div className="flex justify-center mt-4">
+          <div className="flex justify-center mt-2 h-sm:mt-0.5">
             <button
               onClick={clearAllBoxIds}
               className="py-2 px-4 text-lg rounded-lg text-gray-500 hover:text-gray-900 border border-black"
