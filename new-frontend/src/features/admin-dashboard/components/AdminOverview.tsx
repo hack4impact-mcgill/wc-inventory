@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Card, CardContent } from "@/components/ui/card";
 
 /**
  * TypeScript Interface: Defines the shape of our state object
@@ -75,11 +76,67 @@ const AdminOverview: React.FC = () => {
   return (
     <div className="admin-overview">
       {/* Component Header */}
-      <h1 className="text-2xl font-bold mb-6">Admin Overview - Winter 2025</h1>
+      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
       <p className="mb-6">
         This is everything that needs to get done,
         based on exploratory testing done at the very end of Winter 2025.
       </p>
+
+      <div className="mx-auto max-w-7xl p-6 bg-gray-50 min-h-screen">
+        <Card className="p-6">
+          {/* Main Grid: 2 Columns */}
+          <div className="grid grid-cols-2 gap-6">
+            {/* Left Column */}
+            <div className="flex flex-col space-y-6">
+              <Card className="w-1/3 flex justify-center p-2">monthly</Card>
+              {/* Left Column, First Row */}
+              <div>
+                <h2 className="text-xl font-semibold mb-2">Donated</h2>
+                <div className="flex gap-3">
+                  <Card className="flex-1 p-6 text-center text-2xl">
+                    <CardContent>
+                      <p className="text-base">boxes</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="flex-1 p-6 text-center text-2xl">
+                    <CardContent>
+                      <p className="text-base">items</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+              {/* Left Column, Second Row */}
+              <div>
+                <h2 className="text-xl font-semibold mb-2">In Stock</h2>
+                <div className="flex gap-3">
+                  <Card className="flex-1 p-6 text-center text-2xl">
+                    <CardContent>
+                      <p className="text-base">boxes</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="flex-1 p-6 text-center text-2xl">
+                    <CardContent>
+                      <p className="text-base">items</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </div>
+            {/* Right Column */}
+            <div className="flex flex-col gap-4">
+              <Card className="flex-1">
+                <CardContent className="p-3">
+                  <h3>Most Donated Items</h3>
+                </CardContent>
+              </Card>
+              <Card className="flex-1">
+                <CardContent className="p-3">
+                  <h3>Most Active Users</h3>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </Card>
 
       {/*
         Box Management Section
@@ -353,6 +410,7 @@ const AdminOverview: React.FC = () => {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 };
