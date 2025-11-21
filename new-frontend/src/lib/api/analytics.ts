@@ -1,26 +1,34 @@
 import { supabase } from "../supabaseClient";
 
 export const analyticsAPI = {
-    donatedBoxesCount: async (startDate: string, endDate: string) => {
-        let q = supabase.from("boxes").select("box_id", { count: "exact" });
-        if (startDate) q = q.gte("donated_at", startDate);
-        if (endDate) q = q.lte("donated_at", endDate);
+    donatedBoxesCount: async ({ startDate, endDate }: { startDate?: string; endDate?: string }) => {
+        let q = supabase.from("box_movements").select("box_id", { count: "exact" }).eq("action", "Donated");
+        if (startDate) q = q.gte("moved_at", startDate);
+        if (endDate) q = q.lte("moved_at", endDate);
         const { count, error } = await q;
         if (error) throw new Error(error.message);
-        return count;        
+        return count ?? 0;        
     },
 
-    donatedItemsCount: async (startDate: string, endDate: string) => {
-        let q = supabase.from("box_contents_view").select("quantity, donated_at");
-        if (startDate) q = q.gte("donated_at", startDate);
-        if (endDate) q = q.lte("donated_at", endDate);
-        const { data, error } = await q;
+    donatedItemsCount: async ({ startDate, endDate }: { startDate?: string; endDate?: string }) => {
+        let q = supabase.from("box_movements").select("box_id, moved_at").eq("action", "Donated");
+        if (startDate) q = q.gte("moved_at", startDate);
+        if (endDate) q = q.lte("moved_at", endDate);
+        const { data: movements, error } = await q;
 
         if (error) throw new Error(error.message);
 
-        // sum all items in boxes
-        const total = (data ?? []).reduce((sum: number, row: any) => sum + (row.quantity ?? 0), 0);
-        return total;
+        const boxIds = (movements ?? []).map((m: any) => m.box_id).filter(Boolean);
+        if (boxIds.length === 0) return 0;
+
+        const { data: contents, error: contentsError } = await supabase
+            .from("box_contents")
+            .select("quantity")
+            .in("box_id", boxIds);
+        
+        if (contentsError) throw new Error(contentsError.message);
+        const total = (contents ?? []).reduce((sum: number, row: any) => sum + (row.quantity ?? 0), 0);
+        return total ?? 0;
     },
 
     stockTotals: async () => {
@@ -36,58 +44,103 @@ export const analyticsAPI = {
 
         // get items
         const { data: contents, error: contentsError } = await supabase
-            .from("box_contents_view")
-            .select("quantity, location_id");
+            .from("box_contents")
+            .select("quantity, box_id");
         if (contentsError) throw new Error(contentsError.message);
 
-        // sum all items in boxes
+        // sum all items in in-stock boxes
+        const inStockBoxIds = new Set(inStockBoxes.map((b: any) => b.box_id));
         const totalItems = (contents ?? []).reduce((sum: number, row: any) => {
-            return sum + ((row.location_id !== null) ? (row.quantity ?? 0) : 0);
+            return inStockBoxIds.has(row.box_id) ? sum + (row.quantity ?? 0) : sum;
         }, 0);
 
         return { totalBoxes, totalItems };
     },
 
-    topItems: async (limit: number, startDate: string, endDate: String) => {
-        let q = supabase.from("box_contents_view").select("category_id, quantity, donated_at");
-        if (startDate) q = q.gte("donated_at", startDate);
-        if (endDate) q = q.lte("donated_at", endDate);
+    topItems: async ({ limit = 8, startDate, endDate }: { limit?: number; startDate?: string; endDate?: string }) => {
+        // Get donated boxes in the date range
+        let q = supabase.from("box_movements").select("box_id, moved_at").eq("action", "Donated");
+        if (startDate) q = q.gte("moved_at", startDate);
+        if (endDate) q = q.lte("moved_at", endDate);
 
-        const { data, error } = await q;
+        const { data: movements, error } = await q;
         if (error) throw new Error(error.message);
 
+        const boxIds = (movements ?? []).map((m: any) => m.box_id).filter(Boolean);
+        if (boxIds.length === 0) return [];
+
+        // Get box contents for those boxes and join with categories
+        const { data: contents, error: contentsError } = await supabase
+            .from("box_contents")
+            .select("category_id, quantity")
+            .in("box_id", boxIds);
+        
+        if (contentsError) throw new Error(contentsError.message);
+
+        // Get category details
+        const categoryIds = [...new Set((contents ?? []).map((c: any) => c.category_id))];
+        const { data: categories, error: categoriesError } = await supabase
+            .from("categories")
+            .select("category_id, name")
+            .in("category_id", categoryIds);
+        
+        if (categoriesError) throw new Error(categoriesError.message);
+        
+        const categoryMap = new Map(categories?.map(c => [c.category_id, c.name]) ?? []);
+
+        // Sum quantities by category
         const totals: Record<string, number> = {};
-        (data ?? []).forEach((row: any) => {
+        (contents ?? []).forEach((row: any) => {
             const cat = row.category_id ?? "unknown";
             totals[cat] = (totals[cat] || 0) + (row.quantity ?? 0);
         });
 
         const items = Object.entries(totals)
-            .map(([category_id, total]) => ({ category_id, total }))
+            .map(([category_id, total]) => ({ 
+                category_id, 
+                category_name: categoryMap.get(category_id) || category_id,
+                total 
+            }))
             .sort((a, b) => b.total - a.total)
             .slice(0, limit ?? 6);
         return items;
 
     },
 
-    topUsers: async (limit: number, startDate: string, endDate: string) => {
-        let q = supabase.from("box_movements").select("moved_by, moved_at").eq("action", "Donated");
+    topUsers: async ({ limit = 8, startDate, endDate }: { limit?: number; startDate?: string; endDate?: string }) => {
+        let q = supabase.from("box_movements").select("moved_by, moved_at");
         if (startDate) q = q.gte("moved_at", startDate);
         if (endDate) q = q.lte("moved_at", endDate);
+        q = q.eq("action", "Donated");
 
         const { data, error } = await q;
         if (error) throw new Error(error.message);
 
-        const counts: Record<string, number> = {}; // user, donations
+        const counts: Record<string, number> = {}; // user_id -> count
         (data ?? []).forEach((row: any) => {
             const user = row.moved_by ?? "unknown";
             counts[user] = (counts[user] || 0) + 1;
         });
 
+        // Get user details
+        const userIds = Object.keys(counts);
+        const { data: userDetails, error: usersError } = await supabase
+            .from("users")
+            .select("id, name")
+            .in("id", userIds);
+        
+        if (usersError) throw new Error(usersError.message);
+        
+        const userMap = new Map(userDetails?.map(u => [u.id, u.name ?? u.id]) ?? []);
+
         const users = Object.entries(counts)
-        .map(([user_id, donated_count]) => ({ user_id, donated_count }))
-        .sort((a, b) => b.donated_count - a.donated_count)
-        .slice(0, limit ?? 6);
+            .map(([user_id, donated_count]) => ({
+                user_id,
+                name: userMap.get(user_id) || user_id,
+                donated_count
+            }))
+            .sort((a, b) => b.donated_count - a.donated_count)
+            .slice(0, limit ?? 6);
 
         return users;
     }

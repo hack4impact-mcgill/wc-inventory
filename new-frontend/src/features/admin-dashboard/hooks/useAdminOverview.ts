@@ -9,7 +9,7 @@ export function useAdminOverview(period: { id: string; start?: Date; end?: Date 
   return {
     donatedBoxes: useQuery({ queryKey: ['admin', 'donatedBoxes', period.id], queryFn: () => analyticsAPI.donatedBoxesCount({ startDate, endDate }) }),
     donatedItems: useQuery({ queryKey: ['admin', 'donatedItems', period.id], queryFn: () => analyticsAPI.donatedItemsCount({ startDate, endDate }) }),
-    stockTotals: useQuery({ queryKey: ['admin', 'stockTotals', period.id], queryFn: () => analyticsAPI.stockTotals()}),
+    stockTotals: useQuery({ queryKey: ['admin', 'stockTotals', period.id], queryFn: () => analyticsAPI.stockTotals() }),
     topItems: useQuery({ queryKey: ['admin', 'topItems', period.id], queryFn: () => analyticsAPI.topItems({ limit: 8, startDate, endDate }) }),
     topUsers: useQuery({ queryKey: ['admin', 'topUsers', period.id], queryFn: () => analyticsAPI.topUsers({ limit: 8, startDate, endDate }) }),
   };
