@@ -189,11 +189,20 @@ const BoxLookup: React.FC = () => {
   }, [boxes, filters]);
 
   useEffect(() => {
-    console.log(filteredBoxes);
-    console.log(selectedBoxIds);
-    setSelectedBoxIds((prev) =>
-      prev.filter((id) => filteredBoxes.some((box) => box.id === id)),
-    );
+    setSelectedBoxIds((prev) => {
+      const validIds = prev.filter((id) =>
+        filteredBoxes.some((box) => box.id === id),
+      );
+
+      // Prevent update if nothing changed
+      if (
+        validIds.length === prev.length &&
+        validIds.every((id, index) => id === prev[index])
+      ) {
+        return prev; // Return same reference = no re-render
+      }
+      return validIds;
+    });
   }, [filteredBoxes]);
 
   // Handle filter changes
