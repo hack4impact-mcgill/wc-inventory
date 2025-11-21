@@ -57,21 +57,35 @@ export const userApi = {
     });
 
     if (error) throw new Error(error.message);
-    console.log(data);
 
     // data is expected to be: { ok: true, message: 'User deleted successfully', userId }
     return data;
   },
 
-  setUserActive: async (userId: string, isActive: boolean) => {
-    const { data, error } = await supabase
-      .from("users")
-      .update({ is_active: isActive })
-      .eq("id", userId)
-      .select()
-      .single();
+  banUser: async (userId: string) => {
+    const { data, error } = await supabase.functions.invoke("ban-user", {
+      body: {
+        userId,
+      },
+    });
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data;
+  },
+
+  unbanUser: async (userId: string) => {
+    const { data, error } = await supabase.functions.invoke("unban-user", {
+      body: {
+        userId,
+      },
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
     return data;
   },
 };

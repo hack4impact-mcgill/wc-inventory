@@ -1,13 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Table,
   TableBody,
   TableCell,
@@ -15,23 +8,37 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 import { activityLogApi } from "@/lib/api/activity-log";
 import { queryKeys } from "@/lib/api/queryKeys";
 import { userApi } from "@/lib/api/users";
 import { BoxMovementView } from "@/types/activity-log";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { useUsers } from "../admin-dashboard/tabs/user-management/hooks/use-users";
 
 const UserInfo: React.FC = () => {
   const { id } = useParams<{ id: string }>();
 
-  if (!id) return <div>No user id provided</div>;
-
-  const qc = useQueryClient();
   const navigate = useNavigate();
+
+  const { deleteUser, isDeleting, banUser, isBanning, unbanUser, isUnbanning } =
+    useUsers();
 
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: queryKeys.users.detail(id!),
@@ -43,56 +50,46 @@ const UserInfo: React.FC = () => {
     queryFn: () => activityLogApi.getActivityLogByUserId(id!),
   });
 
-  const setActiveMutation = useMutation({
-    mutationFn: async (next: "active" | "inactive") => {
-      // Hard guard: both user and user.id must be present and non-null
-      if (!user || !user.id) throw new Error("User or user.id is missing");
-      return userApi.setUserActive(user.id, next === "active");
-    },
-    onSuccess: async () => {
-      // Re-fetch the user row so the UI stays in sync
-      await qc.invalidateQueries({ queryKey: queryKeys.users.detail(id) });
-    },
-  });
-
-  const deleteUserMutation = useMutation({
-    mutationFn: async () => {
-      if (!userId) throw new Error("User ID missing");
-      return userApi.deleteUser(userId);
-    },
-    onSuccess: async () => {
-      // Invalidate any queries that depend on this user
-      // ensure authoritative data
-      await qc.invalidateQueries({ queryKey: ["users"] });
-
-      // clean up per-user caches
-      qc.removeQueries({ queryKey: queryKeys.users.detail(userId!) });
-      await qc.invalidateQueries({
-        queryKey: queryKeys.activityLog.byUser(userId!),
-      });
-
-      toast.success("User deleted");
-      // navigate away after delete
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      await deleteUser(userId);
       navigate("/admin/users");
-    },
-    onError: async () => {
-      toast.error("Error deleting user");
-    },
-  });
-
-  const onChangeAccountStatus = (value: string) => {
-    const v = value === "active" ? "active" : "inactive";
-    setActiveMutation.mutate(v);
+      toast.success("User deleted successfully");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete user",
+      );
+    }
   };
 
-  if (userLoading || activityLoading || !user) return <div>Loading...</div>;
+  const handleBanUser = async (userId: string) => {
+    try {
+      await banUser(userId);
+      toast.success("User successfully banned");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to ban user",
+      );
+    }
+  };
+  const handleUnbanUser = async (userId: string) => {
+    try {
+      await unbanUser(userId);
+      toast.success("User successfully unbanned");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to unban user",
+      );
+    }
+  };
+
+  if (userLoading || activityLoading) return <div>Loading...</div>;
+  if (!user) return <div>User with that id doesn't exist</div>;
 
   const userId = user.id ?? null;
   if (!userId) return <div>Invalid user record (missing id)</div>;
 
-  const statusValue: "active" | "inactive" = user.is_active
-    ? "active"
-    : "inactive";
+  const isActive = !!user.is_active;
 
   return (
     <Card className="max-w mx-auto">
@@ -120,10 +117,10 @@ const UserInfo: React.FC = () => {
             </div>
             <div className="mb-4">
               <label className="font-semibold">Account Status:</label>
-              <Select
+              {/* <Select
                 value={statusValue}
                 onValueChange={onChangeAccountStatus}
-                disabled={setActiveMutation.isPending}
+                disabled={isBanning || isUnbanning}
               >
                 <SelectTrigger className="mt-1 w-full">
                   <SelectValue placeholder="Select status" />
@@ -132,7 +129,58 @@ const UserInfo: React.FC = () => {
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="inactive">Inactive</SelectItem>
                 </SelectContent>
-              </Select>
+              </Select> */}
+              <div className="flex gap-3">
+                <Button
+                  variant={isActive ? "outline" : "default"}
+                  disabled={isBanning || isUnbanning}
+                  onClick={() =>
+                    isActive ? handleBanUser(userId) : handleUnbanUser(userId)
+                  }
+                >
+                  {isActive
+                    ? isBanning
+                      ? "Disabling..."
+                      : "Disable"
+                    : isUnbanning
+                      ? "Enabling..."
+                      : "Enable"}
+                </Button>
+                {/* <Button
+                  variant="destructive"
+                  disabled={isDeleting}
+                  onClick={() => handleDeleteUser(userId)}
+                >
+                  {isDeleting ? "Deleting..." : "Delete"}
+                </Button> */}
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" disabled={isDeleting}>
+                      {isDeleting ? "Deleting..." : "Delete"}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this user?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently
+                        delete the user account and all associated data.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-red-600 hover:bg-red-700"
+                        disabled={isDeleting}
+                        onClick={() => handleDeleteUser(userId)}
+                      >
+                        {isDeleting ? "Deleting..." : "Confirm delete"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
           </div>
 
@@ -143,39 +191,8 @@ const UserInfo: React.FC = () => {
                 ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
                 : "Unknown"}
             </h2>
-            {
-              <>
-                <Button
-                  variant="destructive"
-                  disabled={deleteUserMutation.isPending}
-                  onClick={() => deleteUserMutation.mutate()}
-                >
-                  {deleteUserMutation.isPending ? "Deleting..." : "Delete"}
-                </Button>
-                <br />
-                <Button
-                  variant="destructive"
-                  onClick={() => userApi.deleteUser(userId)}
-                >
-                  New Delete
-                </Button>
-              </>
-            }
-            <div className="space-y-2">
-              {/* {Object.keys(permissions).map((key) => (
-                <label key={key} className="flex items-center space-x-2">
-                  <Checkbox
-                    checked={permissions[key as keyof typeof permissions]}
-                    onCheckedChange={() =>
-                      togglePermission(key as keyof typeof permissions)
-                    }
-                  />
-                  <span className="capitalize">
-                    {key.replace(/([A-Z])/g, " $1").toLowerCase()}
-                  </span>
-                </label>
-              ))} */}
-            </div>
+
+            <div className="space-y-2"></div>
           </div>
         </div>
 

@@ -30,7 +30,7 @@ export default function UserManagement() {
 
   const handleCreateUser = async (data: UserFormData) => {
     try {
-      createUser(data);
+      await createUser(data);
       toast({ title: "Success", description: "User created successfully" });
       setIsModalOpen(false);
     } catch (error) {
