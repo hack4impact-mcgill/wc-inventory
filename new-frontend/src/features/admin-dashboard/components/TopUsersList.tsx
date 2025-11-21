@@ -8,7 +8,7 @@ export default function TopUsersList({ users, loading }: { users: any[]; loading
           <ul className="space-y-2">
             {users.map((u: any, i: number) => (
               <li key={i} className="flex justify-between">
-                <span>{u.name || u.user_id}</span>
+                <span>{u.name}</span>
                 <span className="font-medium">{u.donated_count ?? 0}</span>
               </li>
             ))}
