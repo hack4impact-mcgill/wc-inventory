@@ -43,10 +43,6 @@ return (
   <div className="admin-overview">
     {/* Component Header */}
     <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
-    <p className="mb-6">
-      This is everything that needs to get done,
-      based on exploratory testing done at the very end of Winter 2025.
-    </p>
 
     <div className="mx-auto max-w-7xl p-6 bg-gray-50 min-h-screen">
       <Card className="p-6">
