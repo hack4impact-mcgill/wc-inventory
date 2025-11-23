@@ -1,10 +1,17 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import SearchFilters from "@/features/admin-dashboard/components/SearchFilters";
 import BoxDetails from "@/features/admin-dashboard/components/BoxDetails";
 import { BoxItem } from "@/types/box";
-import { useBoxView } from "../../hooks/useBoxView";
-import { BoxTable } from "./components/BoxTable";
+import { boxApi } from "@/lib/api/boxes";
+import { useLocations } from "@/features/admin-dashboard/tabs/location-management/hooks/use-locations.ts";
+import { toast } from "sonner";
+import DonateDialog from "./components/DonateDialog";
+import MoveDialog from "./components/MoveDialog";
+import BoxesTable from "./components/BoxesTable";
+import { BoxStatus } from "@/types/enums";
 import { printBoxLabels } from "./utils";
 
 interface FilterState {
@@ -12,34 +19,128 @@ interface FilterState {
   category: string;
   size: string;
   gender: string;
+  status: BoxStatus;
 }
 
 const genderMapping: Record<string, string> = {
-  "male": "Men",
-  "female": "Women",
-  "kids": "Kids",
-  "unisex": "Unisex",
-};
-const categoryMapping: Record<string, string> = {
-  "tshirts": "T-shirt",
-  "pants": "Pants",
+  male: "Men",
+  female: "Women",
+  kids: "Kids",
+  unisex: "Unisex",
 };
 
+// const categoryMapping: Record<string, string> = {
+//   tshirts: "T-shirt",
+//   pants: "Pants",
+// };
+
 const BoxLookup: React.FC = () => {
+  const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedBoxIdParam = searchParams.get('selectedBoxId');
+  
   const [selectedBoxIds, setSelectedBoxIds] = React.useState<string[]>([]);
   const [filters, setFilters] = React.useState<FilterState>({
     searchTerm: "",
     category: "all",
     size: "all",
     gender: "all",
+    status: "Active",
   });
 
-  const { boxes = [], isLoading, isError, error } = useBoxView();
+  // Dialog states
+  const [isDonateDialogOpen, setIsDonateDialogOpen] = React.useState(false);
+  const [isMoveDialogOpen, setIsMoveDialogOpen] = React.useState(false);
 
-  console.log(boxes);
+  // Location selection states
+  const [, setSelectedLocations] = React.useState<string[]>(
+    [],
+  );
+
+  // Use React Query to fetch boxes data
+  const {
+    data: boxes = [],
+    isLoading: isLoadingBoxes,
+    isError: isBoxesError,
+    error: boxesError,
+  } = useQuery({
+    queryKey: ["boxes"],
+    queryFn: async () => boxApi.getBoxes(),
+  });
+
+  const { locations, isLoading: isLoadingLocations } = useLocations();
+
+  // Auto-select box from URL parameter
+  React.useEffect(() => {
+    if (selectedBoxIdParam && boxes.length > 0) {
+      const boxExists = boxes.some(box => box.id === selectedBoxIdParam);
+      if (boxExists) {
+        setSelectedBoxIds([selectedBoxIdParam]);
+        // Clear the URL parameter after selecting
+        setSearchParams({});
+      }
+    }
+  }, [selectedBoxIdParam, boxes, setSearchParams]);
+
+  // Organize locations by parent when locations data changes
+  // Mutations for box operations
+  const donateBoxesMutation = useMutation({
+    mutationFn: (boxIds: string[]) => boxApi.donateBoxes(boxIds),
+    onSuccess: () => {
+      toast.success(
+        `${selectedBoxIds.length} ${
+          selectedBoxIds.length === 1 ? "box" : "boxes"
+        } donated successfully.`,
+      );
+      queryClient.invalidateQueries({ queryKey: ["boxes"] });
+      setSelectedBoxIds([]);
+      setIsDonateDialogOpen(false);
+    },
+    onError: (error) => {
+      toast.error(
+        `Failed to donate boxes: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    },
+  });
+
+  const moveBoxesMutation = useMutation({
+    mutationFn: ({
+      boxIds,
+      locationId,
+    }: {
+      boxIds: string[];
+      locationId: string;
+    }) => boxApi.moveBoxes(boxIds, locationId),
+    onSuccess: () => {
+      toast.success(
+        `${selectedBoxIds.length} ${
+          selectedBoxIds.length === 1 ? "box" : "boxes"
+        } moved successfully.`,
+      );
+      queryClient.invalidateQueries({ queryKey: ["boxes"] });
+      setSelectedBoxIds([]);
+      setIsMoveDialogOpen(false);
+      setSelectedLocations([]);
+    },
+    onError: (error) => {
+      toast.warning(
+        `Failed to move boxes: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    },
+  });
+
   // Filter boxes based on search term and filters - memoized for performance
   const filteredBoxes = React.useMemo(() => {
     return boxes.filter((box) => {
+      // filter by status
+      if (filters.status != box.status) {
+        return false;
+      }
+
       // Filter by search term (box name)
       if (
         filters.searchTerm &&
@@ -48,34 +149,35 @@ const BoxLookup: React.FC = () => {
         return false;
       }
 
-      // If box has no contents, only apply name filter
-      if (!box.contents || box.contents.length === 0) {
-        return true;
-      }
+      // Empty boxes should not show up (should not even exist in the database)
+      // // If box has no contents, only apply name filter
+      // if (!box.contents || box.contents.length === 0) {
+      //   return true;
+      // }
 
       // Filter by contents
       if (
-        filters.category !== "all" || filters.size !== "all" ||
+        filters.category !== "all" ||
+        filters.size !== "all" ||
         filters.gender !== "all"
       ) {
         return box.contents.some((item) => {
           // Filter by category (item type)
-          if (filters.category !== "all") {
-            if (item.type !== categoryMapping[filters.category]) {
-              return false;
-            }
+          if (filters.category !== "all" && item.type !== filters.category) {
+            return false;
           }
 
           // Filter by size
           if (
-            filters.size !== "all" && item.size !== filters.size.toUpperCase()
+            filters.size !== "all" &&
+            item.size !== filters.size.toUpperCase()
           ) {
             return false;
           }
 
           // Filter by gender
           if (filters.gender !== "all") {
-            if (item.gender !== genderMapping[filters.gender]) {
+            if (item.gender !== genderMapping[filters.gender.toLowerCase()]) {
               return false;
             }
           }
@@ -125,6 +227,7 @@ const BoxLookup: React.FC = () => {
       const box = selectedBoxes[0];
       return (
         <BoxDetails
+          boxId={box.id}
           boxName={box.name}
           location={box.location || ""}
           createdAt={box.createdAt || ""}
@@ -159,6 +262,41 @@ const BoxLookup: React.FC = () => {
     }
   };
 
+  // Dialog handlers
+  const handleDonateClick = () => {
+    if (selectedBoxIds.length === 0) {
+      toast.info("Please select at least one box to donate.");
+      return;
+    }
+    setIsDonateDialogOpen(true);
+  };
+
+  const handleMoveClick = () => {
+    if (selectedBoxIds.length === 0) {
+      toast.info("Please select at least one box to move.");
+      return;
+    }
+
+    // Reset selected locations when opening the dialog
+    setSelectedLocations([]);
+
+    // Log the location hierarchy before opening the move dialog
+    setIsMoveDialogOpen(true);
+  };
+
+  const handleConfirmDonation = () => {
+    donateBoxesMutation.mutate(selectedBoxIds);
+  };
+
+  const handleConfirmMove = (locationId: string) => {
+    // The validation is now happening in the MoveDialog component
+    // Here we just need to handle the mutation
+    moveBoxesMutation.mutate({
+      boxIds: selectedBoxIds,
+      locationId,
+    });
+  };
+
   const handlePrintLabel = () => {
     const selectedBoxes = boxes.filter((box) =>
       selectedBoxIds.includes(box.id)
@@ -166,31 +304,52 @@ const BoxLookup: React.FC = () => {
     printBoxLabels(selectedBoxes);
   };
 
+  // Action buttons for selected boxes
   const actionButtons = (
     <div className="flex gap-4">
-      <Button
-        variant="outline"
+      <Button variant="outline" 
         onClick={handlePrintLabel}
         disabled={selectedBoxIds.length === 0}
       >
         Print label
       </Button>
-      <Button variant="outline">Move</Button>
-      <Button variant="outline">Donate</Button>
+      <Button
+        variant="outline"
+        onClick={handleMoveClick}
+        disabled={selectedBoxIds.length === 0}
+      >
+        Move
+      </Button>
+      <Button
+        variant="outline"
+        onClick={handleDonateClick}
+        disabled={selectedBoxIds.length === 0}
+      >
+        Donate
+      </Button>
     </div>
   );
 
-  if (isLoading) return <div className="p-6">Loading inventory data...</div>;
-  if (isError) {
+  // Handle loading and error states
+  if (isLoadingBoxes) {
+    return <div className="p-6">Loading inventory data...</div>;
+  }
+  if (isBoxesError) {
     return (
       <div className="p-6 text-red-500">
-        Error loading inventory: {error?.message}
+        Error loading inventory: {boxesError?.message}
       </div>
     );
   }
 
   return (
     <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Inventory Management</h1>
+        </div>
+      </div>
+
       <div className="flex flex-col gap-6 md:flex-row">
         <div className="flex-1">
           <SearchFilters
@@ -198,9 +357,11 @@ const BoxLookup: React.FC = () => {
             onCategoryChange={(value) => handleFilterChange("category", value)}
             onSizeChange={(value) => handleFilterChange("size", value)}
             onGenderChange={(value) => handleFilterChange("gender", value)}
+            onStatusChange={(value) => handleFilterChange("status", value)}
             actionButtons={actionButtons}
           />
-          <BoxTable
+
+          <BoxesTable
             boxes={filteredBoxes}
             selectedBoxIds={selectedBoxIds}
             onBoxSelect={handleBoxSelect}
@@ -209,10 +370,26 @@ const BoxLookup: React.FC = () => {
         </div>
 
         {/* Right panel for box details */}
-        <div className="w-full md:w-96">
-          {getSelectedBoxesContent()}
-        </div>
+        <div className="w-full md:w-96">{getSelectedBoxesContent()}</div>
       </div>
+
+      {/* Donation Confirmation Dialog */}
+      <DonateDialog
+        open={isDonateDialogOpen}
+        onOpenChange={setIsDonateDialogOpen}
+        onConfirm={handleConfirmDonation}
+        boxCount={selectedBoxIds.length}
+        isProcessing={donateBoxesMutation.isPending}
+      />
+      {/* Move Location Dialog */}
+      <MoveDialog
+        open={isMoveDialogOpen}
+        onOpenChange={setIsMoveDialogOpen}
+        onConfirm={handleConfirmMove}
+        locations={locations}
+        isLoading={isLoadingLocations}
+        isProcessing={moveBoxesMutation.isPending}
+      />
     </div>
   );
 };

@@ -44,8 +44,6 @@ export const boxApi = {
   },
 
   donateBoxes: async (boxIds: string[]) => {
-    console.log("Donating boxes:", boxIds);
-
     // Get current user ID
     const currentUser = await supabase.auth.getUser();
     const userId = currentUser.data.user?.id;
@@ -90,6 +88,7 @@ export const boxApi = {
       .from("boxes")
       .update({
         location_id: null,
+        status: "Donated",
         updated_at: new Date().toISOString(),
       })
       .in("box_id", boxIds)

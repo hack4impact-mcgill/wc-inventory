@@ -215,16 +215,16 @@ export const printBoxLabels = (selectedBoxes: BoxView[]): void => {
       `);
     }
 
-    /* printWindow.document.write(`
+    printWindow.document.write(`
             </tbody>
           </table>
         </div>
-        <div class="barcode-container">
+        <!-- <div class="barcode-container">
           <div class="barcode-label">Box ID: ${box.id}</div>
           <svg id="barcode-${index}"></svg>
-        </div>
+        </div> -->
       </div>
-    `); */
+    `);
   });
 
   printWindow.document.write(`

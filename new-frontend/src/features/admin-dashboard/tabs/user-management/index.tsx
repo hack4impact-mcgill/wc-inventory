@@ -37,9 +37,8 @@ export default function UserManagement() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error
-          ? error.message
-          : "Failed to create user",
+        description:
+          error instanceof Error ? error.message : "Failed to create user",
       });
     }
   };
@@ -69,7 +68,7 @@ export default function UserManagement() {
 
         <UserTable
           users={filteredUsers || []}
-          onUserClick={(email) => navigate(`/admin/users/${email}`)}
+          onUserClick={(id) => navigate(`/admin/users/${id}`)}
         />
 
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>

@@ -1,5 +1,6 @@
-import { Card } from "@/components/ui/card";
+import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -10,14 +11,14 @@ import {
 } from "@/components/ui/table";
 import { BoxView } from "@/types/box";
 
-interface BoxTableProps {
+export interface BoxesTableProps {
   boxes: BoxView[];
   selectedBoxIds: string[];
   onBoxSelect: (boxId: string) => void;
   onSelectAll: () => void;
 }
 
-export const BoxTable: React.FC<BoxTableProps> = ({
+const BoxesTable: React.FC<BoxesTableProps> = ({
   boxes,
   selectedBoxIds,
   onBoxSelect,
@@ -57,9 +58,7 @@ export const BoxTable: React.FC<BoxTableProps> = ({
                       aria-label={`Select box ${box.name}`}
                     />
                   </TableCell>
-                  <TableCell className="font-medium">
-                    {box.name}
-                  </TableCell>
+                  <TableCell className="font-medium">{box.name}</TableCell>
                   <TableCell>{box.location || "—"}</TableCell>
                   <TableCell>
                     Qty: {box.contents?.reduce(
@@ -85,3 +84,5 @@ export const BoxTable: React.FC<BoxTableProps> = ({
     </Card>
   );
 };
+
+export default BoxesTable;
