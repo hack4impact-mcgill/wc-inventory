@@ -323,21 +323,21 @@ const BoxLookup: React.FC = () => {
   const actionButtons = (
     <div className="flex gap-4">
       <Button
-        variant="outline"
+        // variant="outline"
         onClick={handlePrintLabel}
         disabled={selectedBoxIds.length === 0}
       >
         Print label
       </Button>
       <Button
-        variant="outline"
+        // variant="outline"
         onClick={handleMoveClick}
         disabled={selectedBoxIds.length === 0}
       >
         Move
       </Button>
       <Button
-        variant="outline"
+        // variant="outline"
         onClick={handleDonateClick}
         disabled={selectedBoxIds.length === 0}
       >
@@ -359,18 +359,18 @@ const BoxLookup: React.FC = () => {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex flex-col gap-6 md:flex-row h-full">
-        <div className="flex-1 min-w-0">
-          <SearchFilters
-            onSearch={(value) => handleFilterChange("searchTerm", value)}
-            onCategoryChange={(value) => handleFilterChange("category", value)}
-            onSizeChange={(value) => handleFilterChange("size", value)}
-            onGenderChange={(value) => handleFilterChange("gender", value)}
-            onStatusChange={(value) => handleFilterChange("status", value)}
-            actionButtons={actionButtons}
-          />
+    <div>
+      <SearchFilters
+        onSearch={(value) => handleFilterChange("searchTerm", value)}
+        onCategoryChange={(value) => handleFilterChange("category", value)}
+        onSizeChange={(value) => handleFilterChange("size", value)}
+        onGenderChange={(value) => handleFilterChange("gender", value)}
+        onStatusChange={(value) => handleFilterChange("status", value)}
+        actionButtons={actionButtons}
+      />
 
+      <div className="flex flex-col gap-6 md:flex-row mt-6">
+        <div className="flex-1 min-w-0 ">
           <BoxesTable
             boxes={filteredBoxes}
             selectedBoxIds={selectedBoxIds}
@@ -381,9 +381,7 @@ const BoxLookup: React.FC = () => {
 
         {/* Right panel for box details */}
         {selectedBoxIds.length > 0 && (
-          <div className="w-full md:w-96 mt-16">
-            {getSelectedBoxesContent()}
-          </div>
+          <div className="basis-1/3">{getSelectedBoxesContent()}</div>
         )}
       </div>
 

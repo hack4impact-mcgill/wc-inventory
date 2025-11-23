@@ -8,6 +8,8 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 import { useSearchFiltersQueries } from "../hooks/useSearchFiltersQueries";
+import { Search } from "lucide-react";
+import { SearchBar } from "@/components/search-bar";
 
 interface SearchFiltersProps {
   onSearch: (value: string) => void;
@@ -100,79 +102,80 @@ const SearchFilters = ({
         : genders;
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center gap-4">
-        <div className="flex-1 flex gap-4">
+    <div className="flex justify-between items-center gap-4">
+      <div className="flex-1 flex gap-4">
+        <div className="flex flex-1 relative">
           <Input
-            placeholder="Search by box name"
-            className="max-w-xs"
+            placeholder="Search by box ID…"
+            className="max-w-xs bg-white pl-9"
             onChange={(e) => onSearch(e.target.value)}
           />
-
-          <Select defaultValue="all" onValueChange={handleCategoryChange}>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Items</SelectItem>
-              {filteredCategories?.map((category) => (
-                <SelectItem
-                  key={category.category_id}
-                  value={category.category_id} // can't guarantee unique category name, use category id
-                >
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select defaultValue="all" onValueChange={handleSizeChange}>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Size" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Sizes</SelectItem>
-              {filteredSizes?.map((size) => (
-                <SelectItem
-                  key={size.size_id}
-                  value={size.size_id} // can't guarantee unique size name, use size id
-                >
-                  {size.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select defaultValue="all" onValueChange={handleGenderChange}>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Gender" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Genders</SelectItem>
-              {filteredGenders?.map((g) => (
-                <SelectItem key={g} value={g}>
-                  {g}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select defaultValue="Active" onValueChange={onStatusChange}>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem key="Active" value="Active">
-                Active
-              </SelectItem>
-              <SelectItem key="Donated" value="Donated">
-                Donated
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         </div>
-        {actionButtons}
+
+        <Select defaultValue="all" onValueChange={handleCategoryChange}>
+          <SelectTrigger className="w-32 bg-white">
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Items</SelectItem>
+            {filteredCategories?.map((category) => (
+              <SelectItem
+                key={category.category_id}
+                value={category.category_id} // can't guarantee unique category name, use category id
+              >
+                {category.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select defaultValue="all" onValueChange={handleSizeChange}>
+          <SelectTrigger className="w-32 bg-white">
+            <SelectValue placeholder="Size" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Sizes</SelectItem>
+            {filteredSizes?.map((size) => (
+              <SelectItem
+                key={size.size_id}
+                value={size.size_id} // can't guarantee unique size name, use size id
+              >
+                {size.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select defaultValue="all" onValueChange={handleGenderChange}>
+          <SelectTrigger className="w-32 bg-white">
+            <SelectValue placeholder="Gender" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Genders</SelectItem>
+            {filteredGenders?.map((g) => (
+              <SelectItem key={g} value={g}>
+                {g}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select defaultValue="Active" onValueChange={onStatusChange}>
+          <SelectTrigger className="w-32 bg-white">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem key="Active" value="Active">
+              Active
+            </SelectItem>
+            <SelectItem key="Donated" value="Donated">
+              Donated
+            </SelectItem>
+          </SelectContent>
+        </Select>
       </div>
+      {actionButtons}
     </div>
   );
 };

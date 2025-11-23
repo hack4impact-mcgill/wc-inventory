@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import ContentCard from "./ContentCard";
 import { BoxItem } from "@/types/box";
 
@@ -23,6 +23,7 @@ const BoxDetails = ({
   isMultiSelect = false,
 }: BoxDetailsProps) => {
   const navigate = useNavigate();
+  const loc = useLocation();
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -30,12 +31,18 @@ const BoxDetails = ({
   };
 
   const handleEdit = () => {
+    // Infer origin from current route
+    const baseFrom = loc.pathname.startsWith("/admin")
+      ? "/admin/box-lookup"
+      : "/box-lookup";
     // Redirect to the create page with the box ID and name as query parameters
-    navigate(`/create?boxId=${boxId}&boxName=${boxName}`);
+    navigate(`/create?boxId=${boxId}&boxName=${boxName}`, {
+      state: { from: baseFrom },
+    });
   };
 
   return (
-    <div className="p-4 border rounded-lg">
+    <div className="p-4 border rounded-lg bg-white">
       {!isMultiSelect ? (
         <>
           <div className="flex justify-between items-center mb-4">
@@ -53,9 +60,12 @@ const BoxDetails = ({
       )}
 
       <div className="flex justify-between items-center mb-3">
-        <h3 className="font-medium">Contents:</h3>
         {!isMultiSelect && (
-          <Button variant="link" className="text-blue-600" onClick={handleEdit}>
+          <Button
+            variant="link"
+            className="text-blue-600 pl-0"
+            onClick={handleEdit}
+          >
             Edit
           </Button>
         )}
