@@ -360,8 +360,8 @@ const BoxLookup: React.FC = () => {
 
   return (
     <div className="p-6">
-      <div className="flex flex-col gap-6 md:flex-row">
-        <div className="flex-1">
+      <div className="flex flex-col gap-6 md:flex-row h-full">
+        <div className="flex-1 min-w-0">
           <SearchFilters
             onSearch={(value) => handleFilterChange("searchTerm", value)}
             onCategoryChange={(value) => handleFilterChange("category", value)}
@@ -381,7 +381,9 @@ const BoxLookup: React.FC = () => {
 
         {/* Right panel for box details */}
         {selectedBoxIds.length > 0 && (
-          <div className="w-full md:w-96">{getSelectedBoxesContent()}</div>
+          <div className="w-full md:w-96 mt-16">
+            {getSelectedBoxesContent()}
+          </div>
         )}
       </div>
 

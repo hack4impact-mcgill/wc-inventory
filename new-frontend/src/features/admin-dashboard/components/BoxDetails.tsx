@@ -35,7 +35,7 @@ const BoxDetails = ({
   };
 
   return (
-    <div className="p-6 border rounded-lg">
+    <div className="p-4 border rounded-lg">
       {!isMultiSelect ? (
         <>
           <div className="flex justify-between items-center mb-4">
@@ -55,11 +55,7 @@ const BoxDetails = ({
       <div className="flex justify-between items-center mb-3">
         <h3 className="font-medium">Contents:</h3>
         {!isMultiSelect && (
-          <Button 
-            variant="link" 
-            className="text-blue-600"
-            onClick={handleEdit}
-          >
+          <Button variant="link" className="text-blue-600" onClick={handleEdit}>
             Edit
           </Button>
         )}
