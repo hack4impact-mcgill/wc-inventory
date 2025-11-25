@@ -16,6 +16,9 @@ interface UseSaveBoxParams {
   items: BoxContent[];
   boxCount: number | undefined;
   location: BoxLocation;
+  onAddSuccess: (data?: any) => void;
+  boxId?: string | null; // For update mode
+  isUpdateMode?: boolean;
   note: string | undefined;
   onAddSuccess: () => void;
 }
