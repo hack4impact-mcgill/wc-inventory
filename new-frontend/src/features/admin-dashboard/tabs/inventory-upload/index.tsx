@@ -3,6 +3,11 @@ import readInventory, { InventoryResponse } from './utils/read-inventory';
 import { Card, CardContent } from "@/components/ui/card";
 import { UploadTable } from '../inventory-upload/components/upload-table';
 import { buildLocationTree, NestedLocation } from '../location-management/utils';
+import { useSizes } from '../size-management/hooks/use-sizes';
+import { useLocations } from '../location-management/hooks/use-locations';
+import { useCategories } from '../category-management/hooks/use-categories';
+import { useSaveBox } from '../../../add-box/hooks/useCreateBox';
+import { boxApi } from '@/lib/api/boxes';
 
 const sizeTableColumns = [
     { header: 'Name', accessor: 'name' },
@@ -22,6 +27,10 @@ const locationTableColumns = [
 ];
 
 const InventoryUploadTab: React.FC = () => {
+
+  const { createMutation: createSize } = useSizes();
+  const { createMutation: createLocation } = useLocations();
+  const { createMutation: createCategory } = useCategories();
 
   // state to hold the box data
   const [inventory, setInventory] = useState<InventoryResponse | null>(null);
@@ -44,6 +53,51 @@ const InventoryUploadTab: React.FC = () => {
     // parse the inventory data
     const inventoryData = readInventory(arrayBuffer);
 
+    // upload the data
+    inventoryData.contentTypes.sizes.forEach(async (size) => {
+      await createSize.mutateAsync(size);
+    });
+
+    inventoryData.locations.forEach(async (location) => {
+      await createLocation.mutateAsync(location);
+    });
+
+    inventoryData.contentTypes.types.forEach(async (type) => {
+      await createCategory.mutateAsync({ name: type, level: 0 });
+    });
+
+    // create all the boxes in the database
+    inventoryData.boxes.forEach(async (box) => {
+
+      /*
+      box_content_id: string;
+    box_id: string;
+    category_id: string;
+    gender: "Male" | "Female" | "Unisex" | "Kids";
+    quantity: number;
+    size_id: string | null;
+    */
+      const items = Object.keys(box.contents).map(contentType => {
+        const contentInfo = inventoryData.contentTypes.typeMap[contentType];
+        return {
+          box_content_id: "",
+          box_id: box.id,
+          category_id: contentInfo.type,
+          gender: contentInfo.gender,
+          size_id: contentInfo.size.size_id,
+          quantity: box.contents[contentType]
+        };
+      });
+
+      const saveBoxMutation = useSaveBox({
+        items,
+        boxCount: Number.parseInt(box.name.split(" ")[1]),
+        location: { room: box.location, level: "", aisle: "", row: "" },
+        onAddSuccess: () => {}
+      });
+      await saveBoxMutation.mutateAsync();
+    });
+
     setInventory(inventoryData);
 
     console.log('Parsed data:', inventoryData);
@@ -60,9 +114,6 @@ const InventoryUploadTab: React.FC = () => {
       {/* list all the boxes */}
       {inventory ? (
         <>
-
-        <p>Read through the locations and sizes being added, and make sure all the data is set correctly. 
-          Some locations or sizes might be duplicated because of typos, you can merge them by clicking <code>⋯ &gt; Merge with...</code></p>
 
         {/* list all the new sizes, locations, boxes defined in the xlsx file */}
         <div>
@@ -96,7 +147,7 @@ const InventoryUploadTab: React.FC = () => {
                 <div>
                   <p>Box {box.id} [{box.location}]</p>
                   <ul>
-                    {Object.keys(box.contents).map(contentType => <li>{contentType}: {box.contents[contentType]}</li>)}
+                    {Object.keys(box.contents).map(contentType => <li>{inventory.contentTypes.typeMap[contentType].type} ({inventory.contentTypes.typeMap[contentType].size.name} {inventory.contentTypes.typeMap[contentType].size.gender} {inventory.contentTypes.typeMap[contentType].size.category}): {box.contents[contentType]} ({contentType})</li>)}
                   </ul>
                 </div>
               )

@@ -13,6 +13,14 @@ export default function parseLocations(locationStrings: string[]) {
     parent_id: null
   });
 
+  locations.add({
+    name: "Racks",
+    description: null,
+    level: 0,
+    location_id: "r",
+    parent_id: null
+  });
+
   // read through each location string
   for (const loc of locationStrings) {
 
@@ -43,6 +51,17 @@ export default function parseLocations(locationStrings: string[]) {
         level: 2,
         location_id: loc,
         parent_id: "A" + loc.charAt(1)
+      });
+
+    // another special case: Racks
+    } else if (loc.startsWith("rack")) {
+
+      locations.add({
+        name: loc.replace("rack", "Rack"),
+        description: null,
+        level: 1,
+        location_id: "r" + loc.charAt(5) + loc.charAt(6),
+        parent_id: "r"
       });
 
     } else {

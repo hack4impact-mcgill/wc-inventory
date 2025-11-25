@@ -20,6 +20,58 @@ export interface InventoryResponse {
   locations: Set<Location>;
 }
 
+function fixLocation (type: string): string {
+
+  if (type == null) return "Unknown";
+
+  // location typos
+  type = type.replace("Plataform 802", "Platform 802")
+    .replace("platform 802", "Platform 802")
+    .replace("PLATFORM 802", "Platform 802")
+    .replace("Plat 802", "Platform 802")
+    .replace('paltform 802', "Platform 802")
+    .replace("PLAT 802", "Platform 802")
+    .replace("plat 802", "Platform 802")
+    .replace("platfomr 802", "Platform 802")
+    .replace("platfotm 802", "Platform 802")
+    .replace("Plataforma 802", "Platform 802")
+    .replace("winter room", "Winter Distribution Room")
+    .replace("Winter distribution room", "Winter Distribution Room")
+    .replace("Winter room", "Winter Distribution Room")
+    .replace("WINTER ROOM", "Winter Distribution Room")
+    .replace("Winter Room", "Winter Distribution Room")
+    .replace("Winter distribution room boxes", "Winter Distribution Room")
+    .replace("Winter Distribution Room boxes", "Winter Distribution Room")
+    .replace("Winter distribution Room", "Winter Distribution Room")
+    .replace("rack 2b plus half snowpants", "rack 2b")
+    .replace("rack 1inf/nb pants", "rack 1inf/nb")
+
+  if (type == "1B3") type = "A1B3";
+  if (type == "3A4") type = "A3A4";
+  
+  return type;
+
+}
+
+function fixContentType (type: string): string {
+
+  // content type translations
+  type = type.replace("PetitSmall", "Small")
+    .replace("MoyenMedium", "Medium")
+    .replace("GrandLarge", "Large")
+    .replace("Taille", "")
+    .replace("Ans", " Years")
+    .replace("Mois", " Months")
+    .replace("Manteaux", "Jacket")
+    .replace("Bottes", "Boots")
+    .replace("Foulard", "Scarf")
+    .replace("MitainesGants", "Mittens/Gloves")
+    .replace("Pantalon", "Pants")
+  
+  return type;
+
+}
+
 export default function readInventory (file: ArrayBuffer): InventoryResponse {
 
   // array to keep track of boxes
@@ -37,8 +89,11 @@ export default function readInventory (file: ArrayBuffer): InventoryResponse {
 
   // read all the possible box contents
   // read through row 1 of columns H to end to get all the content types
-  const contentTypes: string[] = XLSX.utils.sheet_to_json(boxDetails, { header: 1, range: "H1:ZZ1" })[0];
+  let contentTypes: string[] = XLSX.utils.sheet_to_json(boxDetails, { header: 1, range: "H1:ZZ1" })[0];
   console.log(contentTypes);
+
+  // hardcoded fixes to content types
+  contentTypes = contentTypes.map(fixContentType);
 
   // parse the content types
   const parsedContentTypes = parseContentTypes(contentTypes);
@@ -66,7 +121,7 @@ export default function readInventory (file: ArrayBuffer): InventoryResponse {
     // create the box object
     const box: Box = {
       id: row[0],
-      location: row[4],
+      location: fixLocation(row[4]),
       name: `${row[5]} ${row[6]}`,
       date: row[1],
       contents: boxContents
