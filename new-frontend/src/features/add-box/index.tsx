@@ -17,9 +17,13 @@ import { GenderEnum } from "@/types/enums";
 import { BoxContent, InsertBoxContent } from "@/types/boxContent";
 import { buildLocationTree } from "./utils";
 import { useToast } from "@/hooks/use-toast";
+
 import { getCategoryIconPath } from "@/lib/iconLoader";
-import { supabase } from "@/lib/supabaseClient";
+
+
 import { useMobile } from "./hooks/useMobile";
+import { set } from "date-fns";
+import { networkInterfaces } from "node:os";
 
 const AddBox = () => {
   // Get URL search params to check if we're in update mode
@@ -41,7 +45,8 @@ const AddBox = () => {
   const [categoryId, setCategoryId] = useState<string>("");
   const [sizeId, setSizeId] = useState<string>("");
   const [gender, setGender] = useState<GenderEnum | "">("");
-  const [quantity, setQuantity] = useState<number>(0);
+  const [quantity, setQuantity] = useState<number>(1);
+  const [note, setNote] = useState<string>("");
   const [location, setLocation] = useState<{
     room: string;
     level: string;
@@ -181,7 +186,7 @@ const AddBox = () => {
     setCategoryId("");
     setSizeId("");
     setGender("");
-    setQuantity(0);
+    setQuantity(1);
     setLocation({
       room: "",
       level: "",
@@ -192,6 +197,7 @@ const AddBox = () => {
     setEditingItemIndex(null);
     setIsEditing(false);
     setShowSidebar(false);
+    setNote("");
   };
 
   const isMobile = useMobile();
@@ -222,7 +228,7 @@ const AddBox = () => {
         setCategoryId("");
         setSizeId("");
         setGender("");
-        setQuantity(0);
+        setQuantity(1);
         setIsEditing(false);
       }
     }
@@ -242,6 +248,7 @@ const AddBox = () => {
     items,
     boxCount,
     location,
+    note,
     boxId: boxIdParam,
     isUpdateMode,
     onAddSuccess: (data) => {
@@ -360,7 +367,7 @@ const AddBox = () => {
       size_id: sizeId,
       gender: gender as GenderEnum,
       quantity,
-      box_id: "",
+      box_id: ""
     };
 
     if (isEditing && editingItemIndex !== null) {
@@ -378,7 +385,7 @@ const AddBox = () => {
     setCategoryId("");
     setSizeId("");
     setGender("");
-    setQuantity(0);
+    setQuantity(1);
     setIsEditing(false);
   };
 
@@ -393,15 +400,15 @@ const AddBox = () => {
       setCategoryId("");
       setSizeId("");
       setGender("");
-      setQuantity(0);
+      setQuantity(1);
       setIsEditing(false);
+      setNote("");
     }
   };
 
   // Function to handle clicking on an item to edit
   const handleEditItem = (index: number) => {
     setEditingItemIndex(index);
-    setShowSidebar(true); // Open the sidebar when clicking an item
   };
 
   // Function to cancel editing
@@ -410,7 +417,8 @@ const AddBox = () => {
     setCategoryId("");
     setSizeId("");
     setGender("");
-    setQuantity(0);
+    setQuantity(1);
+    setNote("");
     setIsEditing(false);
   };
 
@@ -538,7 +546,7 @@ const AddBox = () => {
       setCategoryId("");
       setSizeId("");
       setGender("");
-      setQuantity(0);
+      setQuantity(1);
       setIsEditing(false);
     }
   };
@@ -699,96 +707,127 @@ const AddBox = () => {
           </Card>
         </div>
 
-        {showSidebar &&
-          (isMobile ? (
-            // mobile view
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-              <div className="bg-white w-full max-w-sm rounded-lg shadow-lg p-4 relative mx-4">
-                <button
-                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-                  onClick={() => setShowSidebar(false)}
-                >
-                  <X size={20} />
-                </button>
-                <div className="mb-6 mt-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-medium">
-                      {isEditing ? "Edit item" : "Add items"}
-                    </h3>
-                    {isEditing && (
-                      <button
-                        className="text-red-500 hover:text-red-700 transition-colors"
-                        onClick={handleDeleteItem}
-                        aria-label="Delete item"
-                      >
-                        <Trash size={20} />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
+        {showSidebar && (
+            isMobile ? (
+              // mobile view
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="bg-white w-full max-w-sm rounded-lg shadow-lg p-4 relative mx-4">
+                  <button
+                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                    onClick={() => setShowSidebar(false)}
+                  >
+                    <X size={20} />
+                  </button>
+                          <div className="mb-6 mt-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-medium">
+                          {isEditing ? "Edit item" : "Add items"}
+                        </h3>
+                        {isEditing && (
+                          <button
+                            className="text-red-500 hover:text-red-700 transition-colors"
+                            onClick={handleDeleteItem}
+                            aria-label="Delete item"
+                          >
+                            <Trash size={20} />
+                          </button>
+                        )}
+                      </div>
 
-              <div className="space-y-4">
-                <Select value={categoryId} onValueChange={setCategoryId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {leafCategories?.map((category) => (
-                      <SelectItem
-                        key={category.category_id}
-                        value={category.category_id}
-                      >
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      <div className="space-y-4">
+                        <Select value={categoryId} onValueChange={setCategoryId}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {leafCategories?.map((category) => (
+                              <SelectItem
+                                key={category.category_id}
+                                value={category.category_id}
+                              >
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
 
-                <Select
-                  value={gender}
-                  onValueChange={(val) => setGender(val as GenderEnum)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {["Male", "Female", "Unisex", "Kids"].map((g) => (
-                      <SelectItem key={g} value={g}>
-                        {g}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                        <Select
+                          value={gender}
+                          onValueChange={(val) => setGender(val as GenderEnum)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Gender" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {["Male", "Female", "Unisex", "Kids"].map((g) => (
+                              <SelectItem key={g} value={g}>
+                                {g}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
 
-                <Select value={sizeId} onValueChange={setSizeId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Size" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sizes?.map((size) => (
-                      <SelectItem key={size.size_id} value={size.size_id}>
-                        {size.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                        <Select value={sizeId} onValueChange={setSizeId}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Size" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {sizes?.map((size) => (
+                              <SelectItem key={size.size_id} value={size.size_id}>
+                                {size.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Quantity
-                  </label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={quantity || ""}
-                    placeholder="Enter quantity"
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setQuantity(value === "" ? 0 : Number(value));
-                    }}
-                  />
-                </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Quantity
+                          </label>
+                          <Input
+                          type="number"
+                          min={1}
+                          value={quantity}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '') {
+                              setQuantity(val);
+                            } else {
+                              const num = Number(val);
+                              if (!isNaN(num)) {
+                                setQuantity(num);
+                              }
+                            }
+                          }}
+                          onBlur={() => {
+                            if (quantity === '' || quantity < 1) {
+                              setQuantity(1);
+                            }
+                          }}
+                          />
+                        </div>
+
+                        <div className="flex gap-2">
+                          {isEditing && (
+                            <Button
+                              className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800"
+                              onClick={handleCancelEdit}
+                            >
+                              Cancel
+                            </Button>
+                          )}
+                          <Button
+                            className={`${
+                              isEditing ? "flex-1" : "w-full"
+                            } bg-blue-600 hover:bg-blue-700`}
+                            onClick={handleAdd}
+                            disabled={!categoryId || !sizeId || !gender}
+                          >
+                            {isEditing ? "Update" : "Add item"}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
 
                 <Button
                   className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 flex justify-center items-center gap-2 mb-4"
@@ -920,23 +959,35 @@ const AddBox = () => {
                 </div>
               </div>
 
+              <div className="bg-blue-50 rounded-lg p-4 border border-blue-100 mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <label className="text-sm font-semibold text-gray-800">
+                    Note 
+                  </label>
+                  <span className="text-xs text-gray-500">(optional)</span>
+                </div>
+                <textarea
+                  placeholder="Add additional notes about this box..."
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  rows={3}
+                />
+              </div>
+
               <Button
                 className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 flex justify-center items-center gap-2 mb-4"
                 onClick={handleCreateBox}
-                disabled={!canCreateBox || items.length === 0 || saveBoxMutation.isPending}
+                disabled={items.length === 0 || saveBoxMutation.isPending}
               >
                 <span>
-                  {saveBoxMutation.isPending
-                    ? isUpdateMode
-                      ? "Updating..."
-                      : "Creating..."
-                    : isUpdateMode
-                      ? "Update box"
-                      : "Create box"}
+                  {saveBoxMutation.isPending ? "Creating..." : "Create box"}
                 </span>
               </Button>
             </div>
-          ))}
+          )
+        )}
+        
       </div>
     </div>
   );

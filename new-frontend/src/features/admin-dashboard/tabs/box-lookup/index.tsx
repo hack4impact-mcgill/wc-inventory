@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
 import SearchFilters from "@/features/admin-dashboard/components/SearchFilters";
 import BoxDetails from "@/features/admin-dashboard/components/BoxDetails";
 import { BoxItem } from "@/types/box";
@@ -86,7 +85,8 @@ const BoxLookup: React.FC = () => {
   // Organize locations by parent when locations data changes
   // Mutations for box operations
   const donateBoxesMutation = useMutation({
-    mutationFn: (boxIds: string[]) => boxApi.donateBoxes(boxIds),
+    mutationFn: ({ boxIds, note }: { boxIds: string[]; note?: string }) =>
+      boxApi.donateBoxes(boxIds, note),
     onSuccess: () => {
       toast.success(
         `${selectedBoxIds.length} ${
@@ -126,10 +126,12 @@ const BoxLookup: React.FC = () => {
     mutationFn: ({
       boxIds,
       locationId,
+      note,
     }: {
       boxIds: string[];
       locationId: string;
-    }) => boxApi.moveBoxes(boxIds, locationId),
+      note?: string;
+    }) => boxApi.moveBoxes(boxIds, locationId, note),
     onSuccess: () => {
       toast.success(
         `${selectedBoxIds.length} ${
@@ -261,7 +263,6 @@ const BoxLookup: React.FC = () => {
       const box = selectedBoxes[0];
       return (
         <BoxDetails
-          boxId={box.id}
           boxName={box.name}
           location={box.location || ""}
           createdAt={box.createdAt || ""}
@@ -326,8 +327,8 @@ const BoxLookup: React.FC = () => {
     setIsMoveDialogOpen(true);
   };
 
-  const handleConfirmDonation = () => {
-    donateBoxesMutation.mutate(selectedBoxIds);
+  const handleConfirmDonation = (note?: string) => {
+    donateBoxesMutation.mutate({ boxIds: selectedBoxIds, note });
   };
   
   const handleConfirmDelete = () => {
@@ -335,12 +336,13 @@ const BoxLookup: React.FC = () => {
   };
 
 
-  const handleConfirmMove = (locationId: string) => {
+  const handleConfirmMove = (locationId: string, note?: string) => {
     // The validation is now happening in the MoveDialog component
     // Here we just need to handle the mutation
     moveBoxesMutation.mutate({
       boxIds: selectedBoxIds,
       locationId,
+      note,
     });
   };
 

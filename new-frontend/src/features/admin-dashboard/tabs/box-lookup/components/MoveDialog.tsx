@@ -14,12 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import type { Location } from "@/types/location";
 import { LocationHierarchy } from "../types";
 export interface MoveDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (locationId: string) => void;
+  onConfirm: (locationId: string, note?: string) => void;
   locations: Location[];
   isLoading: boolean;
   isProcessing: boolean;
@@ -37,11 +39,13 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
   const [locationsByParent, setLocationsByParent] = useState<LocationHierarchy>(
     {},
   );
+  const [note, setNote] = useState("");
 
   // Reset selected locations when dialog opens/closes
   useEffect(() => {
     if (!open) {
       setSelectedLocations([]);
+      setNote("");
     }
   }, [open]);
 
@@ -112,7 +116,7 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
     const targetLocationId = selectedLocations.filter(Boolean).pop();
 
     if (targetLocationId) {
-      onConfirm(targetLocationId);
+      onConfirm(targetLocationId, note);
     }
   };
 
@@ -210,6 +214,16 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
           )}
 
           {/* Selected Location Path Display */}
+          <div className="w-full">
+            <Label className="mb-2 block text-sm font-medium">Note</Label>
+            <div className="mb-4">
+              <Input
+                placeholder="Add a note about this box..."
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
+            </div>
+          </div>
           <div className="mt-2 p-2 bg-blue-50 rounded-md">
             <h4 className="text-sm font-medium mb-1">
               Selected Location Path:
