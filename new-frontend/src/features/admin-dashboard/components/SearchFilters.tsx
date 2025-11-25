@@ -28,32 +28,72 @@ const SearchFilters = ({
 }: SearchFiltersProps) => {
 
   const { categories, sizes } = useSearchFiltersQueries();
+  const genders = ["Male", "Female", "Unisex", "Kids"];
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
-  const [selectedSizeName, setSelectedSizeName] = useState<string>("all");
+  const [selectedSizeId, setSelectedSizeId] = useState<string>("all");
+  const [selectedGender, setSelectedGender] = useState<string>("all");
   
   const handleCategoryChange = (value: string) => {
     setSelectedCategoryId(value);
-    onCategoryChange(value);
+    // onCategoryChange needs category name for filter logic
+    const selected = categories?.find(c => c.category_id === value);
+    onCategoryChange(value === "all" ? "all" : selected?.name ?? "all");
   };
 
     const handleSizeChange = (value: string) => {
-    setSelectedSizeName(value);
-    onSizeChange(value);
+    setSelectedSizeId(value);
+    // onSizeChange needs size name for filter logic
+    const selected = sizes?.find((s) => s.size_id === value);
+    onSizeChange(value === "all" ? "all" : selected?.name ?? "all");
+  };
+
+    const handleGenderChange = (value: string) => {
+    setSelectedGender(value);
+    onGenderChange(value);
   };
 
   const SHOE_CATEGORY_ID = "f9998911-97c2-43fb-86ef-b63162758a55";
+  const SHOE_SIZES_IDS = sizes?.filter((size) => size.category === "Shoe").map((x) => x.size_id);
+  // size.gender does not have "Kid", has "Unisex" instead
+  const KID_SIZES_IDS = sizes?.filter((size) => size.category === "Kid").map((x) => x.size_id);
+  // both size.category does not have "Female" or "Male", "Adult" instead
+  const MALE_SIZES_IDS = sizes?.filter((size) => size.gender === "Male").map((x) => x.size_id);
+  const FEMALE_SIZES_IDS = sizes?.filter((size) => size.gender === "Female").map((x) => x.size_id);
 
-  const filteredSizes = selectedCategoryId === SHOE_CATEGORY_ID
-    ? sizes?.filter((size) => /^\d+(\.\d+)?T?$/.test(size.name)) // use regex to get only shoe sizes
-    : selectedCategoryId !== "all"
-    ? sizes?.filter((size) => /^[A-Z]+$/.test(size.name)) // use regex to get only clothing sizes
-    : sizes;
+  // add useMemo if sizes, categories or genders grow large or cause re-render lag
 
-  const filteredCategories = /^\d+(\.\d+)?T?$/.test(selectedSizeName)
+  const filteredSizes = sizes?.filter(
+    (size) =>
+        (selectedCategoryId === SHOE_CATEGORY_ID
+          ? size.category === "Shoe"
+          : selectedCategoryId !== "all"
+            ? size.category !== "Shoe"
+            : true
+        )
+        &&
+        (selectedGender === "Male"
+          ? size.gender === "Male"
+          : (selectedGender === "Unisex" || selectedGender === "Kids")
+            ? size.gender === "Unisex"
+            : selectedGender === "Female"
+              ? size.gender === "Female"
+              : true
+        )
+  );
+
+  const filteredCategories = SHOE_SIZES_IDS?.includes(selectedSizeId)
     ? categories?.filter((category) => category.name === "Shoes")
-    : selectedSizeName !== "all"
-    ? categories?.filter((category) => category.name !== "Shoes")
-    : categories;
+    : selectedSizeId !== "all"
+      ? categories?.filter((category) => category.name !== "Shoes")
+      : categories;
+
+  const filteredGenders = MALE_SIZES_IDS?.includes(selectedSizeId)
+    ? genders?.filter((gender) => gender === "Male")
+    : FEMALE_SIZES_IDS?.includes(selectedSizeId)
+      ? genders?.filter((gender) => gender === "Female")
+      : KID_SIZES_IDS?.includes(selectedSizeId)
+        ? genders?.filter((gender) => (gender === "Unisex" || gender === "Kids"))
+        : genders;
 
   return (
     <div className="space-y-6">
@@ -77,7 +117,7 @@ const SearchFilters = ({
               {filteredCategories?.map((category) => (
                 <SelectItem 
                   key={category.category_id}
-                  value={category.category_id}
+                  value={category.category_id} // can't guarantee unique category name, use category id
                 >
                   {category.name}
                 </SelectItem>
@@ -96,7 +136,7 @@ const SearchFilters = ({
               {filteredSizes?.map((size) => (
                 <SelectItem 
                   key={size.size_id} 
-                  value={size.name}
+                  value={size.size_id} // can't guarantee unique size name, use size id
                 >
                   {size.name}
                 </SelectItem>
@@ -104,15 +144,15 @@ const SearchFilters = ({
             </SelectContent>
           </Select>
 
-          <Select defaultValue="all" onValueChange={onGenderChange}>
+          <Select defaultValue="all" onValueChange={handleGenderChange}>
             <SelectTrigger className="w-32">
               <SelectValue placeholder="Gender" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem key="all" value="all">
+              <SelectItem value="all">
                 All Genders
               </SelectItem>
-              {["Male", "Female", "Unisex", "Kids"].map((g) => (
+              {filteredGenders?.map((g) => (
                 <SelectItem key={g} value={g}>
                   {g}
                 </SelectItem>

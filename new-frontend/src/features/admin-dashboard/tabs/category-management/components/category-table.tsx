@@ -15,25 +15,28 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, ChevronRight, ChevronDown } from "lucide-react";
-import { getCategoryIcon } from "@/types/icons";
 import { Category } from "@/types/category";
 import { buildHierarchy, CategoryWithChildren, matchesFilter } from "../utils";
 import React from "react";
+import { getCategoryIconPath } from "@/lib/iconLoader";
 
 interface CategoriesTableProps {
   data: Category[] | undefined;
   filter: string;
   onEdit: (category: Category) => void;
   onDelete: (categoryId: string) => void;
+  expandedCategories: Set<string>;
+  setExpandedCategories: React.Dispatch<React.SetStateAction<Set<string>>>;
 }
 const CategoriesTable: FC<CategoriesTableProps> = ({
   data = [],
   filter = "",
   onEdit,
   onDelete,
+  expandedCategories,
+  setExpandedCategories
 }) => {
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
-  // Move expansion logic to useEffect
+
   useEffect(() => {
     if (filter) {
       const categoryMap = new Map<string, CategoryWithChildren>();
@@ -57,62 +60,81 @@ const CategoriesTable: FC<CategoriesTableProps> = ({
     } else {
       setExpandedCategories(new Set());
     }
-  }, [filter, data]);
+  }, [filter]);
 
   const hierarchicalCategories = buildHierarchy(data);
 
   const toggleExpand = (categoryId: string) => {
     setExpandedCategories(prev => {
       const next = new Set(prev);
-      if (next.has(categoryId)) {
-        next.delete(categoryId);
-      } else {
-        next.add(categoryId);
-      }
+      if (next.has(categoryId)) next.delete(categoryId);
+      else next.add(categoryId);
       return next;
     });
   };
 
-  const renderCategoryRow = (category: CategoryWithChildren, level: number = 0) => {
+  const renderCategoryRow = (
+    category: CategoryWithChildren,
+    level: number = 0
+  ) => {
     const hasChildren = category.children && category.children.length > 0;
     const isExpanded = expandedCategories.has(category.category_id);
-    const IconComponent = getCategoryIcon(category.icon);
 
-    // Skip this category and its children  they don't match the filter
-    if (filter && !matchesFilter(category, filter)) {
-      return null;
-    }
-
+  
+    if (filter && !matchesFilter(category, filter)) return null;
+  
     return (
       <React.Fragment key={category.category_id}>
-        <TableRow>
-          <TableCell className="pl-4">
-            {hasChildren && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="p-0 h-6 w-6"
-                onClick={() => toggleExpand(category.category_id)}
-              >
-                {isExpanded ? (
-                  <ChevronDown className="h-4 w-4" />
+        <TableRow className="hover:bg-gray-50">
+
+          <TableCell className="w-[140px]">
+            <div
+              className="flex items-center h-full"
+              style={{
+                paddingLeft: `${level * 1.25}rem`,
+                transition: "padding-left 0.2s ease",
+              }}
+            >
+              <div className="flex items-center justify-center w-5 h-5 mr-2">
+                {hasChildren ? (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleExpand(category.category_id);
+                    }}
+                    className="flex items-center justify-center h-5 w-5"
+                  >
+                    {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                  </button>
                 ) : (
-                  <ChevronRight className="h-4 w-4" />
+                  <span className="block w-5 h-5" />
                 )}
-              </Button>
-            )}
+              </div>
+
+
+              <div className="flex items-center justify-center h-5 w-5">
+                <img
+                        src={getCategoryIconPath(category.icon)}
+                        alt={category.icon!}
+                        className="h-4 w-4 object-contain"
+                        onError={(e) =>
+                          ((e.currentTarget as HTMLImageElement).src =
+                            "/src/assets/category_icons/Folder.svg")
+                        }
+                />
+              </div>
+            </div>
           </TableCell>
-          <TableCell>
-            <IconComponent className="h-4 w-4 text-muted-foreground" />
-          </TableCell>
-          <TableCell className="font-medium">
-            <span>
-              {category.name}
-            </span>
-          </TableCell>
+
+
+          <TableCell className="font-medium">{category.name}</TableCell>
+  
           <TableCell>{category.description || "-"}</TableCell>
+  
           <TableCell>{category.level}</TableCell>
-          <TableCell>
+  
+          <TableCell className="text-right">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
@@ -134,9 +156,9 @@ const CategoriesTable: FC<CategoriesTableProps> = ({
             </DropdownMenu>
           </TableCell>
         </TableRow>
-        {hasChildren &&
-          (isExpanded || filter) &&
-          category.children?.map(child => renderCategoryRow(child, level + 1))}
+  
+        {hasChildren && isExpanded &&
+          category.children.map((child) => renderCategoryRow(child, level + 1))}
       </React.Fragment>
     );
   };
@@ -144,16 +166,15 @@ const CategoriesTable: FC<CategoriesTableProps> = ({
   return (
     <div className="rounded-md border">
       <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[50px]"></TableHead>
-            <TableHead className="w-[50px]">Icon</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Level</TableHead>
-            <TableHead className="w-[70px]">Options</TableHead>  { }
-          </TableRow>
-        </TableHeader>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-[140px] pl-8">Icon</TableHead>
+          <TableHead>Name</TableHead>
+          <TableHead>Description</TableHead>
+          <TableHead>Level</TableHead>
+          <TableHead className="w-[70px] text-right">Options</TableHead>
+        </TableRow>
+      </TableHeader>
         <TableBody>
           {hierarchicalCategories.length === 0 ? (
             <TableRow>

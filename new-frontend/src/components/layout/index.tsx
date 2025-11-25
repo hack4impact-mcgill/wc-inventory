@@ -42,7 +42,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
             <h1 className="text-lg font-semibold">WC</h1>
 
-            <nav className="hidden md:flex items-center space-x-4">
+            <nav className="md:flex items-center space-x-4">
               <Button
                 variant="ghost"
                 className="text-sm font-medium"
