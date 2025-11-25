@@ -14,6 +14,7 @@ import { BoxStatus } from "@/types/enums";
 import { printBoxLabels } from "./utils";
 import { deleteBoxes } from "@/lib/api";
 import DeleteDialog from "./components/DeleteDialog";
+import { useSearchParams } from "react-router-dom";
 
 interface FilterState {
   searchTerm: string;
