@@ -29,7 +29,7 @@ export const navItems: NavItem[] = [
     title: "Box lookup",
     href: "/admin/box-lookup",
     icon: PackageSearch,
-    description: "Search for boxes or items in boxes",
+    description: "Manage your inventory boxes",
   },
   {
     title: "Create boxes",

@@ -135,26 +135,22 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
                 <SelectValue placeholder="Select location" />
               </SelectTrigger>
               <SelectContent>
-                {isLoading
-                  ? (
-                    <SelectItem value="loading" disabled>
-                      Loading locations...
-                    </SelectItem>
+                {isLoading ? (
+                  <SelectItem value="loading" disabled>
+                    Loading locations...
+                  </SelectItem>
+                ) : (
+                  getLocationsForLevel(0).map((location) =>
+                    location.location_id ? (
+                      <SelectItem
+                        key={`level0-${location.location_id}`}
+                        value={location.location_id}
+                      >
+                        {location.name || "Unnamed Location"}
+                      </SelectItem>
+                    ) : null,
                   )
-                  : (
-                    getLocationsForLevel(0).map((location) => (
-                      location.location_id
-                        ? (
-                          <SelectItem
-                            key={`level0-${location.location_id}`}
-                            value={location.location_id}
-                          >
-                            {location.name || "Unnamed Location"}
-                          </SelectItem>
-                        )
-                        : null
-                    ))
-                  )}
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -162,10 +158,7 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
           {/* Level 1 locations (if level 0 is selected) */}
           {selectedLocations[0] && getLocationsForLevel(1).length > 0 && (
             <div className="w-full">
-              <div className="text-sm text-gray-500 mb-1">
-                Level 1 (Children of{" "}
-                {getLocationNameById(selectedLocations[0], "")}):
-              </div>
+              <div className="text-sm text-gray-500 mb-1">Level 1:</div>
               <Select
                 value={selectedLocations[1] || ""}
                 onValueChange={(value) => handleLocationSelect(value, 1)}
@@ -174,18 +167,16 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
                   <SelectValue placeholder="Select sub-location" />
                 </SelectTrigger>
                 <SelectContent>
-                  {getLocationsForLevel(1).map((location) => (
-                    location.location_id
-                      ? (
-                        <SelectItem
-                          key={`level1-${location.location_id}`}
-                          value={location.location_id}
-                        >
-                          {location.name || "Unnamed Location"}
-                        </SelectItem>
-                      )
-                      : null
-                  ))}
+                  {getLocationsForLevel(1).map((location) =>
+                    location.location_id ? (
+                      <SelectItem
+                        key={`level1-${location.location_id}`}
+                        value={location.location_id}
+                      >
+                        {location.name || "Unnamed Location"}
+                      </SelectItem>
+                    ) : null,
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -194,12 +185,7 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
           {/* Level 2 locations (if level 1 is selected) */}
           {selectedLocations[1] && getLocationsForLevel(2).length > 0 && (
             <div className="w-full">
-              <div className="text-sm text-gray-500 mb-1">
-                Level 2 (Children of {getLocationNameById(
-                  selectedLocations[1],
-                  selectedLocations[0],
-                )}):
-              </div>
+              <div className="text-sm text-gray-500 mb-1">Level 2:</div>
               <Select
                 value={selectedLocations[2] || ""}
                 onValueChange={(value) => handleLocationSelect(value, 2)}
@@ -208,18 +194,16 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
                   <SelectValue placeholder="Select sub-location" />
                 </SelectTrigger>
                 <SelectContent>
-                  {getLocationsForLevel(2).map((location) => (
-                    location.location_id
-                      ? (
-                        <SelectItem
-                          key={`level2-${location.location_id}`}
-                          value={location.location_id}
-                        >
-                          {location.name || "Unnamed Location"}
-                        </SelectItem>
-                      )
-                      : null
-                  ))}
+                  {getLocationsForLevel(2).map((location) =>
+                    location.location_id ? (
+                      <SelectItem
+                        key={`level2-${location.location_id}`}
+                        value={location.location_id}
+                      >
+                        {location.name || "Unnamed Location"}
+                      </SelectItem>
+                    ) : null,
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -230,38 +214,36 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
             <h4 className="text-sm font-medium mb-1">
               Selected Location Path:
             </h4>
-            {selectedLocations.some(Boolean)
-              ? (
-                <div className="text-sm">
-                  {selectedLocations.filter(Boolean).map((locId, idx) => {
-                    let locationName = "Unknown";
-                    if (idx === 0) {
-                      locationName = getLocationNameById(locId, "");
-                    } else if (idx === 1) {
-                      locationName = getLocationNameById(
-                        locId,
-                        selectedLocations[0],
-                      );
-                    } else if (idx === 2) {
-                      locationName = getLocationNameById(
-                        locId,
-                        selectedLocations[1],
-                      );
-                    }
-                    return (
-                      <div key={`path-${idx}`} className="flex items-center">
-                        {idx > 0 && <span className="mx-1">→</span>}
-                        <span className="truncate">{locationName}</span>
-                      </div>
+            {selectedLocations.some(Boolean) ? (
+              <div className="text-sm">
+                {selectedLocations.filter(Boolean).map((locId, idx) => {
+                  let locationName = "Unknown";
+                  if (idx === 0) {
+                    locationName = getLocationNameById(locId, "");
+                  } else if (idx === 1) {
+                    locationName = getLocationNameById(
+                      locId,
+                      selectedLocations[0],
                     );
-                  })}
-                </div>
-              )
-              : (
-                <div className="text-sm text-gray-500">
-                  No location selected yet
-                </div>
-              )}
+                  } else if (idx === 2) {
+                    locationName = getLocationNameById(
+                      locId,
+                      selectedLocations[1],
+                    );
+                  }
+                  return (
+                    <div key={`path-${idx}`} className="flex items-center">
+                      {idx > 0 && <span className="mx-1">→</span>}
+                      <span className="truncate">{locationName}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-sm text-gray-500">
+                No location selected yet
+              </div>
+            )}
           </div>
         </div>
 

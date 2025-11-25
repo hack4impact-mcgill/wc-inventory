@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,9 +25,13 @@ const AddBox = () => {
   // Get URL search params to check if we're in update mode
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const boxIdParam = searchParams.get('boxId');
-  const boxNameParam = searchParams.get('boxName');
+  const boxIdParam = searchParams.get("boxId");
+  const boxNameParam = searchParams.get("boxName");
   const isUpdateMode = !!boxIdParam;
+
+  // Where should we go back to after create/update?
+  const loc = useLocation();
+  const from = (loc.state as { from?: string } | null)?.from ?? "/box-lookup";
 
   // Add toast for notifications
   const { toast } = useToast();
@@ -68,13 +72,13 @@ const AddBox = () => {
       try {
         // Fetch box info including location
         const { data: boxInfo, error: boxError } = await supabase
-          .from('boxes')
-          .select('*, locations(*)')
-          .eq('box_id', boxIdParam)
+          .from("boxes")
+          .select("*, locations(*)")
+          .eq("box_id", boxIdParam)
           .single();
 
         if (boxError) {
-          console.error('Error fetching box info:', boxError);
+          console.error("Error fetching box info:", boxError);
           toast({
             title: "Error",
             description: "Failed to load box information",
@@ -87,59 +91,61 @@ const AddBox = () => {
         if (boxInfo && boxInfo.location_id) {
           // We need to traverse the location hierarchy to set all levels
           const locationId = boxInfo.location_id;
-          
+
           // Function to build location hierarchy
           const buildLocationHierarchy = async (locId: string) => {
             const hierarchy: string[] = [];
             let currentId: string | null = locId;
-            
+
             while (currentId) {
               const { data: loc } = await supabase
-                .from('locations')
-                .select('*')
-                .eq('location_id', currentId)
+                .from("locations")
+                .select("*")
+                .eq("location_id", currentId)
                 .single();
-                
-              if (loc && typeof loc === 'object' && 'location_id' in loc) {
+
+              if (loc && typeof loc === "object" && "location_id" in loc) {
                 hierarchy.unshift(currentId); // Add to beginning
                 currentId = (loc as any).parent_id || null;
               } else {
                 break;
               }
             }
-            
+
             return hierarchy;
           };
-          
+
           const hierarchy = await buildLocationHierarchy(locationId);
-          
+
           // Set location based on hierarchy depth
           if (hierarchy.length >= 1) {
-            setLocation(prev => ({ ...prev, room: hierarchy[0] }));
+            setLocation((prev) => ({ ...prev, room: hierarchy[0] }));
           }
           if (hierarchy.length >= 2) {
-            setLocation(prev => ({ ...prev, level: hierarchy[1] }));
+            setLocation((prev) => ({ ...prev, level: hierarchy[1] }));
           }
           if (hierarchy.length >= 3) {
-            setLocation(prev => ({ ...prev, aisle: hierarchy[2] }));
+            setLocation((prev) => ({ ...prev, aisle: hierarchy[2] }));
           }
           if (hierarchy.length >= 4) {
-            setLocation(prev => ({ ...prev, row: hierarchy[3] }));
+            setLocation((prev) => ({ ...prev, row: hierarchy[3] }));
           }
         }
 
         // Fetch box contents
         const { data: boxData, error } = await supabase
-          .from('box_contents')
-          .select(`
+          .from("box_contents")
+          .select(
+            `
             *,
             categories(name),
             sizes(name)
-          `)
-          .eq('box_id', boxIdParam);
+          `,
+          )
+          .eq("box_id", boxIdParam);
 
         if (error) {
-          console.error('Error fetching box data:', error);
+          console.error("Error fetching box data:", error);
           toast({
             title: "Error",
             description: "Failed to load box data",
@@ -162,7 +168,7 @@ const AddBox = () => {
           setItems(transformedItems);
         }
       } catch (error) {
-        console.error('Error:', error);
+        console.error("Error:", error);
       }
     };
 
@@ -200,7 +206,8 @@ const AddBox = () => {
   // Additional effect to populate form fields when editing an item
   useEffect(() => {
     if (
-      editingItemIndex !== null && editingItemIndex >= 0 &&
+      editingItemIndex !== null &&
+      editingItemIndex >= 0 &&
       editingItemIndex < items.length
     ) {
       const itemToEdit = items[editingItemIndex];
@@ -226,8 +233,8 @@ const AddBox = () => {
     : [];
 
   // Filter out any parent categories
-  const leafCategories = categories?.filter((category) =>
-    !categories.some((c) => c.parent_id === category.category_id)
+  const leafCategories = categories?.filter(
+    (category) => !categories.some((c) => c.parent_id === category.category_id),
   );
 
   // Define saveBox mutation with callbacks
@@ -238,6 +245,8 @@ const AddBox = () => {
     boxId: boxIdParam,
     isUpdateMode,
     onAddSuccess: (data) => {
+      const boxId = data?.box_id ?? boxIdParam ?? "";
+
       if (isUpdateMode) {
         // Show update success notification
         toast({
@@ -246,7 +255,8 @@ const AddBox = () => {
         });
 
         // Navigate back to box lookup with the box selected
-        navigate(`/box-lookup?selectedBoxId=${boxIdParam}`);
+        navigate(boxId ? `${from}?selectedBoxId=${boxIdParam}` : from);
+        return;
       } else {
         // Show create success notification
         toast({
@@ -297,41 +307,43 @@ const AddBox = () => {
 
     const path = [];
     if (location.room) {
-      const roomNode = locationTree.find((node) =>
-        node.location_id === location.room
+      const roomNode = locationTree.find(
+        (node) => node.location_id === location.room,
       );
       if (roomNode) path.push(roomNode.name);
     }
 
     if (location.level) {
-      const levelNodes = locationTree.find((node) =>
-        node.location_id === location.room
-      )?.children || [];
-      const levelNode = levelNodes.find((node) =>
-        node.location_id === location.level
+      const levelNodes =
+        locationTree.find((node) => node.location_id === location.room)
+          ?.children || [];
+      const levelNode = levelNodes.find(
+        (node) => node.location_id === location.level,
       );
       if (levelNode) path.push(levelNode.name);
     }
 
     if (location.aisle) {
-      const aisleNodes = locationTree.find((node) =>
-        node.location_id === location.room
-      )?.children
-        .find((node) => node.location_id === location.level)?.children || [];
-      const aisleNode = aisleNodes.find((node) =>
-        node.location_id === location.aisle
+      const aisleNodes =
+        locationTree
+          .find((node) => node.location_id === location.room)
+          ?.children.find((node) => node.location_id === location.level)
+          ?.children || [];
+      const aisleNode = aisleNodes.find(
+        (node) => node.location_id === location.aisle,
       );
       if (aisleNode) path.push(aisleNode.name);
     }
 
     if (location.row) {
-      const rowNodes = locationTree.find((node) =>
-        node.location_id === location.room
-      )?.children
-        .find((node) => node.location_id === location.level)?.children
-        .find((node) => node.location_id === location.aisle)?.children || [];
-      const rowNode = rowNodes.find((node) =>
-        node.location_id === location.row
+      const rowNodes =
+        locationTree
+          .find((node) => node.location_id === location.room)
+          ?.children.find((node) => node.location_id === location.level)
+          ?.children.find((node) => node.location_id === location.aisle)
+          ?.children || [];
+      const rowNode = rowNodes.find(
+        (node) => node.location_id === location.row,
       );
       if (rowNode) path.push(rowNode.name);
     }
@@ -373,8 +385,8 @@ const AddBox = () => {
   // New function to handle item deletion
   const handleDeleteItem = () => {
     if (editingItemIndex !== null) {
-      const updatedItems = items.filter((_, index) =>
-        index !== editingItemIndex
+      const updatedItems = items.filter(
+        (_, index) => index !== editingItemIndex,
       );
       setItems(updatedItems);
       setEditingItemIndex(null);
@@ -417,7 +429,8 @@ const AddBox = () => {
                 level: "",
                 aisle: "",
                 row: "",
-              })}
+              })
+            }
           >
             <SelectTrigger>
               <SelectValue placeholder="Select Room" />
@@ -435,7 +448,8 @@ const AddBox = () => {
           <Select
             value={location.level}
             onValueChange={(value) =>
-              setLocation({ ...location, level: value, aisle: "", row: "" })}
+              setLocation({ ...location, level: value, aisle: "", row: "" })
+            }
           >
             <SelectTrigger>
               <SelectValue placeholder="Select Level" />
@@ -453,7 +467,8 @@ const AddBox = () => {
           <Select
             value={location.aisle}
             onValueChange={(value) =>
-              setLocation({ ...location, aisle: value, row: "" })}
+              setLocation({ ...location, aisle: value, row: "" })
+            }
           >
             <SelectTrigger>
               <SelectValue placeholder="Select Aisle" />
@@ -484,10 +499,7 @@ const AddBox = () => {
             </SelectContent>
           </Select>
         )}
-        <Button
-          className="w-full"
-          onClick={() => setShowLocationModal(false)}
-        >
+        <Button className="w-full" onClick={() => setShowLocationModal(false)}>
           Save Location
         </Button>
       </CardContent>
@@ -531,7 +543,6 @@ const AddBox = () => {
     }
   };
 
-
   return (
     <div className="flex min-h-screen bg-white">
       <div className="flex-1 p-4 flex">
@@ -539,7 +550,9 @@ const AddBox = () => {
           <Card className="shadow-sm h-full">
             <CardContent className="p-6">
               <h2 className="text-2xl font-bold mb-6">
-                {isUpdateMode ? `Updating ${boxNameParam || 'Box'}` : `Creating Box ${nextBoxId || "456"}`}
+                {isUpdateMode
+                  ? `Updating ${boxNameParam || "Box"}`
+                  : `Creating Box ${nextBoxId || "456"}`}
               </h2>
 
               <div className="bg-gray-50 p-4 rounded-md mb-6">
@@ -572,94 +585,94 @@ const AddBox = () => {
                   className="border-2 border-dashed border-blue-200 bg-blue-50 rounded-lg p-6 min-h-[calc(100vh-300px)] relative flex"
                   onClick={items.length === 0 ? handleOpenSidebar : undefined}
                 >
-                  {items.length === 0
-                    ? (
-                      <div className="text-center text-blue-500 cursor-pointer flex flex-col absolute inset-0 items-center justify-center">
-                        <div className="flex justify-center mb-2">
-                          <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M12 5V19M5 12H19"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </div>
-                        <p>Click to add items in the box</p>
+                  {items.length === 0 ? (
+                    <div className="text-center text-blue-500 cursor-pointer flex flex-col absolute inset-0 items-center justify-center">
+                      <div className="flex justify-center mb-2">
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M12 5V19M5 12H19"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
                       </div>
-                    )
-                    : (
-                      <div className="w-full self-start">
-                        {items.map((item, index) => {
-                          const category = categories?.find((c) =>
-                            c.category_id === item.category_id
-                          );
-                          const IconComponent = category?.icon
-                            ? getCategoryIconPath(category.icon)
-                            : Package;
+                      <p>Click to add items in the box</p>
+                    </div>
+                  ) : (
+                    <div className="w-full self-start">
+                      {items.map((item, index) => {
+                        const category = categories?.find(
+                          (c) => c.category_id === item.category_id,
+                        );
+                        const IconComponent = category?.icon
+                          ? getCategoryIconPath(category.icon)
+                          : Package;
 
-                          return (
-                            <div
-                              key={index}
-                              className={`p-3 bg-white rounded shadow mb-2 w-full cursor-pointer hover:bg-gray-50 transition-colors ${
-                                editingItemIndex === index
-                                  ? "ring-2 ring-blue-400"
-                                  : ""
-                              }`}
-                              onClick={() => handleEditItem(index)}
-                            >
-                              <div className="flex justify-between items-center">
-                                <div className="flex items-center gap-3">
-                                  <div className="text-gray-500">
-                                    <img
-                                      src={getCategoryIconPath(
-                                        category!.icon
-                                      )}
-                                      alt={category?.name || "Item"}
-                                      className="h-6 w-6 object-contain"
-                                      onError={(e) =>
-                                        ((e.currentTarget as HTMLImageElement).src =
-                                          "/icons/default.svg.svg")
-                                      }
-                                    />
-                                  </div>
-                                  <div>
-                                    <p className="font-medium">
-                                      {category?.name}
-                                    </p>
-                                    <p className="text-xs text-gray-500">
-                                      {sizes?.find((s) =>
-                                        s.size_id === item.size_id
-                                      )?.name} • {item.gender}
-                                    </p>
-                                  </div>
+                        return (
+                          <div
+                            key={index}
+                            className={`p-3 bg-white rounded shadow mb-2 w-full cursor-pointer hover:bg-gray-50 transition-colors ${
+                              editingItemIndex === index
+                                ? "ring-2 ring-blue-400"
+                                : ""
+                            }`}
+                            onClick={() => handleEditItem(index)}
+                          >
+                            <div className="flex justify-between items-center">
+                              <div className="flex items-center gap-3">
+                                <div className="text-gray-500">
+                                  <img
+                                    src={getCategoryIconPath(category!.icon)}
+                                    alt={category?.name || "Item"}
+                                    className="h-6 w-6 object-contain"
+                                    onError={(e) =>
+                                      ((
+                                        e.currentTarget as HTMLImageElement
+                                      ).src = "/icons/default.svg.svg")
+                                    }
+                                  />
                                 </div>
-                                <div className="text-gray-500 font-medium">
-                                  x{item.quantity}
+                                <div>
+                                  <p className="font-medium">
+                                    {category?.name}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    {
+                                      sizes?.find(
+                                        (s) => s.size_id === item.size_id,
+                                      )?.name
+                                    }{" "}
+                                    • {item.gender}
+                                  </p>
                                 </div>
                               </div>
+                              <div className="text-gray-500 font-medium">
+                                x{item.quantity}
+                              </div>
                             </div>
-                          );
-                        })}
+                          </div>
+                        );
+                      })}
 
-                        {/* Add a "Add more items" button */}
-                        {!showSidebar && items.length > 0 && (
-                          <Button
-                            className="mt-4 w-full bg-blue-50 border-dashed border-blue-200 border-2 text-blue-500 hover:bg-blue-100"
-                            onClick={() => setShowSidebar(true)}
-                          >
-                            + Add more items
-                          </Button>
-                        )}
-                      </div>
-                    )}
+                      {/* Add a "Add more items" button */}
+                      {!showSidebar && items.length > 0 && (
+                        <Button
+                          className="mt-4 w-full bg-blue-50 border-dashed border-blue-200 border-2 text-blue-500 hover:bg-blue-100"
+                          onClick={() => setShowSidebar(true)}
+                        >
+                          + Add more items
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Create box button */}
@@ -671,9 +684,13 @@ const AddBox = () => {
                   >
                     <Package size={20} />
                     <span>
-                      {saveBoxMutation.isPending 
-                        ? (isUpdateMode ? "Updating..." : "Creating...") 
-                        : (isUpdateMode ? "Update box" : "Create box")}
+                      {saveBoxMutation.isPending
+                        ? isUpdateMode
+                          ? "Updating..."
+                          : "Creating..."
+                        : isUpdateMode
+                          ? "Update box"
+                          : "Create box"}
                     </span>
                   </Button>
                 )}
@@ -682,34 +699,34 @@ const AddBox = () => {
           </Card>
         </div>
 
-        {showSidebar && (
-            isMobile ? (
-              // mobile view
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                <div className="bg-white w-full max-w-sm rounded-lg shadow-lg p-4 relative mx-4">
-                  <button
-                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-                    onClick={() => setShowSidebar(false)}
-                  >
-                    <X size={20} />
-                  </button>
-                    <div className="mb-6 mt-4">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-medium">
-                          {isEditing ? "Edit item" : "Add items"}
-                        </h3>
-                        {isEditing && (
-                          <button
-                            className="text-red-500 hover:text-red-700 transition-colors"
-                            onClick={handleDeleteItem}
-                            aria-label="Delete item"
-                          >
-                            <Trash size={20} />
-                          </button>
-                        )}
-                      </div>
-                    </div>
+        {showSidebar &&
+          (isMobile ? (
+            // mobile view
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+              <div className="bg-white w-full max-w-sm rounded-lg shadow-lg p-4 relative mx-4">
+                <button
+                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                  onClick={() => setShowSidebar(false)}
+                >
+                  <X size={20} />
+                </button>
+                <div className="mb-6 mt-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium">
+                      {isEditing ? "Edit item" : "Add items"}
+                    </h3>
+                    {isEditing && (
+                      <button
+                        className="text-red-500 hover:text-red-700 transition-colors"
+                        onClick={handleDeleteItem}
+                        aria-label="Delete item"
+                      >
+                        <Trash size={20} />
+                      </button>
+                    )}
                   </div>
+                </div>
+              </div>
 
               <div className="space-y-4">
                 <Select value={categoryId} onValueChange={setCategoryId}>
@@ -764,28 +781,27 @@ const AddBox = () => {
                   <Input
                     type="number"
                     min={0}
-                    value={quantity || ''}
+                    value={quantity || ""}
                     placeholder="Enter quantity"
                     onChange={(e) => {
                       const value = e.target.value;
-                      setQuantity(value === '' ? 0 : Number(value));
+                      setQuantity(value === "" ? 0 : Number(value));
                     }}
                   />
                 </div>
 
-                    <Button
-                      className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 flex justify-center items-center gap-2 mb-4"
-                      onClick={handleCreateBox}
-                      disabled={!canCreateBox || saveBoxMutation.isPending}
-                    >
-                      <span>
-                        {saveBoxMutation.isPending ? "Creating..." : "Create box"}
-                      </span>
-                    </Button>
-                  </div>
-                </div>
-            ) : (
-
+                <Button
+                  className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 flex justify-center items-center gap-2 mb-4"
+                  onClick={handleCreateBox}
+                  disabled={!canCreateBox || saveBoxMutation.isPending}
+                >
+                  <span>
+                    {saveBoxMutation.isPending ? "Creating..." : "Create box"}
+                  </span>
+                </Button>
+              </div>
+            </div>
+          ) : (
             <div className="w-80 bg-white rounded-lg shadow-sm p-4 border relative">
               <button
                 className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
@@ -861,24 +877,24 @@ const AddBox = () => {
                       Quantity
                     </label>
                     <Input
-                          min={1}
-                          value={quantity}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            if (val === '') {
-                              setQuantity(val);
-                            } else {
-                              const num = Number(val);
-                              if (!isNaN(num)) {
-                                setQuantity(num);
-                              }
-                            }
-                          }}
-                          onBlur={() => {
-                            if (quantity === '' || quantity < 1) {
-                              setQuantity(1);
-                            }
-                          }} 
+                      min={1}
+                      value={quantity}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === "") {
+                          setQuantity(val);
+                        } else {
+                          const num = Number(val);
+                          if (!isNaN(num)) {
+                            setQuantity(num);
+                          }
+                        }
+                      }}
+                      onBlur={() => {
+                        if (quantity === "" || quantity < 1) {
+                          setQuantity(1);
+                        }
+                      }}
                     />
                   </div>
 
@@ -903,19 +919,24 @@ const AddBox = () => {
                   </div>
                 </div>
               </div>
-            <Button
-              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 flex justify-center items-center gap-2 mb-4"
-              onClick={handleCreateBox}
-              disabled={!canCreateBox || items.length === 0 || saveBoxMutation.isPending}
-            >
-              <span>
-                {saveBoxMutation.isPending 
-                ? (isUpdateMode ? "Updating..." : "Creating...") 
-                : (isUpdateMode ? "Update box" : "Create box")}
-              </span>
-            </Button>
-          </div>
-        ))}
+
+              <Button
+                className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 flex justify-center items-center gap-2 mb-4"
+                onClick={handleCreateBox}
+                disabled={!canCreateBox || items.length === 0 || saveBoxMutation.isPending}
+              >
+                <span>
+                  {saveBoxMutation.isPending
+                    ? isUpdateMode
+                      ? "Updating..."
+                      : "Creating..."
+                    : isUpdateMode
+                      ? "Update box"
+                      : "Create box"}
+                </span>
+              </Button>
+            </div>
+          ))}
       </div>
     </div>
   );
