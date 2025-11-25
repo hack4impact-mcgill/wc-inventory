@@ -101,6 +101,32 @@ export const deleteCategory = async (categoryId: string): Promise<void> => {
 };
 
 /**
+ * Delete boxes 
+ */
+export const deleteBoxes = async (boxIds: string[]): Promise<void> => {
+  for (const boxId of boxIds) {
+   
+    const { error: contentsError } = await supabase
+      .from("box_contents")
+      .delete()
+      .eq("box_id", boxId);
+
+    if (contentsError) throw new Error(contentsError.message);
+
+    
+    const { error: boxError } = await supabase
+      .from("boxes")
+      .delete()
+      .eq("box_id", boxId);
+
+    if (boxError) throw new Error(boxError.message);
+  }
+};
+
+
+
+
+/**
  * Fetch all locations.
  */
 export const fetchLocations = async (): Promise<Location[]> => {

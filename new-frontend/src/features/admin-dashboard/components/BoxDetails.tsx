@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import ContentCard from "./ContentCard";
 import { BoxItem } from "@/types/box";
 
+
 interface BoxDetailsProps {
   boxId?: string;
   boxName: string;
@@ -29,6 +30,9 @@ const BoxDetails = ({
     const date = new Date(dateString);
     return date.toLocaleString();
   };
+  const LogClick = () => {
+    navigate(`/admin/activity-log?box=${encodeURIComponent(boxName)}`)
+  };
 
   const handleEdit = () => {
     // Infer origin from current route
@@ -46,9 +50,9 @@ const BoxDetails = ({
       {!isMultiSelect ? (
         <>
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Box {boxName}</h2>
+            <h2 className="text-xl font-semibold">{boxName}</h2>
           </div>
-          <p className="text-gray-600 mb-2">Location: {location}</p>
+          <p className="text-gray-600 mb-2">Location: {location === "" ? "—" : location}</p>
           <p className="text-gray-600 mb-4">
             Created on: {formatDate(createdAt)}
             <br />

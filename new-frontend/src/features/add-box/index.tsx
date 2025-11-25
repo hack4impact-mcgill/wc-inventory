@@ -522,6 +522,15 @@ const AddBox = () => {
     return findNode(locationTree)?.children || [];
   };
 
+  //to block creating Box if no item or no location
+  const hasItems = items.length > 0;
+  const hasLocation = 
+    location.room != "";
+  
+    
+  
+  const canCreateBox = hasItems && hasLocation;
+
   // New function to open sidebar when clicking empty area
   const handleOpenSidebar = () => {
     if (items.length === 0) {
@@ -667,11 +676,11 @@ const AddBox = () => {
                 </div>
 
                 {/* Create box button */}
-                {!showSidebar && items.length > 0 && (
+                {!showSidebar && (
                   <Button
                     className="w-full mt-4 bg-gray-200 hover:bg-gray-300 text-gray-800 flex justify-center items-center gap-2"
                     onClick={handleCreateBox}
-                    disabled={items.length === 0 || saveBoxMutation.isPending}
+                    disabled={saveBoxMutation.isPending || !canCreateBox}
                   >
                     <Package size={20} />
                     <span>
@@ -784,7 +793,7 @@ const AddBox = () => {
                 <Button
                   className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 flex justify-center items-center gap-2 mb-4"
                   onClick={handleCreateBox}
-                  disabled={items.length === 0 || saveBoxMutation.isPending}
+                  disabled={!canCreateBox || saveBoxMutation.isPending}
                 >
                   <span>
                     {saveBoxMutation.isPending ? "Creating..." : "Create box"}
@@ -914,7 +923,7 @@ const AddBox = () => {
               <Button
                 className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 flex justify-center items-center gap-2 mb-4"
                 onClick={handleCreateBox}
-                disabled={items.length === 0 || saveBoxMutation.isPending}
+                disabled={!canCreateBox || items.length === 0 || saveBoxMutation.isPending}
               >
                 <span>
                   {saveBoxMutation.isPending
