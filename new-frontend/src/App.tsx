@@ -9,6 +9,7 @@ function App() {
   return (
     <ReactQueryProvider>
       <AuthProvider>
+        
         <RouterProvider router={router} fallbackElement={<LoadingScreen />} />
         <Toaster />
       </AuthProvider>

@@ -69,6 +69,7 @@ const CategoryManagement = () => {
     const handleClose = () => {
         setIsDialogOpen(false);
         setSelectedCategory(null);
+
     };
 
     const handleEdit = (category: Category) => {
@@ -139,6 +140,7 @@ const CategoryManagement = () => {
                         onClose={handleClose}
                     />
                 </DialogContent>
+        
             </Dialog>
         </>
     );

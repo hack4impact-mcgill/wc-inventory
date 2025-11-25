@@ -273,7 +273,6 @@ const AddBox = () => {
   // Define saveBox mutation with callbacks
   const saveBoxMutation = useSaveBox({
     items,
-    boxCount,
     location,
     note,
     boxId: boxIdParam,
@@ -587,7 +586,7 @@ const AddBox = () => {
               <h2 className="text-2xl font-bold mb-6">
                 {isUpdateMode
                   ? `Updating ${boxNameParam || "Box"}`
-                  : `Creating Box ${nextBoxId || "456"}`}
+                  : `Creating Box ${boxCount! + 1}`}
               </h2>
 
               <div className="bg-gray-50 p-4 rounded-md mb-6">
@@ -663,9 +662,13 @@ const AddBox = () => {
                                 <div className="flex items-center gap-3">
                                   <div className="text-gray-500">
                                     <img
-                                      src={imgsrc!}
+                                      src={imgsrc || "/src/assets/category_icons/Folder.svg" }
                                       alt={category?.name || "Item"}
                                       className="h-6 w-6 object-contain"
+                                      onError={(e) =>
+                                        ((e.currentTarget as HTMLImageElement).src =
+                                          "/src/assets/category_icons/Folder.svg")
+                                      }
                                     />
                                   </div>
                                   <div>

@@ -210,7 +210,7 @@ const CreateBox: React.FC = () => {
                     <option value="">Select Existing Box</option>
                     {existingBoxes.map((box) => (
                       <option key={box.box_id} value={box.box_id}>
-                        {box.name}
+                        {box.box_name}
                       </option>
                     ))}
                   </select>
