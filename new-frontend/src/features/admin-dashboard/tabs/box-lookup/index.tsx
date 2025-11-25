@@ -360,7 +360,7 @@ const BoxLookup: React.FC = () => {
   const actionButtons = (
     <div className="flex gap-4">
       <Button
-        // variant="outline"
+        variant="outline"
         onClick={handlePrintLabel}
         disabled={selectedBoxIds.length === 0}
       >

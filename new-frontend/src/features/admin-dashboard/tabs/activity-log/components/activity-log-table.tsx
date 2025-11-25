@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -13,7 +13,7 @@ import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 
-type SortKeyOption = "moved_by_email" | "box_name" | "moved_at" | null;
+type SortKeyOption = "moved_by_email" | "box_name" | "moved_at" | "default";
 
 interface ActivityLogTableProps {
   filteredData: BoxMovementView[];
@@ -27,27 +27,29 @@ const ActivityLogTable = ({
   onBoxSelect,
 }: ActivityLogTableProps) => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const defaultBox = searchParams.get("box") || "";
-  const [searchValue, setSearchValue] = useState(defaultBox);
-  const [sortKey, setSortKey] = useState<SortKeyOption>(null);
+  const [sortKey, setSortKey] = useState<SortKeyOption>("default");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   
 
-  // Sorting method for the toggle, sorts descending or asceding.
-  useEffect(() => {
-    setSearchValue(defaultBox);
-    if (!sortKey) {
-      setSortKey("box_name");
-    }
+  const sortedData = useMemo(() => {
+    const data = [...filteredData]; // copy, don’t mutate props
 
-    filteredData.sort((a, b) => {
+    data.sort((a, b) => {
       let result = 0;
 
       switch (sortKey) {
-        case "moved_by_email":
-          result = a.moved_by_email!.localeCompare(b.moved_by_email!);
+        case "moved_by_email": {
+          const emailA = a.moved_by_email;
+          const emailB = b.moved_by_email;
+
+          if (!emailA && !emailB) result = 0;
+          else if (!emailA)
+            result = 1; // a null → after
+          else if (!emailB)
+            result = -1; // b null → after
+          else result = emailA.localeCompare(emailB);
           break;
+        }
         case "box_name":
           result = a.box_name!.localeCompare(b.box_name!);
           break;
@@ -55,13 +57,68 @@ const ActivityLogTable = ({
           result = a.moved_at!.localeCompare(b.moved_at!);
           break;
         default:
-          console.error("Invalid sort key");
-          return 0;
+          result = 0;
       }
+
       return sortOrder === "asc" ? result : -result;
     });
-    console.log(filteredData);
-  }, [sortKey, sortOrder,defaultBox]);
+
+    return data;
+  }, [filteredData, sortKey, sortOrder]);
+
+  // // Sorting method for the toggle, sorts descending or asceding.
+  // useEffect(() => {
+  //   if (!sortKey) {
+  //     setSortKey("box_name");
+  //   }
+
+  //   filteredData.sort((a, b) => {
+  //     let result = 0;
+
+  //     //
+  //     switch (sortKey) {
+  //       // case "moved_by_email":
+  //       //   if (!a.moved_by_email) {
+  //       //     result = -1;
+  //       //     break;
+  //       //   }
+  //       //   if (!b.moved_by_email) {
+  //       //     result = 1;
+  //       //     break;
+  //       //   }
+  //       //   result = a.moved_by_email!.localeCompare(b.moved_by_email!);
+  //       //   break;
+  //       case "moved_by_email": {
+  //         const emailA = a.moved_by_email;
+  //         const emailB = b.moved_by_email;
+
+  //         // Put null/undefined at the end
+  //         if (!emailA && !emailB) {
+  //           result = 0; // both null → equal
+  //         } else if (!emailA) {
+  //           result = 1; // a is null → a goes AFTER b
+  //         } else if (!emailB) {
+  //           result = -1; // b is null → a goes BEFORE b
+  //         } else {
+  //           // Both non-null → do normal string comparison
+  //           result = emailA.localeCompare(emailB);
+  //         }
+  //         break;
+  //       }
+  //       case "box_name":
+  //         result = a.box_name!.localeCompare(b.box_name!);
+  //         break;
+  //       case "moved_at":
+  //         result = a.moved_at!.localeCompare(b.moved_at!);
+  //         break;
+  //       default:
+  //         console.error("Invalid sort key");
+  //         return 0;
+  //     }
+  //     return sortOrder === "asc" ? result : -result;
+  //   });
+  //   // console.log(filteredData);
+  // }, [sortKey, sortOrder]);
 
   if (isLoading) {
     return <p className="text-center p-4">Loading...</p>;
@@ -133,22 +190,26 @@ const ActivityLogTable = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredRows.length > 0 ? (
-            filteredRows.map((entry, index) => (
+          {sortedData.length > 0 ? (
+            sortedData.map((entry, index) => (
               <TableRow key={index} className="border-[0.5px]">
                 <TableCell
-                  className={`text-[#00559B] border-[0.5px] border-gray-300 p-4 hover:underline cursor-pointer ${
-                    index === filteredRows.length - 1 ? "rounded-bl-md" : ""
+                  className={` border-[0.5px] border-gray-300 p-4 ${
+                    index === sortedData.length - 1 ? "rounded-bl-md" : ""
                   }`}
                 >
-                  <span
-                    onClick={() => {
-                      navigate(`/admin/users/${entry.moved_by_user_id}`);
-                    }}
-                    className="hover:underline cursor-pointer underline"
-                  >
-                    {entry.moved_by_email}
-                  </span>
+                  {entry.moved_by_email ? (
+                    <span
+                      onClick={() => {
+                        navigate(`/admin/users/${entry.moved_by_user_id}`);
+                      }}
+                      className="hover:underline cursor-pointer text-[#00559B]"
+                    >
+                      {entry.moved_by_email}
+                    </span>
+                  ) : (
+                    <span className="text-gray-800">[USER DELETED]</span>
+                  )}
                 </TableCell>
                 <TableCell className="text-gray-500 border-[0.5px] border-gray-300 p-4">
                   {entry.action}
@@ -173,7 +234,7 @@ const ActivityLogTable = ({
                 </TableCell>
                 <TableCell
                   className={`text-gray-500 border-[0.5px] border-gray-300 p-4${
-                    index === filteredRows.length - 1 ? "rounded-br-md" : ""
+                    index === sortedData.length - 1 ? "rounded-br-md" : ""
                   }`}
                 >
                   {entry.moved_at
