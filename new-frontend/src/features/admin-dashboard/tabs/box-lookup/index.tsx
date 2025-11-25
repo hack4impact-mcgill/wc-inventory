@@ -13,6 +13,8 @@ import MoveDialog from "./components/MoveDialog";
 import BoxesTable from "./components/BoxesTable";
 import { BoxStatus } from "@/types/enums";
 import { printBoxLabels } from "./utils";
+import { deleteBoxes } from "@/lib/api";
+import DeleteDialog from "./components/DeleteDialog";
 
 interface FilterState {
   searchTerm: string;
@@ -51,6 +53,7 @@ const BoxLookup: React.FC = () => {
   // Dialog states
   const [isDonateDialogOpen, setIsDonateDialogOpen] = React.useState(false);
   const [isMoveDialogOpen, setIsMoveDialogOpen] = React.useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
 
   // Location selection states
   const [, setSelectedLocations] = React.useState<string[]>(
@@ -104,6 +107,22 @@ const BoxLookup: React.FC = () => {
       );
     },
   });
+  const deleteBoxesMutation = useMutation({
+  mutationFn: ({ boxIds }: { boxIds: string[] }) =>
+    deleteBoxes(boxIds),
+  onSuccess: () => {
+    toast.success(`${selectedBoxIds.length} box(es) deleted successfully.`);
+    queryClient.invalidateQueries({ queryKey: ["boxes"] });
+    queryClient.invalidateQueries({ queryKey: ["inventory"] });
+    setSelectedBoxIds([]);
+    setIsDeleteDialogOpen(false);
+  },
+  onError: (error: any) => {
+    console.error(error);
+    toast.warning(`Failed to delete boxes: ${error?.message || "Unknown error"}`);
+  },
+});
+
 
   const moveBoxesMutation = useMutation({
     mutationFn: ({
@@ -271,6 +290,14 @@ const BoxLookup: React.FC = () => {
     setIsDonateDialogOpen(true);
   };
 
+  const handleDeleteClick = () => {
+    if (selectedBoxIds.length === 0) {
+      toast.info("Please select at least one box to delete.");
+      return;
+    }
+    setIsDeleteDialogOpen(true);
+  };
+
   const handleMoveClick = () => {
     if (selectedBoxIds.length === 0) {
       toast.info("Please select at least one box to move.");
@@ -287,6 +314,11 @@ const BoxLookup: React.FC = () => {
   const handleConfirmDonation = () => {
     donateBoxesMutation.mutate(selectedBoxIds);
   };
+  
+  const handleConfirmDelete = () => {
+    deleteBoxesMutation.mutate({ boxIds: selectedBoxIds });
+  };
+
 
   const handleConfirmMove = (locationId: string) => {
     // The validation is now happening in the MoveDialog component
@@ -327,6 +359,16 @@ const BoxLookup: React.FC = () => {
       >
         Donate
       </Button>
+      <Button
+        variant="destructive"
+        onClick={handleDeleteClick}
+        disabled={selectedBoxIds.length === 0}
+      >
+        Delete
+      </Button>
+      
+
+
     </div>
   );
 
@@ -390,6 +432,15 @@ const BoxLookup: React.FC = () => {
         isLoading={isLoadingLocations}
         isProcessing={moveBoxesMutation.isPending}
       />
+      {
+      <DeleteDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={() => deleteBoxesMutation.mutate({ boxIds: selectedBoxIds })}
+        boxCount={selectedBoxIds.length}
+        isProcessing={deleteBoxesMutation.isPending}
+      />
+      }
     </div>
   );
 };
