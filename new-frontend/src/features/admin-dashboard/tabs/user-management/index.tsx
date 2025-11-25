@@ -57,10 +57,7 @@ export default function UserManagement() {
 
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle>User Management</CardTitle>
-      </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         <div className="flex justify-between items-center mb-4">
           <SearchBar value={searchTerm} onChange={setSearchTerm} />
           <Button onClick={() => setIsModalOpen(true)}>Create User</Button>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import SearchFilters from "@/features/admin-dashboard/components/SearchFilters";
@@ -12,6 +12,9 @@ import MoveDialog from "./components/MoveDialog";
 import BoxesTable from "./components/BoxesTable";
 import { BoxStatus } from "@/types/enums";
 import { printBoxLabels } from "./utils";
+import { deleteBoxes } from "@/lib/api";
+import DeleteDialog from "./components/DeleteDialog";
+import { useSearchParams } from "react-router-dom";
 
 interface FilterState {
   searchTerm: string;
@@ -28,13 +31,16 @@ const genderMapping: Record<string, string> = {
   unisex: "Unisex",
 };
 
-const categoryMapping: Record<string, string> = {
-  tshirts: "T-shirt",
-  pants: "Pants",
-};
+// const categoryMapping: Record<string, string> = {
+//   tshirts: "T-shirt",
+//   pants: "Pants",
+// };
 
 const BoxLookup: React.FC = () => {
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedBoxIdParam = searchParams.get("selectedBoxId");
+
   const [selectedBoxIds, setSelectedBoxIds] = React.useState<string[]>([]);
   const [filters, setFilters] = React.useState<FilterState>({
     searchTerm: "",
@@ -47,6 +53,7 @@ const BoxLookup: React.FC = () => {
   // Dialog states
   const [isDonateDialogOpen, setIsDonateDialogOpen] = React.useState(false);
   const [isMoveDialogOpen, setIsMoveDialogOpen] = React.useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
 
   // Location selection states
   const [, setSelectedLocations] = React.useState<string[]>([]);
@@ -64,10 +71,23 @@ const BoxLookup: React.FC = () => {
 
   const { locations, isLoading: isLoadingLocations } = useLocations();
 
+  // Auto-select box from URL parameter
+  React.useEffect(() => {
+    if (selectedBoxIdParam && boxes.length > 0) {
+      const boxExists = boxes.some((box) => box.id === selectedBoxIdParam);
+      if (boxExists) {
+        setSelectedBoxIds([selectedBoxIdParam]);
+        // Clear the URL parameter after selecting
+        setSearchParams({});
+      }
+    }
+  }, [selectedBoxIdParam, boxes, setSearchParams]);
+
   // Organize locations by parent when locations data changes
   // Mutations for box operations
   const donateBoxesMutation = useMutation({
-    mutationFn: (boxIds: string[]) => boxApi.donateBoxes(boxIds),
+    mutationFn: ({ boxIds, note }: { boxIds: string[]; note?: string }) =>
+      boxApi.donateBoxes(boxIds, note),
     onSuccess: () => {
       toast.success(
         `${selectedBoxIds.length} ${
@@ -86,15 +106,33 @@ const BoxLookup: React.FC = () => {
       );
     },
   });
+  const deleteBoxesMutation = useMutation({
+  mutationFn: ({ boxIds }: { boxIds: string[] }) =>
+    deleteBoxes(boxIds),
+  onSuccess: () => {
+    toast.success(`${selectedBoxIds.length} box(es) deleted successfully.`);
+    queryClient.invalidateQueries({ queryKey: ["boxes"] });
+    queryClient.invalidateQueries({ queryKey: ["inventory"] });
+    setSelectedBoxIds([]);
+    setIsDeleteDialogOpen(false);
+  },
+  onError: (error: any) => {
+    console.error(error);
+    toast.warning(`Failed to delete boxes: ${error?.message || "Unknown error"}`);
+  },
+});
+
 
   const moveBoxesMutation = useMutation({
     mutationFn: ({
       boxIds,
       locationId,
+      note,
     }: {
       boxIds: string[];
       locationId: string;
-    }) => boxApi.moveBoxes(boxIds, locationId),
+      note?: string;
+    }) => boxApi.moveBoxes(boxIds, locationId, note),
     onSuccess: () => {
       toast.success(
         `${selectedBoxIds.length} ${
@@ -131,10 +169,11 @@ const BoxLookup: React.FC = () => {
         return false;
       }
 
-      // If box has no contents, only apply name filter
-      if (!box.contents || box.contents.length === 0) {
-        return true;
-      }
+      // Empty boxes should not show up (should not even exist in the database)
+      // // If box has no contents, only apply name filter
+      // if (!box.contents || box.contents.length === 0) {
+      //   return true;
+      // }
 
       // Filter by contents
       if (
@@ -144,10 +183,8 @@ const BoxLookup: React.FC = () => {
       ) {
         return box.contents.some((item) => {
           // Filter by category (item type)
-          if (filters.category !== "all") {
-            if (item.type !== categoryMapping[filters.category]) {
-              return false;
-            }
+          if (filters.category !== "all" && item.type !== filters.category) {
+            return false;
           }
 
           // Filter by size
@@ -160,7 +197,7 @@ const BoxLookup: React.FC = () => {
 
           // Filter by gender
           if (filters.gender !== "all") {
-            if (item.gender !== genderMapping[filters.gender]) {
+            if (item.gender !== genderMapping[filters.gender.toLowerCase()]) {
               return false;
             }
           }
@@ -172,6 +209,23 @@ const BoxLookup: React.FC = () => {
       return true;
     });
   }, [boxes, filters]);
+
+  useEffect(() => {
+    setSelectedBoxIds((prev) => {
+      const validIds = prev.filter((id) =>
+        filteredBoxes.some((box) => box.id === id),
+      );
+
+      // Prevent update if nothing changed
+      if (
+        validIds.length === prev.length &&
+        validIds.every((id, index) => id === prev[index])
+      ) {
+        return prev; // Return same reference = no re-render
+      }
+      return validIds;
+    });
+  }, [filteredBoxes]);
 
   // Handle filter changes
   const handleFilterChange = (filterType: keyof FilterState, value: string) => {
@@ -211,6 +265,7 @@ const BoxLookup: React.FC = () => {
       return (
         <BoxDetails
           boxName={box.name}
+          icon={box.icon}
           location={box.location || ""}
           createdAt={box.createdAt || ""}
           updatedAt={box.updatedAt || ""}
@@ -234,6 +289,7 @@ const BoxLookup: React.FC = () => {
       return (
         <BoxDetails
           boxName={`${selectedBoxes.length} boxes selected`}
+          icon=""
           location=""
           createdAt=""
           updatedAt=""
@@ -253,6 +309,14 @@ const BoxLookup: React.FC = () => {
     setIsDonateDialogOpen(true);
   };
 
+  const handleDeleteClick = () => {
+    if (selectedBoxIds.length === 0) {
+      toast.info("Please select at least one box to delete.");
+      return;
+    }
+    setIsDeleteDialogOpen(true);
+  };
+
   const handleMoveClick = () => {
     if (selectedBoxIds.length === 0) {
       toast.info("Please select at least one box to move.");
@@ -266,16 +330,22 @@ const BoxLookup: React.FC = () => {
     setIsMoveDialogOpen(true);
   };
 
-  const handleConfirmDonation = () => {
-    donateBoxesMutation.mutate(selectedBoxIds);
+  const handleConfirmDonation = (note?: string) => {
+    donateBoxesMutation.mutate({ boxIds: selectedBoxIds, note });
+  };
+  
+  const handleConfirmDelete = () => {
+    deleteBoxesMutation.mutate({ boxIds: selectedBoxIds });
   };
 
-  const handleConfirmMove = (locationId: string) => {
+
+  const handleConfirmMove = (locationId: string, note?: string) => {
     // The validation is now happening in the MoveDialog component
     // Here we just need to handle the mutation
     moveBoxesMutation.mutate({
       boxIds: selectedBoxIds,
       locationId,
+      note,
     });
   };
 
@@ -297,19 +367,29 @@ const BoxLookup: React.FC = () => {
         Print label
       </Button>
       <Button
-        variant="outline"
+        // variant="outline"
         onClick={handleMoveClick}
         disabled={selectedBoxIds.length === 0}
       >
         Move
       </Button>
       <Button
-        variant="outline"
+        // variant="outline"
         onClick={handleDonateClick}
         disabled={selectedBoxIds.length === 0}
       >
         Donate
       </Button>
+      <Button
+        variant="destructive"
+        onClick={handleDeleteClick}
+        disabled={selectedBoxIds.length === 0}
+      >
+        Delete
+      </Button>
+      
+
+
     </div>
   );
 
@@ -324,26 +404,21 @@ const BoxLookup: React.FC = () => {
       </div>
     );
   }
-
+  const content = getSelectedBoxesContent();
+  console.log(content);
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Inventory Management</h1>
-        </div>
-      </div>
+    <div>
+      <SearchFilters
+        onSearch={(value) => handleFilterChange("searchTerm", value)}
+        onCategoryChange={(value) => handleFilterChange("category", value)}
+        onSizeChange={(value) => handleFilterChange("size", value)}
+        onGenderChange={(value) => handleFilterChange("gender", value)}
+        onStatusChange={(value) => handleFilterChange("status", value)}
+        actionButtons={actionButtons}
+      />
 
-      <div className="flex flex-col gap-6 md:flex-row">
-        <div className="flex-1">
-          <SearchFilters
-            onSearch={(value) => handleFilterChange("searchTerm", value)}
-            onCategoryChange={(value) => handleFilterChange("category", value)}
-            onSizeChange={(value) => handleFilterChange("size", value)}
-            onGenderChange={(value) => handleFilterChange("gender", value)}
-            onStatusChange={(value) => handleFilterChange("status", value)}
-            actionButtons={actionButtons}
-          />
-
+      <div className="flex flex-col gap-6 md:flex-row mt-6">
+        <div className="flex-1 min-w-0 ">
           <BoxesTable
             boxes={filteredBoxes}
             selectedBoxIds={selectedBoxIds}
@@ -353,7 +428,9 @@ const BoxLookup: React.FC = () => {
         </div>
 
         {/* Right panel for box details */}
-        <div className="w-full md:w-96">{getSelectedBoxesContent()}</div>
+        {selectedBoxIds.length > 0 && (
+          <div className="basis-1/3">{getSelectedBoxesContent()}</div>
+        )}
       </div>
 
       {/* Donation Confirmation Dialog */}
@@ -373,6 +450,15 @@ const BoxLookup: React.FC = () => {
         isLoading={isLoadingLocations}
         isProcessing={moveBoxesMutation.isPending}
       />
+      {
+      <DeleteDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={() => deleteBoxesMutation.mutate({ boxIds: selectedBoxIds })}
+        boxCount={selectedBoxIds.length}
+        isProcessing={deleteBoxesMutation.isPending}
+      />
+      }
     </div>
   );
 };

@@ -8,6 +8,7 @@ export type Box = BoxTable["Row"];
 
 export interface BoxItem {
   type: string;
+  icon:string;
   gender: "Men" | "Women" | "Kids" | "Unisex";
   size: string;
   quantity: number;
@@ -17,6 +18,7 @@ export interface BoxView {
   id: string;
   location: string;
   name: string;
+  icon:string;
   status: BoxStatus;
   contents: BoxItem[];
   createdAt: string;
