@@ -149,11 +149,12 @@ export const analyticsAPI = {
 
         const users = Object.entries(counts)
             .map(([userId, donatedCount]) => {
-                const userName = userMap.get(userId) ?? `User ${userId}`; 
-                return [userName, donatedCount] as [string, number]; // replace userID with userName
+                // tries to find name, falls back to "User [userId]"
+                const userName = userMap.get(userId) ?? `User ${userId}`;
+                return { user_id: userId, name: userName, donated_count: donatedCount };
             })
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, limit);
+            .sort((a, b) => b.donated_count - a.donated_count)
+            .slice(0, limit ?? 5);
 
         return users;
     }
