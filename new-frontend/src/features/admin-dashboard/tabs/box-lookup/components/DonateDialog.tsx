@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -7,11 +7,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 export interface DonateDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
+  onConfirm: (note: string) => void;
   boxCount: number;
   isProcessing: boolean;
 }
@@ -23,6 +25,12 @@ const DonateDialog: React.FC<DonateDialogProps> = ({
   boxCount,
   isProcessing,
 }) => {
+  const [note, setNote] = useState("");
+
+  // Clear note when dialog closes
+  useEffect(() => {
+    if (!open) setNote("");
+  }, [open]);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -31,6 +39,14 @@ const DonateDialog: React.FC<DonateDialogProps> = ({
             Confirm donation of {boxCount} {boxCount === 1 ? "box" : "boxes"}?
           </DialogTitle>
         </DialogHeader>
+        <Label className="mb-2 block text-sm font-medium">Note</Label>
+        <div className="mb-4">
+          <Input
+            placeholder="Add a note about this box..."
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+          />
+        </div>
         <DialogFooter className="flex justify-between sm:justify-between">
           <Button
             variant="outline"
@@ -39,12 +55,12 @@ const DonateDialog: React.FC<DonateDialogProps> = ({
             ❌ Cancel
           </Button>
           <Button
-            onClick={onConfirm}
+            onClick={() => onConfirm(note)}
             disabled={isProcessing}
           >
             {isProcessing ? "Processing..." : "✅ Confirm"}
           </Button>
-        </DialogFooter>
+        </DialogFooter> 
       </DialogContent>
     </Dialog>
   );
