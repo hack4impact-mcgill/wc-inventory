@@ -42,9 +42,8 @@ const { donatedBoxes, donatedItems, stockTotals, topItems, topUsers } = useAdmin
 return (
   <div className="admin-overview">
     {/* Component Header */}
-    <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
 
-    <div className="mx-auto max-w-7xl p-6 bg-gray-50 min-h-screen">
+    <div className="mx-auto max-w-7xl bg-gray-50">
       <Card className="p-6">
         {/* Main Grid: 2 Columns */}
         <div className="grid grid-cols-2 gap-6">
