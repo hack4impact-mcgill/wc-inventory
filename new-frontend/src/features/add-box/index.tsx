@@ -19,7 +19,7 @@ import { buildLocationTree } from "./utils";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabaseClient";
 import { useMobile } from "./hooks/useMobile";
-import { getSpecificIcon, getAllIcons, getIconCache } from '@/lib/iconLoader';
+import { getAllIcons, getIconCache } from '@/lib/iconLoader';
 
 
 const AddBox = () => {

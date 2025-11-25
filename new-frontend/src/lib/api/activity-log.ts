@@ -95,7 +95,6 @@ export const activityLogApi = {
    * Get all activity logs.
    */
   getActivityLogs: async () => {
-    console.log("GETTING LOGS");
     const thenable = supabase
       .from("box_movements_view")
       .select("*")

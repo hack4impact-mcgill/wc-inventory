@@ -55,7 +55,6 @@ const ActivityLogTable = ({
       }
       return sortOrder === "asc" ? result : -result;
     });
-    console.log(filteredData);
   }, [sortKey, sortOrder]);
 
   if (isLoading) {
@@ -75,11 +74,9 @@ const ActivityLogTable = ({
                 className="inline pl-1"
                 onClick={() => {
                   setSortKey("moved_by_email");
-                  console.log("sortKey", sortKey);
                   sortOrder === "asc"
                     ? setSortOrder("desc")
                     : setSortOrder("asc");
-                  console.log("sortOrder", sortOrder);
                 }}
               />
             </TableHead>
@@ -98,11 +95,9 @@ const ActivityLogTable = ({
                 className="inline pl-1"
                 onClick={() => {
                   setSortKey("box_name");
-                  console.log("sortKey", sortKey);
                   sortOrder === "asc"
                     ? setSortOrder("desc")
                     : setSortOrder("asc");
-                  console.log("sortOrder", sortOrder);
                 }}
               />
             </TableHead>
