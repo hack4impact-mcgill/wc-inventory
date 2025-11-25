@@ -25,65 +25,113 @@ export const useSaveBox = ({
   boxCount,
   location,
   note,
-  onAddSuccess
+  onAddSuccess,
+  boxId,
+  isUpdateMode = false
 }: UseSaveBoxParams) => {
+  const queryClient = useQueryClient();
+  
   return useMutation({
-    mutationFn: async () => {      
-      
-      // First create the box
-      const boxName = `Box ${String(boxCount).padStart(3, "0")}`;
-      const currentUser = await supabase.auth.getUser();
-      const userId = currentUser.data.user?.id;
-      
-      const { data: boxData, error: boxError } = await supabase
-        .from("boxes")
-        .insert({
-          name: boxName,
-          location_id: location.row || location.aisle || location.level || location.room,
-          description: note || null,
-        })
-        .select()
-        .single();
+    mutationFn: async () => {
+      if (isUpdateMode && boxId) {
+        // UPDATE MODE: Update existing box
+        
+        // Update box location if changed
+        const { error: boxError } = await supabase
+          .from("boxes")
+          .update({
+            location_id: location.row || location.aisle || location.level || location.room,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("box_id", boxId);
 
-      if (boxError) {
-        throw boxError;
-      }
+        if (boxError) throw boxError;
 
-      // Then add contents
-      const boxContents = items.map((item) => ({
-        ...item,
-        box_id: boxData.box_id,
-      }));
+        // Delete all existing contents
+        const { error: deleteError } = await supabase
+          .from("box_contents")
+          .delete()
+          .eq("box_id", boxId);
 
-      const { error: contentsError } = await supabase
-        .from("box_contents")
-        .insert(boxContents);
+        if (deleteError) throw deleteError;
 
-      if (contentsError) {
-        throw contentsError;
-      }
+        // Insert new contents
+        if (items.length > 0) {
+          const boxContents = items.map((item) => ({
+            category_id: item.category_id,
+            size_id: item.size_id,
+            gender: item.gender,
+            quantity: item.quantity,
+            box_id: boxId,
+          }));
 
-      // Finally, log the box movement
-      const { error: movementError } = await supabase
-        .from("box_movements")
-        .insert({
-          moved_by: userId || null,
+          const { error: contentsError } = await supabase
+            .from("box_contents")
+            .insert(boxContents);
+
+          if (contentsError) throw contentsError;
+        }
+
+        // Fetch and return updated box data
+        const { data: updatedBox, error: fetchError } = await supabase
+          .from("boxes")
+          .select("*")
+          .eq("box_id", boxId)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        return updatedBox;
+      } else {
+        // CREATE MODE: Create new box
+        const boxName = `Box ${String(boxCount).padStart(3, "0")}`;
+        const { data: boxData, error: boxError } = await supabase
+          .from("boxes")
+          .insert({
+            name: boxName,
+            location_id: location.row || location.aisle || location.level || location.room,
+            description: note || null,
+          })
+          .select()
+          .single();
+
+        if (boxError) throw boxError;
+
+        // Then add contents
+        const boxContents = items.map((item) => ({
+          ...item,
           box_id: boxData.box_id,
-          to_location_id: location.row || location.aisle || location.level || location.room,
-          action: "Created",
-          note: note || "Box created",
-        });
+        }));
 
-      if (movementError) {
-        throw movementError;
+        const { error: contentsError } = await supabase
+          .from("box_contents")
+          .insert(boxContents);
+
+        if (contentsError) throw contentsError;
+
+        // Finally, log the box movement
+        const { error: movementError } = await supabase
+          .from("box_movements")
+          .insert({
+            moved_by: userId || null,
+            box_id: boxData.box_id,
+            to_location_id: location.row || location.aisle || location.level || location.room,
+            action: "Created",
+            note: note || "Box created",
+          });
+
+        if (movementError) {
+          throw movementError;
+        }
+
+        return boxData;
       }
-
-      return boxData;
     },
-    onSuccess: () => {
-      onAddSuccess?.();
-    },
-    onError: (error) => {
+    onSuccess: (data) => {
+      // Invalidate the boxes query to trigger a refetch
+      queryClient.invalidateQueries({ queryKey: ["boxes"] });
+      queryClient.invalidateQueries({ queryKey: ["boxCount"] });
+      onAddSuccess?.(data);
     },
   });
 };
