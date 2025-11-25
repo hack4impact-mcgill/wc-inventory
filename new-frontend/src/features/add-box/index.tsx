@@ -639,6 +639,7 @@ const AddBox = () => {
                           />
                         </svg>
                       </div>
+                      </div>
                     )
                     : (
                       <div className="w-full self-start">
@@ -696,7 +697,6 @@ const AddBox = () => {
                                 x{item.quantity}
                               </div>
                             </div>
-                          </div>
                         );
                       })}
 
@@ -709,8 +709,8 @@ const AddBox = () => {
                           + Add more items
                         </Button>
                       )}
-                    </div>
-                  )}
+                      </div>
+                    )}
                 </div>
 
                 {/* Create box button */}
