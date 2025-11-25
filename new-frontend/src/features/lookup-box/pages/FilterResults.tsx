@@ -239,7 +239,7 @@ const FilterResults = () => {
 
   return (
 
-    <div className="h-screen w-full flex flex-col bg-white">
+    <div className="h-full w-full flex flex-col bg-white overflow-hidden">
 
       <div className="w-full flex items-center justify-center">
         <Header

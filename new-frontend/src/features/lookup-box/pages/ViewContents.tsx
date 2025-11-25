@@ -1,13 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { boxApi } from "@/lib/api/boxes";
-import { ArrowLeft } from "lucide-react";
 import { BoxStatus } from "@/types/enums";
 import BoxDetails from "@/features/admin-dashboard/components/BoxDetails";
 import { BoxItem } from "@/types/box";
 import { useState } from "react";
 import { useNavigate, } from "react-router-dom";
 // import { useLocation } from "react-router-dom";
-import { useLookupState } from "..";
+import { useLookupState } from "../";
 import Header from "../components/Header";
 
 
@@ -113,7 +112,7 @@ const ViewContents = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col gap-5 items-center bg-white overflow-hidden">
+    <div className="h-full flex flex-col gap-5 items-center bg-white overflow-hidden">
       
       <div className="w-full max-w-screen-md mb-2">
 

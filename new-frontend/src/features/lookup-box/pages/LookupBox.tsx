@@ -168,7 +168,7 @@ const LookupBox = () => {
   }
 
   return (
-    <div className="h-screen w-full flex flex-col bg-white gap-4">
+    <div className="h-full w-full flex flex-col bg-white gap-4 overflow-hidden">
 
       <Header handleGoBack={handleGoBack} title={title} />
 

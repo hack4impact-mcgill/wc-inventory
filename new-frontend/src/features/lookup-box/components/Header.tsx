@@ -13,7 +13,7 @@ const Header = ({
 
   return (
 
-    <div className="h-[6vh] w-full flex items-center justify-center px-4">
+    <div className="h-[6vh] w-full flex items-center justify-center px-4 mt-2">
         <div className="flex-[1] w-full max-w-screen-md flex items-center justify-start">
             <button 
             className="mr-6 p-2 rounded-lg font-bold bg-gray-300 mb-1 duration-300 ease-in-out shadow transform transition-all hover:shadow-xl"
