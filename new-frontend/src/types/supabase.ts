@@ -547,7 +547,7 @@ export type Database = {
     Enums: {
       app_permission: "users.create" | "users.edit" | "users.delete"
       app_role: "admin" | "volunteer"
-      box_movement_action: "Donated" | "Moved" | "Retired" | "Other"
+      box_movement_action: "Donated" | "Moved" | "Retired" | "Created" | "Other"
       box_status_enum: "Active" | "Donated" | "Archived"
       gender_enum: "Male" | "Female" | "Unisex" | "Kids"
       icon_name_enum:

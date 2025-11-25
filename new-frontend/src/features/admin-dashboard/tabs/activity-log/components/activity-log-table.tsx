@@ -11,6 +11,7 @@ import { ArrowUpDown } from "lucide-react";
 import { BoxMovementView } from "@/types/activity-log";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 type SortKeyOption = "moved_by_email" | "box_name" | "moved_at" | null;
 
@@ -26,12 +27,16 @@ const ActivityLogTable = ({
   onBoxSelect,
 }: ActivityLogTableProps) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const defaultBox = searchParams.get("box") || "";
+  const [searchValue, setSearchValue] = useState(defaultBox);
   const [sortKey, setSortKey] = useState<SortKeyOption>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   
 
   // Sorting method for the toggle, sorts descending or asceding.
   useEffect(() => {
+    setSearchValue(defaultBox);
     if (!sortKey) {
       setSortKey("box_name");
     }
@@ -55,11 +60,18 @@ const ActivityLogTable = ({
       }
       return sortOrder === "asc" ? result : -result;
     });
-  }, [sortKey, sortOrder]);
+    console.log(filteredData);
+  }, [sortKey, sortOrder,defaultBox]);
 
   if (isLoading) {
     return <p className="text-center p-4">Loading...</p>;
   }
+
+  // apply box name filtering
+  const filteredRows = filteredData.filter(row =>
+    (row.box_name ?? "").toLowerCase().includes(searchValue.toLowerCase())
+);
+
 
   // ----------------------------- Table Header -----------------------------------------
 
@@ -117,12 +129,12 @@ const ActivityLogTable = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredData.length > 0 ? (
-            filteredData.map((entry, index) => (
+          {filteredRows.length > 0 ? (
+            filteredRows.map((entry, index) => (
               <TableRow key={index} className="border-[0.5px]">
                 <TableCell
                   className={`text-[#00559B] border-[0.5px] border-gray-300 p-4 hover:underline cursor-pointer ${
-                    index === filteredData.length - 1 ? "rounded-bl-md" : ""
+                    index === filteredRows.length - 1 ? "rounded-bl-md" : ""
                   }`}
                 >
                   <span
@@ -157,7 +169,7 @@ const ActivityLogTable = ({
                 </TableCell>
                 <TableCell
                   className={`text-gray-500 border-[0.5px] border-gray-300 p-4${
-                    index === filteredData.length - 1 ? "rounded-br-md" : ""
+                    index === filteredRows.length - 1 ? "rounded-br-md" : ""
                   }`}
                 >
                   {entry.moved_at
