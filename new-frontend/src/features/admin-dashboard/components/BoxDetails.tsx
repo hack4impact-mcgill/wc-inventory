@@ -7,6 +7,7 @@ import { BoxItem } from "@/types/box";
 interface BoxDetailsProps {
   boxId?: string;
   boxName: string;
+  icon:string;
   location: string;
   createdAt: string;
   updatedAt: string;
@@ -75,10 +76,10 @@ const BoxDetails = ({
         )}
       </div>
 
-      <div className="space-y-3">
-        {contents.map((item, idx) => (
-          <ContentCard key={idx} item={item} />
-        ))}
+      <div className="space-y-3 overflow-auto max-h-[65vh]">
+        {contents.map((item, idx) => {
+          return <ContentCard key={idx} item={item} />;
+        })} 
       </div>
     </div>
   );

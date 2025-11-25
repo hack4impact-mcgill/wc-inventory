@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Category } from "@/types/category";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -15,6 +15,7 @@ import { Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useCategories } from "./hooks/use-categories";
+import { getAllIcons } from "@/lib/iconLoader";
 
 const CategoryManagement = () => {
     const {
@@ -22,13 +23,14 @@ const CategoryManagement = () => {
         isLoading,
         createMutation,
         updateMutation,
-        deleteMutation
+        deleteMutation,
     } = useCategories();
     const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
     const sortedCategories = [...categories].sort((a, b) => a.name.localeCompare(b.name));
     const [globalFilter, setGlobalFilter] = useState("");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+
 
     const handleSubmit: CategoryFormProps["onSubmit"] = async (data) => {
         try {
@@ -73,6 +75,15 @@ const CategoryManagement = () => {
         setSelectedCategory(category);  // Update selectedCategory to the full Category
         setIsDialogOpen(true);  // Open the dialog to edit
     };
+
+    useEffect(() => {
+        const fetchIcons = async () => {
+            getAllIcons();
+          
+        };
+        fetchIcons();
+      }, []);
+
 
     if (isLoading) return <div>Loading...</div>;
 

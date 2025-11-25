@@ -264,6 +264,7 @@ const BoxLookup: React.FC = () => {
       return (
         <BoxDetails
           boxName={box.name}
+          icon={box.icon}
           location={box.location || ""}
           createdAt={box.createdAt || ""}
           updatedAt={box.updatedAt || ""}
@@ -287,6 +288,7 @@ const BoxLookup: React.FC = () => {
       return (
         <BoxDetails
           boxName={`${selectedBoxes.length} boxes selected`}
+          icon=""
           location=""
           createdAt=""
           updatedAt=""
@@ -401,7 +403,8 @@ const BoxLookup: React.FC = () => {
       </div>
     );
   }
-
+  const content = getSelectedBoxesContent();
+  console.log(content);
   return (
     <div>
       <SearchFilters

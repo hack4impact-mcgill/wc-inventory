@@ -17,13 +17,10 @@ import { GenderEnum } from "@/types/enums";
 import { BoxContent, InsertBoxContent } from "@/types/boxContent";
 import { buildLocationTree } from "./utils";
 import { useToast } from "@/hooks/use-toast";
-
-import { getCategoryIconPath } from "@/lib/iconLoader";
-
-
+import { supabase } from "@/lib/supabaseClient";
 import { useMobile } from "./hooks/useMobile";
-import { set } from "date-fns";
-import { networkInterfaces } from "node:os";
+import { getSpecificIcon, getAllIcons, getIconCache } from '@/lib/iconLoader';
+
 
 const AddBox = () => {
   // Get URL search params to check if we're in update mode
@@ -234,6 +231,36 @@ const AddBox = () => {
     }
   }, [editingItemIndex, items]);
 
+  const [iconSrcMap, setIconSrcMap] = useState<Map<string, string>>(new Map());
+
+  useEffect(() => {
+  const loadIcons = async () => {
+    try {
+
+      const cached = getIconCache();
+
+      if (cached && cached.length > 0) {
+        const map = new Map<string, string>();
+        for (const icon of cached) {
+          map.set(icon.name.toLowerCase().trim(), icon.data);
+        }
+        setIconSrcMap(map);
+      }
+
+
+      const icons = await getAllIcons();
+      const freshMap = new Map<string, string>();
+      for (const icon of icons) {
+        freshMap.set(icon.name.toLowerCase().trim(), icon.data);
+      }
+      setIconSrcMap(freshMap);
+    } catch (error) {
+      console.error("Failed to fetch icons:", error);
+    }
+  };
+
+  loadIcons();
+}, []);
   const locationTree = locations
     ? buildLocationTree(locations.map((loc) => ({ ...loc, children: [] })))
     : [];
@@ -612,41 +639,45 @@ const AddBox = () => {
                           />
                         </svg>
                       </div>
-                      <p>Click to add items in the box</p>
-                    </div>
-                  ) : (
-                    <div className="w-full self-start">
-                      {items.map((item, index) => {
-                        const category = categories?.find(
-                          (c) => c.category_id === item.category_id,
-                        );
-                        const IconComponent = category?.icon
-                          ? getCategoryIconPath(category.icon)
-                          : Package;
+                      </div>
+                    )
+                    : (
+                      <div className="w-full self-start">
+                        {items.map((item, index) => {
+                          const category = categories?.find((c) =>
+                            c.category_id === item.category_id
+                          );
+                          const imgsrc = category?.icon? iconSrcMap.get(category.icon.toLowerCase().trim()): undefined;
 
-                        return (
-                          <div
-                            key={index}
-                            className={`p-3 bg-white rounded shadow mb-2 w-full cursor-pointer hover:bg-gray-50 transition-colors ${
-                              editingItemIndex === index
-                                ? "ring-2 ring-blue-400"
-                                : ""
-                            }`}
-                            onClick={() => handleEditItem(index)}
-                          >
-                            <div className="flex justify-between items-center">
-                              <div className="flex items-center gap-3">
-                                <div className="text-gray-500">
-                                  <img
-                                    src={getCategoryIconPath(category!.icon)}
-                                    alt={category?.name || "Item"}
-                                    className="h-6 w-6 object-contain"
-                                    onError={(e) =>
-                                      ((
-                                        e.currentTarget as HTMLImageElement
-                                      ).src = "/icons/default.svg.svg")
-                                    }
-                                  />
+                          return (
+                            <div
+                              key={index}
+                              className={`p-3 bg-white rounded shadow mb-2 w-full cursor-pointer hover:bg-gray-50 transition-colors ${
+                                editingItemIndex === index
+                                  ? "ring-2 ring-blue-400"
+                                  : ""
+                              }`}
+                              onClick={() => handleEditItem(index)}
+                            >
+                              <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-3">
+                                  <div className="text-gray-500">
+                                    <img
+                                      src={imgsrc!}
+                                      alt={category?.name || "Item"}
+                                      className="h-6 w-6 object-contain"
+                                    />
+                                  </div>
+                                  <div>
+                                    <p className="font-medium">
+                                      {category?.name}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      {sizes?.find((s) =>
+                                        s.size_id === item.size_id
+                                      )?.name} • {item.gender}
+                                    </p>
+                                  </div>
                                 </div>
                                 <div>
                                   <p className="font-medium">
@@ -666,7 +697,6 @@ const AddBox = () => {
                                 x{item.quantity}
                               </div>
                             </div>
-                          </div>
                         );
                       })}
 
@@ -679,8 +709,8 @@ const AddBox = () => {
                           + Add more items
                         </Button>
                       )}
-                    </div>
-                  )}
+                      </div>
+                    )}
                 </div>
 
                 {/* Create box button */}
