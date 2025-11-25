@@ -14,6 +14,7 @@ import { BoxStatus } from "@/types/enums";
 import { printBoxLabels } from "./utils";
 import { deleteBoxes } from "@/lib/api";
 import DeleteDialog from "./components/DeleteDialog";
+import { useSearchParams } from "react-router-dom";
 
 interface FilterState {
   searchTerm: string;
@@ -106,21 +107,21 @@ const BoxLookup: React.FC = () => {
     },
   });
   const deleteBoxesMutation = useMutation({
-  mutationFn: ({ boxIds }: { boxIds: string[] }) =>
-    deleteBoxes(boxIds),
-  onSuccess: () => {
-    toast.success(`${selectedBoxIds.length} box(es) deleted successfully.`);
-    queryClient.invalidateQueries({ queryKey: ["boxes"] });
-    queryClient.invalidateQueries({ queryKey: ["inventory"] });
-    setSelectedBoxIds([]);
-    setIsDeleteDialogOpen(false);
-  },
-  onError: (error: any) => {
-    console.error(error);
-    toast.warning(`Failed to delete boxes: ${error?.message || "Unknown error"}`);
-  },
-});
-
+    mutationFn: ({ boxIds }: { boxIds: string[] }) => deleteBoxes(boxIds),
+    onSuccess: () => {
+      toast.success(`${selectedBoxIds.length} box(es) deleted successfully.`);
+      queryClient.invalidateQueries({ queryKey: ["boxes"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      setSelectedBoxIds([]);
+      setIsDeleteDialogOpen(false);
+    },
+    onError: (error: any) => {
+      console.error(error);
+      toast.warning(
+        `Failed to delete boxes: ${error?.message || "Unknown error"}`,
+      );
+    },
+  });
 
   const moveBoxesMutation = useMutation({
     mutationFn: ({
@@ -332,11 +333,10 @@ const BoxLookup: React.FC = () => {
   const handleConfirmDonation = (note?: string) => {
     donateBoxesMutation.mutate({ boxIds: selectedBoxIds, note });
   };
-  
+
   const handleConfirmDelete = () => {
     deleteBoxesMutation.mutate({ boxIds: selectedBoxIds });
   };
-
 
   const handleConfirmMove = (locationId: string, note?: string) => {
     // The validation is now happening in the MoveDialog component
@@ -386,9 +386,6 @@ const BoxLookup: React.FC = () => {
       >
         Delete
       </Button>
-      
-
-
     </div>
   );
 
@@ -450,13 +447,15 @@ const BoxLookup: React.FC = () => {
         isProcessing={moveBoxesMutation.isPending}
       />
       {
-      <DeleteDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        onConfirm={() => deleteBoxesMutation.mutate({ boxIds: selectedBoxIds })}
-        boxCount={selectedBoxIds.length}
-        isProcessing={deleteBoxesMutation.isPending}
-      />
+        <DeleteDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+          onConfirm={() =>
+            deleteBoxesMutation.mutate({ boxIds: selectedBoxIds })
+          }
+          boxCount={selectedBoxIds.length}
+          isProcessing={deleteBoxesMutation.isPending}
+        />
       }
     </div>
   );

@@ -7,8 +7,7 @@ import { queryKeys } from "@/lib/api/queryKeys.ts";
 import { BoxMovementView } from "@/types/activity-log.ts";
 import { boxApi } from "@/lib/api/boxes";
 import BoxDetails from "@/features/admin-dashboard/components/BoxDetails";
-
-
+import { Card, CardContent } from "@/components/ui/card.tsx";
 
 const defaultStartDate = new Date("2000-01-01");
 const defaultEndDate = new Date("2100-12-31");
@@ -21,7 +20,6 @@ const ActivityLog = () => {
   const [action, setAction] = useState<ActionTypes>("allActions");
   const [selectedBoxId, setSelectedBoxId] = useState<string | null>(null);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-
 
   // Get data entries
   const {
@@ -47,23 +45,26 @@ const ActivityLog = () => {
   // Places popup relative to box selected
   const placeBy = (el: HTMLElement) => {
     const r = el.getBoundingClientRect();
-    document.documentElement.style.setProperty("--popup-top", `${r.bottom + 8}px`);
+    document.documentElement.style.setProperty(
+      "--popup-top",
+      `${r.bottom + 8}px`,
+    );
     document.documentElement.style.setProperty("--popup-left", `${r.left}px`);
   };
 
   // Handles box selected from table, sets anchor for popup
   const handleSelectBox = (boxId: string, el?: HTMLElement) => {
     if (el) {
-    setAnchorEl(el);
-    placeBy(el);
+      setAnchorEl(el);
+      placeBy(el);
     }
-    setSelectedBoxId(prev => (prev === boxId ? null : boxId));
+    setSelectedBoxId((prev) => (prev === boxId ? null : boxId));
   };
 
   // Render box popup
   const getSelectedBoxesContent = () => {
     if (!selectedBoxId) return null;
-    const box = boxes.find(b => String(b.id) === String(selectedBoxId));
+    const box = boxes.find((b) => String(b.id) === String(selectedBoxId));
     if (!box) return null;
     return (
       <BoxDetails
@@ -72,12 +73,13 @@ const ActivityLog = () => {
         createdAt={box.createdAt || ""}
         updatedAt={box.updatedAt || ""}
         contents={box.contents}
+        icon={box.icon}
       />
     );
   };
 
   const content = getSelectedBoxesContent();
-  
+
   // Close popup on escape key
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -141,10 +143,10 @@ const ActivityLog = () => {
   });
 
   console.log(filteredLogs as BoxMovementView[]);
+
   return (
-    <>
-      <div className="p-16 gap-y-2 px-20 font-poppins">
-      <div>
+    <Card>
+      <CardContent className="pt-6">
         <SearchBar
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -153,39 +155,59 @@ const ActivityLog = () => {
           setAction={setAction}
           onRefetch={refetch}
         />
-      </div>
-        <div>
-          <ActivityLogTable
-            filteredData={filteredLogs!}
-            isLoading={isLoading}
-            onBoxSelect={handleSelectBox}
-          />
-        </div>
-    </div>
-    {/* Popup - renders only when content exists */}
-    {content && (
-      <aside
-        className="fixed z-50 w-full md:w-96 bg-white rounded-2xl shadow-xl border p-4"
-        style={{ top: "var(--popup-top)", left: "var(--popup-left)" }}
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-      >
-        {/* Close button */}
-        <button
-          type="button"
-          aria-label="Close"
-          className="absolute top-2 right-2 inline-flex h-12 w-12 items-center justify-center"
-          onClick={() => setSelectedBoxId(null)}
-        >
-          ×
-        </button>
-      {content}
-      </aside>
-    )}
-    </>
+        <ActivityLogTable
+          filteredData={filteredLogs!}
+          isLoading={isLoading}
+          onBoxSelect={handleSelectBox}
+        />
+      </CardContent>
+    </Card>
   );
+
+  // return (
+  //   <>
+  //     <div className="p-16 gap-y-2 px-20 font-poppins">
+  //       <div>
+  //         <SearchBar
+  //           searchTerm={searchTerm}
+  //           onSearchChange={setSearchTerm}
+  //           setStartDate={setStartDate}
+  //           setEndDate={setEndDate}
+  //           setAction={setAction}
+  //           onRefetch={refetch}
+  //         />
+  //       </div>
+  //       <div>
+  //         <ActivityLogTable
+  //           filteredData={filteredLogs!}
+  //           isLoading={isLoading}
+  //           onBoxSelect={handleSelectBox}
+  //         />
+  //       </div>
+  //     </div>
+  //     {/* Popup - renders only when content exists */}
+  //     {content && (
+  //       <aside
+  //         className="fixed z-50 w-full md:w-96 bg-white rounded-2xl shadow-xl border p-4"
+  //         style={{ top: "var(--popup-top)", left: "var(--popup-left)" }}
+  //         onClick={(e) => e.stopPropagation()}
+  //         role="dialog"
+  //         aria-modal="true"
+  //       >
+  //         {/* Close button */}
+  //         <button
+  //           type="button"
+  //           aria-label="Close"
+  //           className="absolute top-2 right-2 inline-flex h-12 w-12 items-center justify-center"
+  //           onClick={() => setSelectedBoxId(null)}
+  //         >
+  //           ×
+  //         </button>
+  //         {content}
+  //       </aside>
+  //     )}
+  //   </>
+  // );
 };
 
 export default ActivityLog;
-

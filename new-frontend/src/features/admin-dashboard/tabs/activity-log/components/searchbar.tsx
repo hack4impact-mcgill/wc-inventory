@@ -1,15 +1,15 @@
-import { Input } from "@/components/ui/input";
-import { Search, RotateCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { RotateCw, Search } from "lucide-react";
 
 type ActionTypes = "allActions" | "Donated" | "Moved" | "Retired";
 
@@ -31,37 +31,33 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onRefetch,
 }) => {
   return (
-    <div className="pb-11 flex flex-row justify-between">
+    <div className="flex justify-between mb-4 items-center">
       {/* Search Input */}
-      <div className="flex flex-row gap-2">
-        <div className="relative bg-white">
-          <Search className="absolute right-2 top-1/2 -translate-y-1/2 h-4 text-muted-foreground " />
+      <div className="flex flex-row gap-2 items-center">
+        <div className="relative bg-white flex items-center">
+          <Search className="absolute left-2 size-4 text-muted-foreground " />
           <Input
             placeholder="Search by box name..."
             value={searchTerm}
-            className="rounded-md pl-3 w-60 h-[40px] p-4 font-poppins font-normal texborder focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus:border-gray-300 shadow-none"
+            className="pl-8"
             onChange={(e) => {
               onSearchChange(e.target.value);
             }}
           />
         </div>
+
         <Button
           onClick={onRefetch}
-          variant="ghost"
+          variant="outline"
           size="icon"
-          className="bg-white h-full rounded-md border"
+          className="bg-white rounded-md border"
         >
           <RotateCw />
         </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              className="bg-white rounded-md pl-3 w-60 h-[40px] p-4 font-poppins font-normal border focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus:border-gray-300 shadow-none"
-            >
-              All actions
-            </Button>
+            <Button variant="outline">All actions</Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem onClick={() => setAction("allActions")}>
@@ -107,7 +103,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
                     color: "#000", // Make the input text black
                     fontWeight: 400,
                     fontSize: "0.875rem",
-                    fontFamily: "Poppins",
                   },
 
                   // 💡 Style the placeholder text
@@ -155,7 +150,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
                     color: "#000", // Make the input text black
                     fontWeight: 400,
                     fontSize: "0.875rem",
-                    fontFamily: "Poppins",
                   },
 
                   // 💡 Style the placeholder text
