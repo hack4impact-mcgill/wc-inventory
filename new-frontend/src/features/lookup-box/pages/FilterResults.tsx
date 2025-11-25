@@ -10,7 +10,7 @@ import { boxApi } from "@/lib/api/boxes";
 import { useLocations } from "@/features/admin-dashboard/tabs/location-management/hooks/use-locations.ts";
 import { useSearchFiltersQueries } from "@/features/admin-dashboard/hooks/useSearchFiltersQueries";3
 import { toast } from "sonner";
-import { useLookupState } from "..";
+import { useLookupState } from "../";
 import Header from "../components/Header";
 
 const genderMapping: Record<string, string> = {
@@ -239,16 +239,16 @@ const FilterResults = () => {
 
   return (
 
-    <div className="h-screen w-full flex flex-col bg-white gap-2">
+    <div className="h-screen w-full flex flex-col bg-white">
 
-      <div className="h-[10vh] w-full flex items-center justify-center">
+      <div className="w-full flex items-center justify-center">
         <Header
           handleGoBack={handleGoBack}
           title={"Box List"}
         />
       </div>
 
-      <div className="h-[7vh] w-full flex items-center justify-center gap-3">
+      <div className="h-[5vh] w-full flex items-center justify-center gap-3 mb-2 h-sm:mt-3">
 
         <Button variant="outline" 
           className="px-3 py-1 rounded-md text-sm font-medium"
@@ -273,9 +273,9 @@ const FilterResults = () => {
 
       </div>
     
-      <div className="max-h-[30rem] h-lg:max-h-[33rem] h-sm:max-h-[22rem] 
+      <div className="max-h-[35rem] h-lg:max-h-[38rem] h-sm:max-h-[25rem] 
                       flex-1 w-full px-2 overflow-y-auto [&_table]:table-fixed [&_table]:w-full [&_td]:break-words [&_th]:break-words [&_th]:whitespace-normal">
-        <div className="w-full max-w-screen-md mx-auto">
+        <div className="w-full max-w-screen-md mx-auto [&_div.mt-6]:mt-0">
           <BoxesTable
             boxes={filteredBoxes}
             selectedBoxIds={selectedBoxIds}
@@ -285,7 +285,7 @@ const FilterResults = () => {
         </div>
       </div>
 
-      <div className="h-[10vh] w-full flex items-center justify-center mt-1 h-sm:mt-3">
+      <div className="h-[10vh] w-full flex items-center justify-center h-sm:mt-3">
         <button 
           className="w-3/4 lg:w-1/2 bg-gray-300 p-3 rounded-lg shadow text-lg font-medium"
           onClick={handleViewContents}
