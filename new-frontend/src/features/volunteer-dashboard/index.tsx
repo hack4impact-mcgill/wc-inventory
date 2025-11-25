@@ -11,7 +11,7 @@ const VolunteerDashboard = () => {
       title: "Box Lookup",
       bgColor: "bg-green-500",
       hoverColor: "hover:bg-green-600",
-      onClick: () => navigate("/box-lookup"), // Navigate to shared BoxLookup page
+      onClick: () => navigate("/lookup"),
     },
 
     {
