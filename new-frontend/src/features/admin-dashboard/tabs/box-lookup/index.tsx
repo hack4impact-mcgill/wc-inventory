@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import SearchFilters from "@/features/admin-dashboard/components/SearchFilters";
@@ -12,6 +12,8 @@ import MoveDialog from "./components/MoveDialog";
 import BoxesTable from "./components/BoxesTable";
 import { BoxStatus } from "@/types/enums";
 import { printBoxLabels } from "./utils";
+import { deleteBoxes } from "@/lib/api";
+import DeleteDialog from "./components/DeleteDialog";
 
 interface FilterState {
   searchTerm: string;
@@ -35,6 +37,9 @@ const genderMapping: Record<string, string> = {
 
 const BoxLookup: React.FC = () => {
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedBoxIdParam = searchParams.get("selectedBoxId");
+
   const [selectedBoxIds, setSelectedBoxIds] = React.useState<string[]>([]);
   const [filters, setFilters] = React.useState<FilterState>({
     searchTerm: "",
@@ -47,11 +52,10 @@ const BoxLookup: React.FC = () => {
   // Dialog states
   const [isDonateDialogOpen, setIsDonateDialogOpen] = React.useState(false);
   const [isMoveDialogOpen, setIsMoveDialogOpen] = React.useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
 
   // Location selection states
-  const [, setSelectedLocations] = React.useState<string[]>(
-    [],
-  );
+  const [, setSelectedLocations] = React.useState<string[]>([]);
 
   // Use React Query to fetch boxes data
   const {
@@ -65,6 +69,18 @@ const BoxLookup: React.FC = () => {
   });
 
   const { locations, isLoading: isLoadingLocations } = useLocations();
+
+  // Auto-select box from URL parameter
+  React.useEffect(() => {
+    if (selectedBoxIdParam && boxes.length > 0) {
+      const boxExists = boxes.some((box) => box.id === selectedBoxIdParam);
+      if (boxExists) {
+        setSelectedBoxIds([selectedBoxIdParam]);
+        // Clear the URL parameter after selecting
+        setSearchParams({});
+      }
+    }
+  }, [selectedBoxIdParam, boxes, setSearchParams]);
 
   // Organize locations by parent when locations data changes
   // Mutations for box operations
@@ -89,6 +105,22 @@ const BoxLookup: React.FC = () => {
       );
     },
   });
+  const deleteBoxesMutation = useMutation({
+  mutationFn: ({ boxIds }: { boxIds: string[] }) =>
+    deleteBoxes(boxIds),
+  onSuccess: () => {
+    toast.success(`${selectedBoxIds.length} box(es) deleted successfully.`);
+    queryClient.invalidateQueries({ queryKey: ["boxes"] });
+    queryClient.invalidateQueries({ queryKey: ["inventory"] });
+    setSelectedBoxIds([]);
+    setIsDeleteDialogOpen(false);
+  },
+  onError: (error: any) => {
+    console.error(error);
+    toast.warning(`Failed to delete boxes: ${error?.message || "Unknown error"}`);
+  },
+});
+
 
   const moveBoxesMutation = useMutation({
     mutationFn: ({
@@ -177,6 +209,23 @@ const BoxLookup: React.FC = () => {
     });
   }, [boxes, filters]);
 
+  useEffect(() => {
+    setSelectedBoxIds((prev) => {
+      const validIds = prev.filter((id) =>
+        filteredBoxes.some((box) => box.id === id),
+      );
+
+      // Prevent update if nothing changed
+      if (
+        validIds.length === prev.length &&
+        validIds.every((id, index) => id === prev[index])
+      ) {
+        return prev; // Return same reference = no re-render
+      }
+      return validIds;
+    });
+  }, [filteredBoxes]);
+
   // Handle filter changes
   const handleFilterChange = (filterType: keyof FilterState, value: string) => {
     setFilters((prev) => ({
@@ -206,7 +255,7 @@ const BoxLookup: React.FC = () => {
     if (selectedBoxIds.length === 0) return null;
 
     const selectedBoxes = boxes.filter((box) =>
-      selectedBoxIds.includes(box.id)
+      selectedBoxIds.includes(box.id),
     );
 
     if (selectedBoxIds.length === 1) {
@@ -257,6 +306,14 @@ const BoxLookup: React.FC = () => {
     setIsDonateDialogOpen(true);
   };
 
+  const handleDeleteClick = () => {
+    if (selectedBoxIds.length === 0) {
+      toast.info("Please select at least one box to delete.");
+      return;
+    }
+    setIsDeleteDialogOpen(true);
+  };
+
   const handleMoveClick = () => {
     if (selectedBoxIds.length === 0) {
       toast.info("Please select at least one box to move.");
@@ -273,6 +330,11 @@ const BoxLookup: React.FC = () => {
   const handleConfirmDonation = (note?: string) => {
     donateBoxesMutation.mutate({ boxIds: selectedBoxIds, note });
   };
+  
+  const handleConfirmDelete = () => {
+    deleteBoxesMutation.mutate({ boxIds: selectedBoxIds });
+  };
+
 
   const handleConfirmMove = (locationId: string, note?: string) => {
     // The validation is now happening in the MoveDialog component
@@ -286,7 +348,7 @@ const BoxLookup: React.FC = () => {
 
   const handlePrintLabel = () => {
     const selectedBoxes = boxes.filter((box) =>
-      selectedBoxIds.includes(box.id)
+      selectedBoxIds.includes(box.id),
     );
     printBoxLabels(selectedBoxes);
   };
@@ -294,26 +356,37 @@ const BoxLookup: React.FC = () => {
   // Action buttons for selected boxes
   const actionButtons = (
     <div className="flex gap-4">
-      <Button variant="outline" 
+      <Button
+        // variant="outline"
         onClick={handlePrintLabel}
         disabled={selectedBoxIds.length === 0}
       >
         Print label
       </Button>
       <Button
-        variant="outline"
+        // variant="outline"
         onClick={handleMoveClick}
         disabled={selectedBoxIds.length === 0}
       >
         Move
       </Button>
       <Button
-        variant="outline"
+        // variant="outline"
         onClick={handleDonateClick}
         disabled={selectedBoxIds.length === 0}
       >
         Donate
       </Button>
+      <Button
+        variant="destructive"
+        onClick={handleDeleteClick}
+        disabled={selectedBoxIds.length === 0}
+      >
+        Delete
+      </Button>
+      
+
+
     </div>
   );
 
@@ -330,24 +403,18 @@ const BoxLookup: React.FC = () => {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Inventory Management</h1>
-        </div>
-      </div>
+    <div>
+      <SearchFilters
+        onSearch={(value) => handleFilterChange("searchTerm", value)}
+        onCategoryChange={(value) => handleFilterChange("category", value)}
+        onSizeChange={(value) => handleFilterChange("size", value)}
+        onGenderChange={(value) => handleFilterChange("gender", value)}
+        onStatusChange={(value) => handleFilterChange("status", value)}
+        actionButtons={actionButtons}
+      />
 
-      <div className="flex flex-col gap-6 md:flex-row">
-        <div className="flex-1">
-          <SearchFilters
-            onSearch={(value) => handleFilterChange("searchTerm", value)}
-            onCategoryChange={(value) => handleFilterChange("category", value)}
-            onSizeChange={(value) => handleFilterChange("size", value)}
-            onGenderChange={(value) => handleFilterChange("gender", value)}
-            onStatusChange={(value) => handleFilterChange("status", value)}
-            actionButtons={actionButtons}
-          />
-
+      <div className="flex flex-col gap-6 md:flex-row mt-6">
+        <div className="flex-1 min-w-0 ">
           <BoxesTable
             boxes={filteredBoxes}
             selectedBoxIds={selectedBoxIds}
@@ -357,7 +424,9 @@ const BoxLookup: React.FC = () => {
         </div>
 
         {/* Right panel for box details */}
-        <div className="w-full md:w-96">{getSelectedBoxesContent()}</div>
+        {selectedBoxIds.length > 0 && (
+          <div className="basis-1/3">{getSelectedBoxesContent()}</div>
+        )}
       </div>
 
       {/* Donation Confirmation Dialog */}
@@ -377,6 +446,15 @@ const BoxLookup: React.FC = () => {
         isLoading={isLoadingLocations}
         isProcessing={moveBoxesMutation.isPending}
       />
+      {
+      <DeleteDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={() => deleteBoxesMutation.mutate({ boxIds: selectedBoxIds })}
+        boxCount={selectedBoxIds.length}
+        isProcessing={deleteBoxesMutation.isPending}
+      />
+      }
     </div>
   );
 };
