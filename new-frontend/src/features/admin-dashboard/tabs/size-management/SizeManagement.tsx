@@ -254,7 +254,7 @@ const SizeManagement = () => {
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-4">
 
-                        <div className="relative bg-white">
+                        <div className="relative">
                             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
                                 placeholder="Search sizes..."
@@ -268,7 +268,7 @@ const SizeManagement = () => {
                             value={categoryFilter || "all"}
                             onValueChange={(v) => setCategoryFilter(v === "all" ? undefined : v)}
                         >
-                            <SelectTrigger className="bg-white">
+                            <SelectTrigger>
                                 <SelectValue placeholder="All Categories" /> 
                             </SelectTrigger>
                             <SelectContent>
@@ -284,7 +284,7 @@ const SizeManagement = () => {
                             value={regionFilter || "all"}
                             onValueChange={(v) => setRegionFilter(v === "all" ? undefined : v)}
                         >
-                            <SelectTrigger className="bg-white">
+                            <SelectTrigger>
                                 <SelectValue placeholder="All Regions" />
                             </SelectTrigger>
                             <SelectContent>
@@ -300,7 +300,7 @@ const SizeManagement = () => {
                             value={sortBy}
                             onValueChange={(v) => setSortBy(v as "updated" | "asc" | "desc")}
                         >
-                            <SelectTrigger className="bg-white">
+                            <SelectTrigger>
                                 <div className="flex items-center gap-1.5">
                                     <span>Sort By:</span> 
                                     <SelectValue

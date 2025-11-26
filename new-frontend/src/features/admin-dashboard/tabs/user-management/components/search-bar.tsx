@@ -8,7 +8,7 @@ interface SearchBarProps {
 
 export function SearchBar({ value, onChange }: SearchBarProps) {
     return (
-        <div className="bg-white relative">
+        <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
                 placeholder="Search user"

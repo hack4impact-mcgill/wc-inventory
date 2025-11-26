@@ -8,7 +8,7 @@ export const SearchBar = ({
     value: string;
     onChange: (value: string) => void;
 }) => (
-    <div className="relative max-w-sm bg-white">
+    <div className="relative max-w-sm">
         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
             placeholder="Search locations..."
