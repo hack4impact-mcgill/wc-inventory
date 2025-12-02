@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -8,27 +8,37 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 import { activityLogApi } from "@/lib/api/activity-log";
 import { queryKeys } from "@/lib/api/queryKeys";
 import { userApi } from "@/lib/api/users";
-import { format } from "date-fns";
 import { BoxMovementView } from "@/types/activity-log";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import React from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
+import { useUsers } from "../admin-dashboard/tabs/user-management/hooks/use-users";
 
 const UserInfo: React.FC = () => {
   const { id } = useParams<{ id: string }>();
 
-  if (!id) return <div>No user id provided</div>;
+  const navigate = useNavigate();
 
-  const [accountStatus, setAccountStatus] = useState("active");
+  const { deleteUser, isDeleting, banUser, isBanning, unbanUser, isUnbanning } =
+    useUsers();
 
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: queryKeys.users.detail(id!),
@@ -40,7 +50,46 @@ const UserInfo: React.FC = () => {
     queryFn: () => activityLogApi.getActivityLogByUserId(id!),
   });
 
-  if (userLoading || activityLoading || !user) return <div>Loading...</div>;
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      await deleteUser(userId);
+      navigate("/admin/users");
+      toast.success("User deleted successfully");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete user",
+      );
+    }
+  };
+
+  const handleBanUser = async (userId: string) => {
+    try {
+      await banUser(userId);
+      toast.success("User successfully banned");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to ban user",
+      );
+    }
+  };
+  const handleUnbanUser = async (userId: string) => {
+    try {
+      await unbanUser(userId);
+      toast.success("User successfully unbanned");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to unban user",
+      );
+    }
+  };
+
+  if (userLoading || activityLoading) return <div>Loading...</div>;
+  if (!user) return <div>User with that id doesn't exist</div>;
+
+  const userId = user.id ?? null;
+  if (!userId) return <div>Invalid user record (missing id)</div>;
+
+  const isActive = !!user.is_active;
 
   return (
     <Card className="max-w mx-auto">
@@ -52,7 +101,11 @@ const UserInfo: React.FC = () => {
           <div>
             <div className="mb-4">
               <label className="font-semibold">Name: </label>
-              <p>{user.email}</p>
+              <p>{user.name ?? "N/A"}</p>
+            </div>
+            <div className="mb-4">
+              <label className="font-semibold">Email: </label>
+              <p>{user.email ?? "N/A"}</p>
             </div>
             <div className="mb-4">
               <label className="font-semibold">Created on:</label>
@@ -64,22 +117,70 @@ const UserInfo: React.FC = () => {
             </div>
             <div className="mb-4">
               <label className="font-semibold">Account Status:</label>
-              <Select
-                onValueChange={(value) => setAccountStatus(value)}
-                defaultValue={accountStatus}
+              {/* <Select
+                value={statusValue}
+                onValueChange={onChangeAccountStatus}
+                disabled={isBanning || isUnbanning}
               >
                 <SelectTrigger className="mt-1 w-full">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">
-                    Active (current volunteer)
-                  </SelectItem>
-                  <SelectItem value="inactive">
-                    Inactive (no longer volunteer)
-                  </SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
                 </SelectContent>
-              </Select>
+              </Select> */}
+              <div className="flex gap-3">
+                <Button
+                  variant={isActive ? "outline" : "default"}
+                  disabled={isBanning || isUnbanning}
+                  onClick={() =>
+                    isActive ? handleBanUser(userId) : handleUnbanUser(userId)
+                  }
+                >
+                  {isActive
+                    ? isBanning
+                      ? "Disabling..."
+                      : "Disable"
+                    : isUnbanning
+                      ? "Enabling..."
+                      : "Enable"}
+                </Button>
+                {/* <Button
+                  variant="destructive"
+                  disabled={isDeleting}
+                  onClick={() => handleDeleteUser(userId)}
+                >
+                  {isDeleting ? "Deleting..." : "Delete"}
+                </Button> */}
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" disabled={isDeleting}>
+                      {isDeleting ? "Deleting..." : "Delete"}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this user?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently
+                        delete the user account and all associated data.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-red-600 hover:bg-red-700"
+                        disabled={isDeleting}
+                        onClick={() => handleDeleteUser(userId)}
+                      >
+                        {isDeleting ? "Deleting..." : "Confirm delete"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
           </div>
 
@@ -90,21 +191,8 @@ const UserInfo: React.FC = () => {
                 ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
                 : "Unknown"}
             </h2>
-            <div className="space-y-2">
-              {/* {Object.keys(permissions).map((key) => (
-                <label key={key} className="flex items-center space-x-2">
-                  <Checkbox
-                    checked={permissions[key as keyof typeof permissions]}
-                    onCheckedChange={() =>
-                      togglePermission(key as keyof typeof permissions)
-                    }
-                  />
-                  <span className="capitalize">
-                    {key.replace(/([A-Z])/g, " $1").toLowerCase()}
-                  </span>
-                </label>
-              ))} */}
-            </div>
+
+            <div className="space-y-2"></div>
           </div>
         </div>
 
@@ -136,7 +224,7 @@ const UserInfo: React.FC = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={3}>No activity found</TableCell>
+                  <TableCell colSpan={4}>No activity found</TableCell>
                 </TableRow>
               )}
             </TableBody>
