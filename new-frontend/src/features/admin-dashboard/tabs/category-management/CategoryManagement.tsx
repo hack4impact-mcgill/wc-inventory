@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Category } from "@/types/category";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -15,6 +15,7 @@ import { Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useCategories } from "./hooks/use-categories";
+import { getAllIcons } from "@/lib/iconLoader";
 
 const CategoryManagement = () => {
     const {
@@ -22,11 +23,14 @@ const CategoryManagement = () => {
         isLoading,
         createMutation,
         updateMutation,
-        deleteMutation
+        deleteMutation,
     } = useCategories();
+    const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+    const sortedCategories = [...categories].sort((a, b) => a.name.localeCompare(b.name));
     const [globalFilter, setGlobalFilter] = useState("");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+
 
     const handleSubmit: CategoryFormProps["onSubmit"] = async (data) => {
         try {
@@ -65,6 +69,7 @@ const CategoryManagement = () => {
     const handleClose = () => {
         setIsDialogOpen(false);
         setSelectedCategory(null);
+
     };
 
     const handleEdit = (category: Category) => {
@@ -72,36 +77,45 @@ const CategoryManagement = () => {
         setIsDialogOpen(true);  // Open the dialog to edit
     };
 
+    useEffect(() => {
+        const fetchIcons = async () => {
+            getAllIcons();
+          
+        };
+        fetchIcons();
+      }, []);
+
+
     if (isLoading) return <div>Loading...</div>;
 
     return (
         <>
-            <Card>
-                <CardContent className="pt-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="relative max-w-sm">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search categories..."
-                                value={globalFilter}
-                                onChange={(e) => setGlobalFilter(e.target.value)}
-                                className="pl-8"
-                            />
-                        </div>
-                        <Button onClick={() => setIsDialogOpen(true)}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Category
-                        </Button>
+            <div>
+                <div className="flex items-center justify-between mb-4">
+                    <div className="relative max-w-sm">
+                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Search categories..."
+                            value={globalFilter}
+                            onChange={(e) => setGlobalFilter(e.target.value)}
+                            className="pl-8"
+                        />
                     </div>
+                    <Button onClick={() => setIsDialogOpen(true)}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Category
+                    </Button>
+                </div>
 
-                    <CategoriesTable
-                        data={categories}
-                        filter={globalFilter}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                    />
-                </CardContent>
-            </Card>
+                <CategoriesTable
+                    data={sortedCategories}
+                    filter={globalFilter}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    expandedCategories={expandedCategories}
+                    setExpandedCategories={setExpandedCategories}
+                />
+            </div>
             <Dialog open={isDialogOpen} onOpenChange={handleClose}>
                 <DialogContent className="max-w-4xl">
                     <DialogHeader>
@@ -124,6 +138,7 @@ const CategoryManagement = () => {
                         onClose={handleClose}
                     />
                 </DialogContent>
+        
             </Dialog>
         </>
     );

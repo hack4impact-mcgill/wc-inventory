@@ -23,6 +23,7 @@ interface CreateBoxItem {
   gender: string;
   size_id?: string | null;
   location_id?: string | null;
+  note?: string;
 }
 
 const CreateBox: React.FC = () => {
@@ -38,7 +39,8 @@ const CreateBox: React.FC = () => {
       quantity: 0,
       gender: 'Unisex',
       size_id: null,
-      location_id: null
+      location_id: null,
+      note: ''
     }
   ]);
 
@@ -59,22 +61,6 @@ const CreateBox: React.FC = () => {
       const { data: locationsData, error: locationsError } = await supabase
         .from('locations')
         .select('*');
-
-      if (categoriesError) {
-        console.error('Error fetching categories:', categoriesError);
-      }
-
-      if (sizesError) {
-        console.error('Error fetching sizes:', sizesError);
-      }
-
-      if (boxesError) {
-        console.error('Error fetching boxes:', boxesError);
-      }
-
-      if (locationsError) {
-        console.error('Error fetching locations:', locationsError);
-      }
 
       setCategories(categoriesData || []);
       setSizes(sizesData || []);
@@ -101,12 +87,15 @@ const CreateBox: React.FC = () => {
         quantity: 0,
         gender: 'Unisex',
         size_id: null,
-        location_id: null
+        location_id: null,
+        note: ''
       }
     ]);
   };
 
   const handleCreateBox = async () => {
+    const currentUser = await supabase.auth.getUser();
+    const userId = currentUser.data.user?.id;
     const boxesToCreate = createBoxItems.filter(item => 
       (item.box_id || item.box_name) && 
       item.category_id && 
@@ -122,13 +111,15 @@ const CreateBox: React.FC = () => {
             .from('boxes')
             .insert({
               name: item.box_name || `${categories.find(c => c.category_id === item.category_id)?.name || 'Box'}-${Date.now()}`,
-              description: `${item.quantity} items`,
+              description: item.note || null,
               location_id: item.location_id
             })
             .select()
             .single();
   
-          if (boxError) throw boxError;
+          if (boxError) {
+            throw boxError;
+          }
           targetBoxId = newBox.box_id;
         } else {
           targetBoxId = item.box_id;
@@ -144,7 +135,24 @@ const CreateBox: React.FC = () => {
             size_id: item.size_id
           });
   
-        if (contentsError) throw contentsError;
+        if (contentsError) {
+          throw contentsError;
+        }
+
+        // Create box movement entry
+        const { error: movementError } = await supabase
+          .from('box_movements')
+          .insert({
+            moved_by: userId || null,
+            box_id: targetBoxId,
+            to_location_id: item.location_id || null,
+            action: "Created",
+            note: item.note || 'Box created',
+          });
+
+        if (movementError) {
+          throw movementError;
+        }
       }
   
       setCreateBoxItems([
@@ -155,7 +163,8 @@ const CreateBox: React.FC = () => {
           quantity: 0,
           gender: 'Unisex',
           size_id: null,
-          location_id: null
+          location_id: null,
+          note: ''
         }
       ]);
 
@@ -164,7 +173,6 @@ const CreateBox: React.FC = () => {
       const { data: boxesData } = await supabase.from('boxes').select('*');
       setExistingBoxes(boxesData || []);
     } catch (error) {
-      console.error('Error creating boxes:', error);
     // toast.error('Failed to create boxe');
     }
   };
@@ -180,6 +188,7 @@ const CreateBox: React.FC = () => {
             <TableHead>Gender</TableHead>
             <TableHead>Size</TableHead>
             <TableHead>Location</TableHead>
+            <TableHead>Note (Optional)</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -201,7 +210,7 @@ const CreateBox: React.FC = () => {
                     <option value="">Select Existing Box</option>
                     {existingBoxes.map((box) => (
                       <option key={box.box_id} value={box.box_id}>
-                        {box.name}
+                        {box.box_name}
                       </option>
                     ))}
                   </select>
@@ -288,6 +297,16 @@ const CreateBox: React.FC = () => {
                     </option>
                   ))}
                 </select>
+              </TableCell>
+              <TableCell>
+                <Input 
+                  placeholder="Add a note (optional)"
+                  value={item.note || ''}
+                  onChange={(e) => updateCreateBoxItem(index, { 
+                    note: e.target.value 
+                  })}
+                  className="w-full"
+                />
               </TableCell>
             </TableRow>
           ))}

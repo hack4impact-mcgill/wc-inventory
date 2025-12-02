@@ -2,6 +2,13 @@ import { useState } from "react";
 import { Size } from "@/types/size";
 import { Card, CardContent } from "@/components/ui/card";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
     Dialog,
     DialogContent,
     DialogHeader,
@@ -243,101 +250,85 @@ const SizeManagement = () => {
 
     return (
         <>
-            <Card>
-                <CardContent className="pt-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-4">
-                            <div className="relative">
-                                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search sizes..."
-                                    value={filter}
-                                    onChange={(e) => setFilter(e.target.value)}
-                                    className="pl-8 w-[300px]"
-                                />
-                            </div>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline">
-                                        {categoryFilter || "All Categories"}
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuItem onClick={() => setCategoryFilter(undefined)}>
-                                        All Categories
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setCategoryFilter("Adult")}>
-                                        Adult Sizes
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setCategoryFilter("Kid")}>
-                                        Kid Sizes
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setCategoryFilter("Shoe")}>
-                                        Shoe Sizes
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline">
-                                        {regionFilter || "All Regions"}
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuItem onClick={() => setRegionFilter(undefined)}>
-                                        All Regions
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setRegionFilter("US")}>
-                                        US
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setRegionFilter("EU")}>
-                                        EU
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setRegionFilter("UK")}>
-                                        UK
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setRegionFilter("INT")}>
-                                        International
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline">
-                                        Sort By: {
-                                            sortBy === "updated" ? "Last Updated" :
-                                            sortBy === "asc" ? "Smallest to Largest" :
-                                            "Largest to Smallest"
-                                        }
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuItem onClick={() => setSortBy("updated")}>
-                                        Last Updated
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setSortBy("asc")}>
-                                        Smallest to Largest
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setSortBy("desc")}>
-                                        Largest to Smallest
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                        <Button onClick={() => setIsDialogOpen(true)}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Size
-                        </Button>
-                    </div>
+            <div>
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-4">
 
-                    <SizeTable
-                        sizes={filteredSizes}
-                        categoryFilter={categoryFilter}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                    />
-                </CardContent>
-            </Card>
+                        <div className="relative">
+                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Search sizes..."
+                                value={filter}
+                                onChange={(e) => setFilter(e.target.value)}
+                                className="pl-8 w-[300px]"
+                            />
+                        </div>
+
+                        <Select
+                            value={categoryFilter || "all"}
+                            onValueChange={(v) => setCategoryFilter(v === "all" ? undefined : v)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="All Categories" /> 
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Categories</SelectItem>
+                                <SelectItem value="Adult">Adult Sizes</SelectItem>
+                                <SelectItem value="Kid">Kid Sizes</SelectItem>
+                                <SelectItem value="Shoe">Shoe Sizes</SelectItem>
+                            </SelectContent>
+                        </Select>
+
+
+                        <Select
+                            value={regionFilter || "all"}
+                            onValueChange={(v) => setRegionFilter(v === "all" ? undefined : v)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="All Regions" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Regions</SelectItem>
+                                <SelectItem value="US">US</SelectItem>
+                                <SelectItem value="EU">EU</SelectItem>
+                                <SelectItem value="UK">UK</SelectItem>
+                                <SelectItem value="INT">International</SelectItem>
+                            </SelectContent>
+                        </Select>
+
+                        <Select
+                            value={sortBy}
+                            onValueChange={(v) => setSortBy(v as "updated" | "asc" | "desc")}
+                        >
+                            <SelectTrigger>
+                                <div className="flex items-center gap-1.5">
+                                    <span>Sort By:</span> 
+                                    <SelectValue
+                                        placeholder="Sort By"
+                                    />
+                                </div>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="updated">Last Updated</SelectItem>
+                                <SelectItem value="asc">Smallest to Largest</SelectItem>
+                                <SelectItem value="desc">Largest to Smallest</SelectItem>
+                            </SelectContent>
+                        </Select>
+
+                    </div>
+                    <Button onClick={() => setIsDialogOpen(true)}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Size
+                    </Button>
+                </div>
+
+                <SizeTable
+                    sizes={filteredSizes}
+                    categoryFilter={categoryFilter}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                />
+            </div>
 
             <Dialog open={isDialogOpen} onOpenChange={handleClose}>
                 <DialogContent className="sm:max-w-[425px]">

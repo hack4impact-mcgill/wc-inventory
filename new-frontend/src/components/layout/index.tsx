@@ -28,6 +28,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     return user?.email?.substring(0, 2).toUpperCase() ?? "U";
   };
 
+  const isAdmin = () => {
+    return user?.user_metadata?.role === "admin";
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="sticky top-0 z-50 w-full border-b bg-white dark:bg-gray-950">
@@ -42,7 +46,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
             <h1 className="text-lg font-semibold">WC</h1>
 
-            <nav className="hidden md:flex items-center space-x-4">
+            <nav className="md:flex items-center space-x-4">
               <Button
                 variant="ghost"
                 className="text-sm font-medium"
@@ -72,14 +76,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     </p>
                   </div>
                 </DropdownMenuLabel>
-                {/* user?.role === 'Admin' &&  */}
-                <DropdownMenuItem
-                  onClick={() => navigate("/admin")}
-                  className="text-gray-700 dark:text-gray-300 cursor-pointer"
-                >
-                  <Shield className="mr-2 h-4 w-4" />
-                  <span>Admin Dashboard</span>
-                </DropdownMenuItem>
+                {isAdmin() && (
+                  <DropdownMenuItem
+                    onClick={() => navigate("/admin")}
+                    className="text-gray-700 dark:text-gray-300 cursor-pointer"
+                  >
+                    <Shield className="mr-2 h-4 w-4" />
+                    <span>Admin Dashboard</span>
+                  </DropdownMenuItem>
+                )}
+
                 <DropdownMenuItem className="h-px bg-gray-200 dark:bg-gray-700 p-0 m-1" />
                 <DropdownMenuItem
                   onClick={handleSignOut}

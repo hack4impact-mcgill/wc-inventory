@@ -12,7 +12,7 @@ export const boxApi = {
     return data as BoxView[];
   },
 
-  getBox: async (boxId: string) => {
+  getBox: async (boxId: string) => { //this is never used either
     const { data, error } = await supabase
       .from("box_view")
       .select()
@@ -23,7 +23,7 @@ export const boxApi = {
     return data as Box;
   },
 
-  getBoxContents: async (boxId: string) => {
+  getBoxContents: async (boxId: string) => { //This doesnt even exist (the view)?
     const { data, error } = await supabase
       .from("box_contents_view")
       .select()
@@ -33,17 +33,18 @@ export const boxApi = {
     return data;
   },
 
-  moveBoxes: async (boxIds: string[], locationId: string) => {
+  moveBoxes: async (boxIds: string[], locationId: string, note?: string) => {
     const { data, error } = await supabase.rpc("move_boxes", {
       p_box_ids: boxIds,
       p_location_id: locationId,
+      p_note: note,
     });
 
     if (error) throw new Error(error.message);
     return data;
   },
 
-  donateBoxes: async (boxIds: string[]) => {
+  donateBoxes: async (boxIds: string[], note?: string) => {
     // Get current user ID
     const currentUser = await supabase.auth.getUser();
     const userId = currentUser.data.user?.id;
@@ -69,7 +70,7 @@ export const boxApi = {
         to_location_id: null, // No destination for donations
         moved_at: new Date().toISOString(),
         moved_by: userId || null,
-        note: "Donated via inventory management",
+        note: note || "Donated via inventory management",
       };
     });
 

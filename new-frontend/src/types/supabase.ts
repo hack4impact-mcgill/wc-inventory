@@ -203,31 +203,34 @@ export type Database = {
       boxes: {
         Row: {
           box_id: string
+          box_name: string | null
+          box_number: number
           created_at: string | null
           description: string | null
           donated_at: string | null
           location_id: string | null
-          name: string
           status: Database["public"]["Enums"]["box_status_enum"]
           updated_at: string | null
         }
         Insert: {
           box_id?: string
+          box_name?: string | null
+          box_number?: number
           created_at?: string | null
           description?: string | null
           donated_at?: string | null
           location_id?: string | null
-          name: string
           status?: Database["public"]["Enums"]["box_status_enum"]
           updated_at?: string | null
         }
         Update: {
           box_id?: string
+          box_name?: string | null
+          box_number?: number
           created_at?: string | null
           description?: string | null
           donated_at?: string | null
           location_id?: string | null
-          name?: string
           status?: Database["public"]["Enums"]["box_status_enum"]
           updated_at?: string | null
         }
@@ -275,6 +278,75 @@ export type Database = {
             referencedColumns: ["category_id"]
           },
         ]
+      }
+      category_icons: {
+        Row: {
+          created_at: string
+          data: string
+          icon_id: string
+          mime_type: string
+          name: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          data: string
+          icon_id?: string
+          mime_type: string
+          name: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          data?: string
+          icon_id?: string
+          mime_type?: string
+          name?: string
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
+      hook_debug_log: {
+        Row: {
+          called_at: string | null
+          id: number
+          sub: string | null
+          who: string | null
+        }
+        Insert: {
+          called_at?: string | null
+          id?: number
+          sub?: string | null
+          who?: string | null
+        }
+        Update: {
+          called_at?: string | null
+          id?: number
+          sub?: string | null
+          who?: string | null
+        }
+        Relationships: []
+      }
+      hook_error_log: {
+        Row: {
+          called_at: string | null
+          error: string | null
+          id: number
+          sub: string | null
+        }
+        Insert: {
+          called_at?: string | null
+          error?: string | null
+          id?: number
+          sub?: string | null
+        }
+        Update: {
+          called_at?: string | null
+          error?: string | null
+          id?: number
+          sub?: string | null
+        }
+        Relationships: []
       }
       locations: {
         Row: {
@@ -368,7 +440,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          role: Database["public"]["Enums"]["app_role"]
+          role?: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Update: {
@@ -495,43 +567,40 @@ export type Database = {
       }
     }
     Functions: {
-      add_user_role: {
-        Args:
-          | { new_role: string; new_user_id: number }
-          | { new_role: string; new_user_id: string }
-        Returns: undefined
-      }
-      add_user_role_uuid: {
-        Args:
-          | {
+      add_user_role:
+        | {
+            Args: { new_role: string; new_user_id: number }
+            Returns: undefined
+          }
+        | {
+            Args: { new_role: string; new_user_id: string }
+            Returns: undefined
+          }
+      add_user_role_uuid:
+        | {
+            Args: { new_role: string; new_user_id: string }
+            Returns: undefined
+          }
+        | {
+            Args: {
               new_role: Database["public"]["Enums"]["app_role"]
               new_user_id: string
             }
-          | { new_role: string; new_user_id: string }
-        Returns: undefined
-      }
+            Returns: undefined
+          }
       authorize: {
         Args: {
           requested_permission: Database["public"]["Enums"]["app_permission"]
         }
         Returns: boolean
       }
-      check_user_exists: {
-        Args: { input_email: string }
-        Returns: boolean
-      }
+      check_user_exists: { Args: { input_email: string }; Returns: boolean }
       create_new_user: {
         Args: { email: string; name: string; password: string; role: string }
         Returns: undefined
       }
-      custom_access_token_hook: {
-        Args: { event: Json }
-        Returns: Json
-      }
-      get_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      custom_access_token_hook: { Args: { event: Json }; Returns: Json }
+      get_user_role: { Args: never; Returns: Json }
       insert_user_role_uuid: {
         Args: {
           new_role: Database["public"]["Enums"]["app_role"]
@@ -547,7 +616,7 @@ export type Database = {
     Enums: {
       app_permission: "users.create" | "users.edit" | "users.delete"
       app_role: "admin" | "volunteer"
-      box_movement_action: "Donated" | "Moved" | "Retired" | "Other"
+      box_movement_action: "Donated" | "Moved" | "Retired" | "Created" | "Other"
       box_status_enum: "Active" | "Donated" | "Archived"
       gender_enum: "Male" | "Female" | "Unisex" | "Kids"
       icon_name_enum:
@@ -566,7 +635,7 @@ export type Database = {
       size_category_enum: "Adult" | "Kid" | "Shoe" | "Other" | "baby"
       size_region_enum: "US" | "EU" | "UK" | "INT"
       user_role: "admin" | "volunteer"
-      user_role_enum: "Volunteer" | "Admin"
+      user_role_enum: "volunteer" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -696,7 +765,7 @@ export const Constants = {
     Enums: {
       app_permission: ["users.create", "users.edit", "users.delete"],
       app_role: ["admin", "volunteer"],
-      box_movement_action: ["Donated", "Moved", "Retired", "Other"],
+      box_movement_action: ["Donated", "Moved", "Retired", "Created", "Other"],
       box_status_enum: ["Active", "Donated", "Archived"],
       gender_enum: ["Male", "Female", "Unisex", "Kids"],
       icon_name_enum: [
@@ -716,7 +785,7 @@ export const Constants = {
       size_category_enum: ["Adult", "Kid", "Shoe", "Other", "baby"],
       size_region_enum: ["US", "EU", "UK", "INT"],
       user_role: ["admin", "volunteer"],
-      user_role_enum: ["Volunteer", "Admin"],
+      user_role_enum: ["volunteer", "admin"],
     },
   },
 } as const

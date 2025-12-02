@@ -33,7 +33,9 @@ export default function LoginPage() {
       await signIn(email, password);
       navigate("/"); // Navigate to home page after login
     } catch (error) {
-      setError("Invalid email or password");
+      setError(
+        error instanceof Error ? error.message : "Invalid email or password",
+      );
     } finally {
       setIsLoading(false);
     }

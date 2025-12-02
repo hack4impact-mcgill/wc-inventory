@@ -63,18 +63,16 @@ const LocationManagement = () => {
 
   return (
     <>
-      <Card>
-        <CardContent className="pt-6">
-          <LocationTable
-            locations={locations}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            globalFilter={globalFilter}
-            setGlobalFilter={setGlobalFilter}
-            onAdd={() => setIsDialogOpen(true)}
-          />
-        </CardContent>
-      </Card>
+      <div>
+        <LocationTable
+          locations={locations}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          globalFilter={globalFilter}
+          setGlobalFilter={setGlobalFilter}
+          onAdd={() => setIsDialogOpen(true)}
+        />
+      </div>
 
       <Dialog open={isDialogOpen} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-[500px]">

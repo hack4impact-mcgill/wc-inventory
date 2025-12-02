@@ -30,7 +30,7 @@ export default function UserManagement() {
 
   const handleCreateUser = async (data: UserFormData) => {
     try {
-      createUser(data);
+      await createUser(data);
       toast({ title: "Success", description: "User created successfully" });
       setIsModalOpen(false);
     } catch (error) {
@@ -56,34 +56,29 @@ export default function UserManagement() {
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>User Management</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex justify-between items-center mb-4">
-          <SearchBar value={searchTerm} onChange={setSearchTerm} />
-          <Button onClick={() => setIsModalOpen(true)}>Create User</Button>
-        </div>
+    <div className="w-full">
+      <div className="flex justify-between items-center mb-4">
+        <SearchBar value={searchTerm} onChange={setSearchTerm} />
+        <Button onClick={() => setIsModalOpen(true)}>Create User</Button>
+      </div>
 
-        <UserTable
-          users={filteredUsers || []}
-          onUserClick={(id) => navigate(`/admin/users/${id}`)}
-        />
+      <UserTable
+        users={filteredUsers || []}
+        onUserClick={(id) => navigate(`/admin/users/${id}`)}
+      />
 
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent aria-describedby="create-user-dialog">
-            <DialogHeader>
-              <DialogTitle>Create New User</DialogTitle>
-            </DialogHeader>
-            <UserForm
-              onSubmit={handleCreateUser}
-              onCancel={() => setIsModalOpen(false)}
-              isLoading={isCreating}
-            />
-          </DialogContent>
-        </Dialog>
-      </CardContent>
-    </Card>
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent aria-describedby="create-user-dialog">
+          <DialogHeader>
+            <DialogTitle>Create New User</DialogTitle>
+          </DialogHeader>
+          <UserForm
+            onSubmit={handleCreateUser}
+            onCancel={() => setIsModalOpen(false)}
+            isLoading={isCreating}
+          />
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
