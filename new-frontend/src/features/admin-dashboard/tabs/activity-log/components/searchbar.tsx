@@ -103,12 +103,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
                     color: "#000", // Make the input text black
                     fontWeight: 400,
                     fontSize: "0.875rem",
+                    fontFamily: "var(--font-sans)",
                   },
 
                   // 💡 Style the placeholder text
                   "& .MuiInputBase-input::placeholder": {
                     color: "#000", // Force black placeholder
                     opacity: 1, // Required to make the color show
+                    fontFamily: "var(--font-sans)",
                   },
 
                   "& .MuiOutlinedInput-root": {

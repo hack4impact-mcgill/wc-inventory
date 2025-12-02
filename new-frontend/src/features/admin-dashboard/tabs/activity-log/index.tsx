@@ -145,69 +145,26 @@ const ActivityLog = () => {
   console.log(filteredLogs as BoxMovementView[]);
 
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <SearchBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          setStartDate={setStartDate}
-          setEndDate={setEndDate}
-          setAction={setAction}
-          onRefetch={refetch}
-        />
-        <ActivityLogTable
-          filteredData={filteredLogs!}
-          isLoading={isLoading}
-          onBoxSelect={handleSelectBox}
-        />
-      </CardContent>
-    </Card>
+    <>
+      <SearchBar
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        setStartDate={setStartDate}
+        setEndDate={setEndDate}
+        setAction={setAction}
+        onRefetch={refetch}
+      />
+      <Card>
+        <CardContent className="mt-6">
+          <ActivityLogTable
+            filteredData={filteredLogs!}
+            isLoading={isLoading}
+            onBoxSelect={handleSelectBox}
+          />
+        </CardContent>
+      </Card>
+    </>
   );
-
-  // return (
-  //   <>
-  //     <div className="p-16 gap-y-2 px-20 font-poppins">
-  //       <div>
-  //         <SearchBar
-  //           searchTerm={searchTerm}
-  //           onSearchChange={setSearchTerm}
-  //           setStartDate={setStartDate}
-  //           setEndDate={setEndDate}
-  //           setAction={setAction}
-  //           onRefetch={refetch}
-  //         />
-  //       </div>
-  //       <div>
-  //         <ActivityLogTable
-  //           filteredData={filteredLogs!}
-  //           isLoading={isLoading}
-  //           onBoxSelect={handleSelectBox}
-  //         />
-  //       </div>
-  //     </div>
-  //     {/* Popup - renders only when content exists */}
-  //     {content && (
-  //       <aside
-  //         className="fixed z-50 w-full md:w-96 bg-white rounded-2xl shadow-xl border p-4"
-  //         style={{ top: "var(--popup-top)", left: "var(--popup-left)" }}
-  //         onClick={(e) => e.stopPropagation()}
-  //         role="dialog"
-  //         aria-modal="true"
-  //       >
-  //         {/* Close button */}
-  //         <button
-  //           type="button"
-  //           aria-label="Close"
-  //           className="absolute top-2 right-2 inline-flex h-12 w-12 items-center justify-center"
-  //           onClick={() => setSelectedBoxId(null)}
-  //         >
-  //           ×
-  //         </button>
-  //         {content}
-  //       </aside>
-  //     )}
-  //   </>
-  // );
 };
 
 export default ActivityLog;

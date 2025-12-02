@@ -403,7 +403,7 @@ const BoxLookup: React.FC = () => {
   const content = getSelectedBoxesContent();
   console.log(content);
   return (
-    <div>
+    <>
       <SearchFilters
         onSearch={(value) => handleFilterChange("searchTerm", value)}
         onCategoryChange={(value) => handleFilterChange("category", value)}
@@ -457,7 +457,7 @@ const BoxLookup: React.FC = () => {
           isProcessing={deleteBoxesMutation.isPending}
         />
       }
-    </div>
+    </>
   );
 };
 
