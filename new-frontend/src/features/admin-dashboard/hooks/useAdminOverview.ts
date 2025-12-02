@@ -5,6 +5,7 @@ import { formatISO } from "date-fns";
 export function useAdminOverview(period: { id: string; start?: Date; end?: Date }) {
   const startDate = period.start ? formatISO(period.start) : undefined;
   const endDate = period.end ? formatISO(period.end) : undefined;
+  // const endDate = period.end ? formatISO(new Date(period.end.getTime() + 1000)) : undefined;
 
   return {
     donatedBoxes: useQuery({ queryKey: ['admin', 'donatedBoxes', period.id], queryFn: () => analyticsAPI.donatedBoxesCount({ startDate, endDate }) }),
