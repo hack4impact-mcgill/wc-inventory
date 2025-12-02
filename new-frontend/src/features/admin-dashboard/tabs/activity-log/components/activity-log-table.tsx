@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -7,11 +6,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowUpDown } from "lucide-react";
 import { BoxMovementView } from "@/types/activity-log";
 import { format } from "date-fns";
-import { useNavigate } from "react-router-dom";
-import { useSearchParams } from "react-router-dom";
+import { ArrowUpDown } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 type SortKeyOption = "moved_by_email" | "box_name" | "moved_at" | null;
 
@@ -32,7 +31,6 @@ const ActivityLogTable = ({
   const [searchValue, setSearchValue] = useState(defaultBox);
   const [sortKey, setSortKey] = useState<SortKeyOption>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  
 
   // Sorting method for the toggle, sorts descending or asceding.
   useEffect(() => {
@@ -61,67 +59,58 @@ const ActivityLogTable = ({
       return sortOrder === "asc" ? result : -result;
     });
     console.log(filteredData);
-  }, [sortKey, sortOrder,defaultBox]);
+  }, [sortKey, sortOrder, defaultBox]);
 
   if (isLoading) {
     return <p className="text-center p-4">Loading...</p>;
   }
 
   // apply box name filtering
-  const filteredRows = filteredData.filter(row =>
-    (row.box_name ?? "").toLowerCase().includes(searchValue.toLowerCase())
-);
-
+  const filteredRows = filteredData.filter((row) =>
+    (row.box_name ?? "").toLowerCase().includes(searchValue.toLowerCase()),
+  );
 
   // ----------------------------- Table Header -----------------------------------------
 
   return (
     <div>
-      <Table className="border-separate border-spacing-0 w-full">
+      <Table>
         <TableHeader>
-          <TableRow className="bg-gray-100">
-            <TableHead className="font-poppins font-normal text-black p-4 cursor-pointer border-[0.5px] border-gray-300 rounded-tl">
-              User{" "}
+          <TableRow>
+            <TableHead>
+              User
               <ArrowUpDown
-                className="inline pl-1"
+                className="inline pl-1 hover:cursor-pointer"
                 onClick={() => {
                   setSortKey("moved_by_email");
-                  console.log("sortKey", sortKey);
                   sortOrder === "asc"
                     ? setSortOrder("desc")
                     : setSortOrder("asc");
-                  console.log("sortOrder", sortOrder);
                 }}
               />
             </TableHead>
 
-            <TableHead className="font-poppins font-normal text-black p-4 cursor-pointer border-[0.5px] border-gray-300">
-              Action
-            </TableHead>
+            <TableHead>Action</TableHead>
 
-            <TableHead className="font-poppins font-normal text-black p-4 cursor-pointer border-[0.5px] border-gray-300">
-              Note
-            </TableHead>
+            <TableHead>Note</TableHead>
 
-            <TableHead className="font-poppins font-normal text-black p-4 cursor-pointer border-[0.5px] border-gray-300">
+            <TableHead>
               Box
               <ArrowUpDown
-                className="inline pl-1"
+                className="inline pl-1 hover:cursor-pointer"
                 onClick={() => {
                   setSortKey("box_name");
-                  console.log("sortKey", sortKey);
                   sortOrder === "asc"
                     ? setSortOrder("desc")
                     : setSortOrder("asc");
-                  console.log("sortOrder", sortOrder);
                 }}
               />
             </TableHead>
 
-            <TableHead className="font-poppins font-normal text-black p-4 cursor-pointer border-[0.5px] border-gray-300 rounded-tr-md">
+            <TableHead>
               Time
               <ArrowUpDown
-                className="inline pl-1"
+                className="inline pl-1 hover:cursor-pointer"
                 onClick={() => {
                   setSortKey("moved_at");
                   sortOrder === "asc"
@@ -135,9 +124,9 @@ const ActivityLogTable = ({
         <TableBody>
           {filteredRows.length > 0 ? (
             filteredRows.map((entry, index) => (
-              <TableRow key={index} className="border-[0.5px]">
+              <TableRow key={index}>
                 <TableCell
-                  className={`text-[#00559B] border-[0.5px] border-gray-300 p-4 hover:underline cursor-pointer ${
+                  className={`text-[#00559B] ${
                     index === filteredRows.length - 1 ? "rounded-bl-md" : ""
                   }`}
                 >
@@ -145,34 +134,33 @@ const ActivityLogTable = ({
                     onClick={() => {
                       navigate(`/admin/users/${entry.moved_by_user_id}`);
                     }}
-                    className="hover:underline cursor-pointer underline"
+                    className="hover:underline cursor-pointer"
                   >
                     {entry.moved_by_email}
                   </span>
                 </TableCell>
-                <TableCell className="text-gray-500 border-[0.5px] border-gray-300 p-4">
-                  {entry.action}
-                </TableCell>
-                <TableCell className="text-gray-500 border-[0.5px] border-gray-300 p-4">
-                  {entry.note}
-                </TableCell>
-                <TableCell className="text-[#00559B] border-[0.5px] border-gray-300 p-4">
+                <TableCell>{entry.action}</TableCell>
+                <TableCell>{entry.note}</TableCell>
+                <TableCell className="text-[#00559B] ">
                   <span
-                    className="underline hover:no-underline cursor-pointer"
+                    className=" hover:underline cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
                       if (entry.box_id) {
-                        onBoxSelect(String(entry.box_id), e.currentTarget as HTMLElement);
+                        onBoxSelect(
+                          String(entry.box_id),
+                          e.currentTarget as HTMLElement,
+                        );
                       }
                     }}
                     role="button"
                     tabIndex={0}
                   >
-                  {entry.box_name}
+                    {entry.box_name}
                   </span>
                 </TableCell>
                 <TableCell
-                  className={`text-gray-500 border-[0.5px] border-gray-300 p-4${
+                  className={`${
                     index === filteredRows.length - 1 ? "rounded-br-md" : ""
                   }`}
                 >
@@ -184,10 +172,7 @@ const ActivityLogTable = ({
             ))
           ) : (
             <TableRow>
-              <TableCell
-                colSpan={4}
-                className="text-center py-4 border-[0.5px] border-gray-300 p-4 font-poppins font-normal "
-              >
+              <TableCell colSpan={5} className="font-normal">
                 No results found.
               </TableCell>
             </TableRow>

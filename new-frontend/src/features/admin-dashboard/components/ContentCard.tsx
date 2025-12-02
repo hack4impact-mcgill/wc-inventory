@@ -47,7 +47,7 @@ const ContentCard = ({ item }: ContentCardProps) => {
     <div className="p-4 bg-white rounded-lg border shadow-sm text-sm">
       <div className="flex items-center gap-3">
             <img
-              src={iconSrc}
+              src={iconSrc || "/src/assets/category_icons/Folder.svg"}
               alt={item.type}
               className="w-8 h-8 object-contain"
               onError={(e) =>

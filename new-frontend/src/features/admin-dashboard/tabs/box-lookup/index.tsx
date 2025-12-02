@@ -359,7 +359,7 @@ const BoxLookup: React.FC = () => {
   const actionButtons = (
     <div className="flex gap-4">
       <Button
-        // variant="outline"
+        variant="outline"
         onClick={handlePrintLabel}
         disabled={selectedBoxIds.length === 0}
       >
@@ -401,9 +401,8 @@ const BoxLookup: React.FC = () => {
     );
   }
   const content = getSelectedBoxesContent();
-  console.log(content);
   return (
-    <div>
+    <>
       <SearchFilters
         onSearch={(value) => handleFilterChange("searchTerm", value)}
         onCategoryChange={(value) => handleFilterChange("category", value)}
@@ -457,7 +456,7 @@ const BoxLookup: React.FC = () => {
           isProcessing={deleteBoxesMutation.isPending}
         />
       }
-    </div>
+    </>
   );
 };
 

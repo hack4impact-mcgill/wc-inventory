@@ -6,6 +6,8 @@ import { Category, CategoryFormData } from "@/types/category";
 import { Upload } from "lucide-react";
 import { uploadIcon } from "@/lib/iconLoader";
 import { supabase } from "@/lib/supabaseClient";
+import { useToast } from "@/hooks/use-toast";
+
 export interface CategoryFormProps {
   categories: ReadonlyArray<Category>;
   onSubmit: (values: CategoryFormData) => Promise<void>;
@@ -14,9 +16,14 @@ export interface CategoryFormProps {
   onClose: () => void;
 }
 
-const CategoryForm: FC<CategoryFormProps> = (
-  { categories, onSubmit, initialData, isLoading, onClose },
-) => {
+const CategoryForm: FC<CategoryFormProps> = ({
+  categories,
+  onSubmit,
+  initialData,
+  isLoading,
+  onClose,
+}) => {
+  const { toast } = useToast();
   const [formData, setFormData] = useState<CategoryFormData>(() => ({
     name: initialData?.name || "",
     description: initialData?.description || "",
@@ -24,6 +31,103 @@ const CategoryForm: FC<CategoryFormProps> = (
     icon: initialData?.icon || null,
     parent_id: initialData?.parent_id || null,
   }));
+
+  const [parentSearch, setParentSearch] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [breadcrumb, setBreadcrumb] = useState<Category[]>([]);
+  const [iconRefreshKey, setIconRefreshKey] = useState(0);
+  const [fileInputKey, setFileInputKey] = useState(0);
+
+  const currentParent = breadcrumb[breadcrumb.length - 1];
+  const searchQuery = (
+    breadcrumb.map((c) => c.name).join("") + "" + parentSearch
+  )
+    .toLowerCase()
+    .replace(/\s/g, "");
+
+//HELPER FUNCTIONS:
+  const getCategoryPath = (category: Category): string => {
+    const path: string[] = [category.name];
+    let currentCategory = category;
+
+    while (currentCategory.parent_id) {
+      const parent = categories.find((c) => c.category_id === currentCategory.parent_id);
+      if (!parent) break;
+      path.unshift(parent.name);
+      currentCategory = parent;
+    }
+
+    return path.join(" → ");
+  };
+
+  const getCategoryBreadcrumb = (category: Category): Category[] => {
+    const chain: Category[] = [];
+    let current: Category | undefined = category;
+    while (current) {
+      chain.unshift(current);
+      current = categories.find((c) => c.category_id === current?.parent_id);
+    }
+    return chain;
+  };
+
+  const filteredCategories = categories
+    .filter((category) => {
+      //Don't show the category itself as a parent option
+      if (formData.parent_id && category.category_id === formData.parent_id) {
+        return false;
+      }
+
+      const isTopLevel = !category.parent_id;
+      const isDirectChildOfCurrent =
+        currentParent && category.parent_id === currentParent.category_id;
+
+      if (currentParent) {
+        if (!isDirectChildOfCurrent) return false;
+      } else {
+        if (!isTopLevel) return false;
+      }
+
+      if (!searchQuery.trim()) return true;
+
+      const path = getCategoryPath(category)
+        .toLowerCase()
+        .replace(/\s/g, "")
+        .replace(/→/g, "");
+
+      return path.includes(searchQuery);
+    })
+    .sort((a, b) => {
+      const aDepth = getCategoryPath(a).split(" → ").length;
+      const bDepth = getCategoryPath(b).split(" → ").length;
+      return aDepth - bDepth;
+    });
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleParentSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setParentSearch(e.target.value);
+    setShowSuggestions(true);
+  };
+
+  const handleSelectParent = (category: Category) => {
+    setFormData((prev) => ({
+      ...prev,
+      parent_id: category.category_id,
+      level: category.level || 0,
+    }));
+
+    const chain = getCategoryBreadcrumb(category);
+    setBreadcrumb(chain);
+    setParentSearch("");
+  };
 
   const handleClearParent = () => {
     setFormData((prev) => ({
@@ -35,104 +139,80 @@ const CategoryForm: FC<CategoryFormProps> = (
     setParentSearch("");
     setShowSuggestions(false);
   };
-  
-  const [parentSearch, setParentSearch] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [breadcrumb, setBreadcrumb] = useState<Category[]>([]);
-  const currentParent = breadcrumb[breadcrumb.length - 1];
-  const searchQuery = (breadcrumb.map(c => c.name).join("") + "" + parentSearch).toLowerCase().replace(/\s/g, "");
 
-  const getCategoryPath = (category: Category): string => {
-    const path: string[] = [category.name];
-    let currentCategory = category;
-
-    while (currentCategory.parent_id) {
-      const parent = categories.find((c) =>
-        c.category_id === currentCategory.parent_id
-      );
-      if (!parent) break;
-      path.unshift(parent.name);
-      currentCategory = parent;
-    }
-
-    return path.join(" → ");
-  };
-  const getCategoryBreadcrumb = (category: Category): Category[] => {
-    const chain: Category[] = [];
-    let current: Category | undefined = category;
-    while (current) {
-      chain.unshift(current);
-      current = categories.find(c => c.category_id === current?.parent_id);
-    }
-    return chain;
-  };
-  const filteredCategories = categories
-  .filter((category) => {
-
-    if (formData.parent_id && category.category_id === formData.parent_id) {
-      return false;
-    }
-
-    const isTopLevel = !category.parent_id;
-    const isDirectChildOfCurrent =
-      currentParent && category.parent_id === currentParent.category_id;
-
-    if (currentParent) {
-      if (!isDirectChildOfCurrent) return false;
-    } else {
-      if (!isTopLevel) return false;
-    }
-
-
-    if (!searchQuery.trim()) return true;
-
-
-    const path = getCategoryPath(category)
-      .toLowerCase()
-      .replace(/\s/g, "")
-      .replace(/→/g, "");
-
-    return path.includes(searchQuery);
-  })
-  .sort((a, b) => {
-    const aDepth = getCategoryPath(a).split(" → ").length;
-    const bDepth = getCategoryPath(b).split(" → ").length;
-    return aDepth - bDepth;
-  });
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleParentSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setParentSearch(e.target.value );
-    setShowSuggestions(true);
-  };
-
-  const handleSelectParent = (category: Category) => {
-    setFormData(prev => ({
-      ...prev,
-      parent_id: category.category_id,
-      level: (category.level || 0),
-    }));
-  
-    const chain = getCategoryBreadcrumb(category);
-    setBreadcrumb(chain);
-
-    setParentSearch(""); 
-  };
-
-  const handleIconChange = (newIcon:string | null) => {
+  const handleIconChange = (newIcon: string | null) => {
     setFormData((prev) => ({
       ...prev,
       icon: newIcon,
     }));
+  };
+
+  const handleIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileInput = e.target;
+    const file = fileInput.files?.[0];
+    if (!file) return;
+
+    fileInput.value = "";
+    setFileInputKey(prev => prev + 1);
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        const dataUrl = ev.target?.result as string;
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        const user_id = user?.id;
+
+        // Generate a clean filename without extension
+        const cleanFilename = file.name.replace(/\.[^/.]+$/, "");
+
+        try {
+          // The duplicate check is now handled in the uploadIcon function
+          const newIcon = await uploadIcon(
+            file,
+            cleanFilename,
+            user_id
+          );
+
+          setFormData((prev) => ({
+            ...prev,
+            icon: newIcon.name,
+          }));
+          setIconRefreshKey(Date.now());
+
+          toast({
+            title: "Success",
+            description: `Icon "${newIcon.name}" uploaded successfully!`,
+          });
+        } catch (uploadError) {
+          console.error("Upload failed:", uploadError);
+          
+          if (uploadError.message && uploadError.message.includes("already exists")) {
+            toast({
+              title: "Duplicate Icon",
+              description: uploadError.message,
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Error",
+              description: `Failed to upload icon: ${uploadError.message || "Unknown error"}`,
+              variant: "destructive",
+            });
+          }
+        }
+      };
+
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("File processing failed:", error);
+      toast({
+        title: "Error",
+        description: `Failed to process file: ${error.message || "Unknown error"}`,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -140,10 +220,8 @@ const CategoryForm: FC<CategoryFormProps> = (
     onSubmit(formData);
   };
 
-  // Set initial parent search value if editing
   useEffect(() => {
     if (initialData) {
-      // Pre-fill main form fields
       setFormData({
         name: initialData.name || "",
         description: initialData.description || "",
@@ -151,30 +229,28 @@ const CategoryForm: FC<CategoryFormProps> = (
         icon: initialData.icon || null,
         parent_id: initialData.parent_id || null,
       });
-  
+
       if (initialData.parent_id) {
         const parent = categories.find(
           (c) => c.category_id === initialData.parent_id
         );
         if (parent) {
-          // Restore breadcrumb chain
           const chain = getCategoryBreadcrumb(parent);
           setBreadcrumb(chain);
-  
-
         }
       } else {
-        // Reset everything if no parent
         setBreadcrumb([]);
         setParentSearch("");
       }
     }
   }, [initialData, categories]);
+
+  // Handle click outside to close suggestions dropdown
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const dropdown = document.getElementById("parent-category-dropdown");
       const input = document.getElementById("parent-category-input");
-  
+
       if (
         dropdown &&
         input &&
@@ -184,11 +260,10 @@ const CategoryForm: FC<CategoryFormProps> = (
         setShowSuggestions(false);
       }
     };
-  
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-4 py-4">
@@ -201,64 +276,22 @@ const CategoryForm: FC<CategoryFormProps> = (
         </label>
 
         <div className="flex-1 flex items-center gap-2">
-          {/* Icon selector */}
           <div className="flex-1">
             <IconSelector
               value={formData.icon}
               onChange={handleIconChange}
               className="w-full"
+              refreshTrigger={iconRefreshKey}
             />
           </div>
 
           <input
+            key={fileInputKey}
             type="file"
             id="icon-upload"
             accept=".svg"
             className="hidden"
-            onChange={async (e) => {
-              const fileInput = e.target;
-              const file = fileInput.files?.[0];
-              if (!file) return;
-
-              try {
-                const reader = new FileReader();
-                reader.onload = async (ev) => {
-                  const dataUrl = ev.target?.result as string;
-                  const { data: { user } } = await supabase.auth.getUser();
-                  const user_id = user?.id;
-
-                  const newIcon = await uploadIcon(
-                    file,
-                    file.name.replace(/\.[^/.]+$/, ""), 
-                    user_id
-
-                  )
-                  
-                  
-                  // await iconApi.createIcon({
-                  //   name: file.name.replace(/\.[^/.]+$/, ""), 
-                  //   mime_type: file.type,
-                  //   data: dataUrl,
-                  //   uploaded_by: null,
-                  // });
-                  
-
-                  setFormData((prev) => ({
-                    ...prev,
-                    icon: newIcon.name, 
-                  }));
-
-                  alert(`Icon "${newIcon.name}" uploaded successfully!`);
-                  fileInput.value = ""; 
-                };
-
-                reader.readAsDataURL(file);
-              } catch (error) {
-                console.error("Upload failed:", error);
-                alert("Failed to upload icon");
-                fileInput.value = "";
-              }
-            }}
+            onChange={handleIconUpload}
           />
 
           <Button
@@ -271,8 +304,6 @@ const CategoryForm: FC<CategoryFormProps> = (
           >
             <Upload className="h-4 w-4" />
           </Button>
-
-
         </div>
       </div>
 
@@ -303,103 +334,110 @@ const CategoryForm: FC<CategoryFormProps> = (
           placeholder="Category Description"
           className="min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         />
+      </div>
 
-        <div className="grid gap-2 relative">
-          <label htmlFor="parent" className="text-gray-700 font-medium">
-            Parent Category (Optional):
-          </label>
+      <div className="grid gap-2 relative">
+        <label htmlFor="parent" className="text-gray-700 font-medium">
+          Parent Category (Optional):
+        </label>
 
-          <div className="relative">
-            <div
-              className="flex items-center gap-1 border border-input rounded-md px-3 py-2 text-sm cursor-text bg-transparent min-h-[40px]"
-              onClick={() => setShowSuggestions(true)}
-            >
-
-              {breadcrumb.map((c, idx) => (
-                  <React.Fragment key={c.category_id}>
-                    <button
-                      type="button"
-                      className="hover:underline text-gray-700"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setBreadcrumb(breadcrumb.slice(0, idx + 1));
-                        setFormData(prev => ({
-                          ...prev,
-                          parent_id: c.category_id,
-                          level: (c.level || 0) ,
-                        }));
-                      }}
-                    >
-                      {c.name}
-                    </button>
-                    {idx < breadcrumb.length - 1 && <span>→</span>}
-                  </React.Fragment>
-                ))}
-
-              <input
-                id="parent-category-input" 
-                type="text"
-                className="flex-1 outline-none bg-transparent text-gray-700 placeholder-gray-400"
-                value={parentSearch}
-                onChange={handleParentSearch}
-                onFocus={() => setShowSuggestions(true)}
-                onKeyDown={(e) => {
-                  if (e.key === "Backspace" && parentSearch === "" && breadcrumb.length > 0) {
-                    const newBreadcrumb = breadcrumb.slice(0, -1);
-                    setBreadcrumb(newBreadcrumb);
-                  
-                    const last = newBreadcrumb[newBreadcrumb.length - 1];
-                    setFormData((prev) => ({
-                      ...prev,
-                      parent_id: last ? last.category_id : null,
-                      level: last ? last.level ?? 0 : 0,
-                    }));
-                  }
-                }}
-                placeholder={breadcrumb.length === 0 ? "Search for parent category..." : ""}
-              />
-
-
-              {breadcrumb.length > 0 && (
+        <div className="relative">
+          <div
+            className="flex items-center gap-1 border border-input rounded-md px-3 py-2 text-sm cursor-text bg-transparent min-h-[40px]"
+            onClick={() => setShowSuggestions(true)}
+          >
+            {breadcrumb.map((c, idx) => (
+              <React.Fragment key={c.category_id}>
                 <button
                   type="button"
+                  className="hover:underline text-gray-700"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleClearParent();
+                    setBreadcrumb(breadcrumb.slice(0, idx + 1));
+                    setFormData((prev) => ({
+                      ...prev,
+                      parent_id: c.category_id,
+                      level: c.level ?? 0,
+                    }));
                   }}
-                  className="ml-auto text-gray-400 hover:text-gray-600"
                 >
-                  ✕
+                  {c.name}
                 </button>
-              )}
-            </div>
-          </div>
+                {idx < breadcrumb.length - 1 && <span>→</span>}
+              </React.Fragment>
+            ))}
 
-          {showSuggestions && (
-            <div
-              id="parent-category-dropdown" 
-              className="absolute top-full left-0 right-0 mt-1 
-                        bg-white rounded-md border border-gray-200 shadow-lg z-10"
-              onMouseDown={(e) => e.preventDefault()}
-            >
-              {filteredCategories.length > 0 ? (
-                <div className="py-1 max-h-60 overflow-y-auto">
-                  {filteredCategories.map((category) => (
-                    <div
-                      key={category.category_id}
-                      className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() => handleSelectParent(category)}
-                    >
-                      {getCategoryPath(category)}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="px-3 py-2 text-gray-500">No categories found</div>
-              )}
-            </div>
-          )}
+            <input
+              id="parent-category-input"
+              type="text"
+              className="flex-1 outline-none bg-transparent text-gray-700 placeholder-gray-400"
+              value={parentSearch}
+              onChange={handleParentSearch}
+              onFocus={() => setShowSuggestions(true)}
+              onKeyDown={(e) => {
+                if (
+                  e.key === "Backspace" &&
+                  parentSearch === "" &&
+                  breadcrumb.length > 0
+                ) {
+                  const newBreadcrumb = breadcrumb.slice(0, -1);
+                  setBreadcrumb(newBreadcrumb);
+
+                  const last = newBreadcrumb[newBreadcrumb.length - 1];
+                  setFormData((prev) => ({
+                    ...prev,
+                    parent_id: last ? last.category_id : null,
+                    level: last ? last.level ?? 0 : 0,
+                  }));
+                }
+              }}
+              placeholder={
+                breadcrumb.length === 0
+                  ? "Search for parent category..."
+                  : ""
+              }
+            />
+
+            {breadcrumb.length > 0 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleClearParent();
+                }}
+                className="ml-auto text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            )}
+          </div>
         </div>
+
+        {showSuggestions && (
+          <div
+            id="parent-category-dropdown"
+            className="absolute top-full left-0 right-0 mt-1 bg-white rounded-md border border-gray-200 shadow-lg z-10"
+            onMouseDown={(e) => e.preventDefault()}
+          >
+            {filteredCategories.length > 0 ? (
+              <div className="py-1 max-h-60 overflow-y-auto">
+                {filteredCategories.map((category) => (
+                  <div
+                    key={category.category_id}
+                    className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                    onClick={() => handleSelectParent(category)}
+                  >
+                    {getCategoryPath(category)}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="px-3 py-2 text-gray-500">
+                No categories found
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex justify-end gap-4 pt-4">

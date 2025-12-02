@@ -15,17 +15,35 @@ import {
 } from "@/components/ui/popover";
 import { Check, Edit2, Save, Trash2, X } from "lucide-react";
 import { getAllIcons, renameIcon, deleteIcon } from "@/lib/iconLoader";
+import { CategoryIcon } from "@/lib/api/icon";
+
+
+function hexToUtf8(data: string): string {
+  const hex = data.startsWith("\\x") ? data.slice(2) : data;
+
+  let result = "";
+  for (let i = 0; i < hex.length; i += 2) {
+    const byte = parseInt(hex.slice(i, i + 2), 16);
+    if (!Number.isNaN(byte)) {
+      result += String.fromCharCode(byte);
+    }
+  }
+  return result;
+}
+
 
 interface IconSelectorProps {
   value: string | null;
   onChange: (value: string) => void;
   className?: string;
+  refreshTrigger?: any;
 }
 
 const IconSelector: FC<IconSelectorProps> = ({
   value,
   onChange,
   className,
+  refreshTrigger,
 }) => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,25 +53,67 @@ const IconSelector: FC<IconSelectorProps> = ({
   const [editingName, setEditingName] = useState<string | null>(null);
   const [tempName, setTempName] = useState("");
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const ignoreBlurRef = useRef(false);
+
+  function normalizeIconData(icon: CategoryIcon): CategoryIcon {
+    if (!icon.data) return icon;
+  
+    if (icon.data.startsWith("data:image/svg+xml;base64,")) {
+      return icon;
+    }
+  
+    let data = icon.data.trim();
+  
+    if (data.startsWith("\\x")) {
+      data = hexToUtf8(data);
+    }
+  
+    data = data
+      .replace(/<\?xml[^>]*>/g, "")
+      .replace(/<!DOCTYPE[^>]*>/g, "")
+      .replace(/<!--[\s\S]*?-->/g, "")
+      .trim();
+  
+    const svg = data.match(/<svg[\s\S]*<\/svg>/i)?.[0];
+    if (!svg) {
+      return {
+        ...icon,
+        data: `data:image/svg+xml;base64,${btoa(data)}`,
+      };
+    }
+  
+    const cleanedSvg = svg.replace(/(width|height)="[^"]*"/g, "").trim();
+    const base64 = btoa(cleanedSvg);
+  
+    return {
+      ...icon,
+      data: `data:image/svg+xml;base64,${base64}`,
+    };
+  }
 
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);
         const icons = await getAllIcons();
-
+  
         const names: string[] = [];
         const map: Record<string, string> = {};
         const ids: Record<string, string> = {};
-
-        for (const icon of icons) {
+  
+        for (const raw of icons) {
+          const icon = normalizeIconData(raw);
+  
           names.push(icon.name);
-          if (icon.data) map[icon.name] = icon.data;
+  
+          if (icon.data) {
+            map[icon.name] = icon.data;
+          }
+  
           ids[icon.name] = icon.icon_id;
         }
-
+  
         setIconNames(names);
         setIconsMap(map);
         setIconIds(ids);
@@ -63,9 +123,9 @@ const IconSelector: FC<IconSelectorProps> = ({
         setLoading(false);
       }
     };
-
+  
     load();
-  }, []);
+  }, [refreshTrigger]);
 
   const handleRename = async (oldName: string) => {
     const newName = tempName.trim();
@@ -75,7 +135,6 @@ const IconSelector: FC<IconSelectorProps> = ({
     }
 
     try {
-      setSaving(true);
       await renameIcon(iconIds[oldName], newName);
 
       // Update UI locally
@@ -93,11 +152,14 @@ const IconSelector: FC<IconSelectorProps> = ({
         return updated;
       });
 
-      if (value === oldName) onChange(newName);
+      if (value === oldName) {
+        onChange(newName);
+        setRefreshKey(Date.now());
+      }
     } catch (err) {
       console.error("Rename failed:", err);
     } finally {
-      setSaving(false);
+
       setEditingName(null);
     }
   };
@@ -124,8 +186,14 @@ const IconSelector: FC<IconSelectorProps> = ({
   };
 
   const currentIcon =
-    (value && iconsMap[value]) ||
-    "/src/assets/category_icons/Folder.svg";
+  value && iconsMap[value]
+    ? iconsMap[value]
+    : "/src/assets/category_icons/Folder.svg";
+  useEffect(() => {
+      if (value && iconsMap[value]) {
+        setRefreshKey(Date.now());
+      }
+    }, [iconsMap, value]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -139,6 +207,7 @@ const IconSelector: FC<IconSelectorProps> = ({
         >
           <div className="flex items-center gap-2">
             <img
+              key={refreshKey}
               src={currentIcon}
               alt={value ?? "icon"}
               className="h-4 w-4 object-contain"
@@ -185,6 +254,7 @@ const IconSelector: FC<IconSelectorProps> = ({
                       className="cursor-pointer grid grid-cols-[auto_1fr_auto] items-center gap-2 py-2"
                     >
                       <img
+                        key={refreshKey}
                         src={iconsMap[name]}
                         alt={name}
                         className="h-4 w-4 object-contain justify-self-start"
@@ -298,4 +368,4 @@ const IconSelector: FC<IconSelectorProps> = ({
   );
 };
 
-export default IconSelector;
+export default IconSelector; 
