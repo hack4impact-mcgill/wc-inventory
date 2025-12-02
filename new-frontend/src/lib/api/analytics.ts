@@ -139,19 +139,19 @@ export const analyticsAPI = {
         // Get user details
         const { data: userDetails, error: usersError } = await supabase 
             .from("user_view")
-            .select("id, name")
+            .select("id, email")
             .in("id", userIds);
         
         if (usersError) throw new Error(usersError.message);
 
         // create new map with [id: name]
-        const userMap = new Map(userDetails?.map(u => [u.id, u.name]) ?? []);
+        const userMap = new Map(userDetails?.map(u => [u.id, u.email]) ?? []);
 
         const users = Object.entries(counts)
             .map(([userId, donatedCount]) => {
                 // tries to find name, falls back to "User [userId]"
-                const userName = userMap.get(userId) ?? `User ${userId}`;
-                return { user_id: userId, name: userName, donated_count: donatedCount };
+                const userEmail = userMap.get(userId) ?? `User ${userId}`;
+                return { user_id: userId, email: userEmail, donated_count: donatedCount };
             })
             .sort((a, b) => b.donated_count - a.donated_count)
             .slice(0, limit ?? 5);

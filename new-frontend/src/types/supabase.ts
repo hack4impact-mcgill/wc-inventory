@@ -482,7 +482,7 @@ export type Database = {
           is_active: boolean | null
           name: string | null
           role: Database["public"]["Enums"]["user_role"] | null
-        }
+        } 
         Relationships: [
           {
             foreignKeyName: "users_id_fkey"
