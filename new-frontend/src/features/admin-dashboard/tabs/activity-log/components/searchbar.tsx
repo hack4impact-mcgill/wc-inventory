@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -55,25 +56,18 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <RotateCw />
         </Button>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">All actions</Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => setAction("allActions")}>
-              All actions (default)
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setAction("Donated")}>
-              Donated
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setAction("Moved")}>
-              Moved
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setAction("Retired")}>
-              Retired
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Select defaultValue="allActions" onValueChange={setAction}>
+          <SelectTrigger className="w-32 bg-white">
+            <SelectValue placeholder="All actions" />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem value="allActions">All actions</SelectItem>
+            <SelectItem value="Donated">Donated</SelectItem>
+            <SelectItem value="Moved">Moved</SelectItem>
+            <SelectItem value="Retired">Retired</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Date Range Filter */}
