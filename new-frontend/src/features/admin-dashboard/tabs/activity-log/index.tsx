@@ -74,7 +74,6 @@ const ActivityLog = () => {
         createdAt={box.createdAt || ""}
         updatedAt={box.updatedAt || ""}
         contents={box.contents}
-        icon={box.icon}
       />
     );
   };
