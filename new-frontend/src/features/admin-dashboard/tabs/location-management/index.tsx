@@ -1,28 +1,25 @@
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { LocationTable } from "./components/location-table";
-import { LocationInsert, Location } from "@/types/location";
+import { Location, LocationInsert } from "@/types/location";
+import { useState } from "react";
 import LocationForm from "./components/create-location-form";
+import { LocationTable } from "./components/location-table";
 import { useLocations } from "./hooks/use-locations";
 
 const LocationManagement = () => {
-  const {
-    locations,
-    createMutation,
-    updateMutation,
-    deleteMutation,
-  } = useLocations();
+  const { locations, createMutation, updateMutation, deleteMutation } =
+    useLocations();
   const [globalFilter, setGlobalFilter] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(
+    null,
+  );
 
   const handleSubmit = async (data: LocationInsert) => {
     if (selectedLocation) {
@@ -87,12 +84,12 @@ const LocationManagement = () => {
             </DialogDescription>
           </DialogHeader>
           <LocationForm
-            locations={locations.filter(loc => loc.location_id !== selectedLocation?.location_id)}
+            locations={locations.filter(
+              (loc) => loc.location_id !== selectedLocation?.location_id,
+            )}
             onSubmit={handleSubmit}
             initialData={selectedLocation}
-            isLoading={
-              createMutation.isPending || updateMutation.isPending
-            }
+            isLoading={createMutation.isPending || updateMutation.isPending}
           />
         </DialogContent>
       </Dialog>
