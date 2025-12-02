@@ -12,7 +12,7 @@ import { ArrowUpDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-type SortKeyOption = "moved_by_email" | "box_name" | "moved_at" | null;
+type SortKeyOption = "moved_by_email" | "box_name" | "moved_at" | "default";
 
 interface ActivityLogTableProps {
   filteredData: BoxMovementView[];
@@ -26,26 +26,28 @@ const ActivityLogTable = ({
   onBoxSelect,
 }: ActivityLogTableProps) => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const defaultBox = searchParams.get("box") || "";
-  const [searchValue, setSearchValue] = useState(defaultBox);
-  const [sortKey, setSortKey] = useState<SortKeyOption>(null);
+  const [sortKey, setSortKey] = useState<SortKeyOption>("default");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  // Sorting method for the toggle, sorts descending or asceding.
-  useEffect(() => {
-    setSearchValue(defaultBox);
-    if (!sortKey) {
-      setSortKey("box_name");
-    }
+  const sortedData = useMemo(() => {
+    const data = [...filteredData]; // copy, don’t mutate props
 
-    filteredData.sort((a, b) => {
+    data.sort((a, b) => {
       let result = 0;
 
       switch (sortKey) {
-        case "moved_by_email":
-          result = a.moved_by_email!.localeCompare(b.moved_by_email!);
+        case "moved_by_email": {
+          const emailA = a.moved_by_email;
+          const emailB = b.moved_by_email;
+
+          if (!emailA && !emailB) result = 0;
+          else if (!emailA)
+            result = 1; // a null → after
+          else if (!emailB)
+            result = -1; // b null → after
+          else result = emailA.localeCompare(emailB);
           break;
+        }
         case "box_name":
           result = a.box_name!.localeCompare(b.box_name!);
           break;
@@ -53,9 +55,9 @@ const ActivityLogTable = ({
           result = a.moved_at!.localeCompare(b.moved_at!);
           break;
         default:
-          console.error("Invalid sort key");
-          return 0;
+          result = 0;
       }
+
       return sortOrder === "asc" ? result : -result;
     });
     console.log(filteredData);
