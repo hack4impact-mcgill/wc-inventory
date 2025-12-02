@@ -90,34 +90,32 @@ const CategoryManagement = () => {
 
     return (
         <>
-            <Card>
-                <CardContent className="pt-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="relative max-w-sm">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search categories..."
-                                value={globalFilter}
-                                onChange={(e) => setGlobalFilter(e.target.value)}
-                                className="pl-8"
-                            />
-                        </div>
-                        <Button onClick={() => setIsDialogOpen(true)}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Category
-                        </Button>
+            <div>
+                <div className="flex items-center justify-between mb-4">
+                    <div className="relative max-w-sm">
+                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Search categories..."
+                            value={globalFilter}
+                            onChange={(e) => setGlobalFilter(e.target.value)}
+                            className="pl-8"
+                        />
                     </div>
+                    <Button onClick={() => setIsDialogOpen(true)}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Category
+                    </Button>
+                </div>
 
-                    <CategoriesTable
-                        data={sortedCategories}
-                        filter={globalFilter}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                        expandedCategories={expandedCategories}
-                        setExpandedCategories={setExpandedCategories}
-                    />
-                </CardContent>
-            </Card>
+                <CategoriesTable
+                    data={sortedCategories}
+                    filter={globalFilter}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    expandedCategories={expandedCategories}
+                    setExpandedCategories={setExpandedCategories}
+                />
+            </div>
             <Dialog open={isDialogOpen} onOpenChange={handleClose}>
                 <DialogContent className="max-w-4xl">
                     <DialogHeader>

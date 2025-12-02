@@ -42,38 +42,33 @@ export function UserTable({ users, onUserClick }: UserTableProps) {
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Role</TableHead>
-          <TableHead
-            onClick={toggleSort}
-            className="cursor-pointer select-none"
-          >
-            Status {sortIndicator}
-          </TableHead>
-          <TableHead>Account Creation</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {sortedUsers.map((user) => (
-          <TableRow
-            key={user.id}
-            className="cursor-pointer hover:bg-muted"
-            onClick={() => onUserClick(user.id!)}
-          >
-            <TableCell>{user.name ?? "N/A"}</TableCell>
-            <TableCell>{user.email}</TableCell>
-            <TableCell>{user.role}</TableCell>
-            <TableCell>{user.is_active ? "Active" : "Inactive"}</TableCell>
-            <TableCell>
-              {user.created_at ? format(new Date(user.created_at), "PP") : "-"}
-            </TableCell>
+    <div className="rounded-md border bg-white px-4">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Role</TableHead>
+            <TableHead>Account Creation</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {users.map((user) => (
+            <TableRow
+              key={user.id}
+              className="cursor-pointer hover:bg-muted"
+              onClick={() => onUserClick(user.id!)}
+            >
+              <TableCell>{user.name ?? "N/A"}</TableCell>
+              <TableCell>{user.email}</TableCell>
+              <TableCell>{user.role}</TableCell>
+              <TableCell>
+                {user.created_at ? format(new Date(user.created_at), "PP") : "-"}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }
