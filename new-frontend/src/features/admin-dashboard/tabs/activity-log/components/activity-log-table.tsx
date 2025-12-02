@@ -83,11 +83,9 @@ const ActivityLogTable = ({
                 className="inline pl-1 hover:cursor-pointer"
                 onClick={() => {
                   setSortKey("moved_by_email");
-                  console.log("sortKey", sortKey);
                   sortOrder === "asc"
                     ? setSortOrder("desc")
                     : setSortOrder("asc");
-                  console.log("sortOrder", sortOrder);
                 }}
               />
             </TableHead>
@@ -102,11 +100,9 @@ const ActivityLogTable = ({
                 className="inline pl-1 hover:cursor-pointer"
                 onClick={() => {
                   setSortKey("box_name");
-                  console.log("sortKey", sortKey);
                   sortOrder === "asc"
                     ? setSortOrder("desc")
                     : setSortOrder("asc");
-                  console.log("sortOrder", sortOrder);
                 }}
               />
             </TableHead>

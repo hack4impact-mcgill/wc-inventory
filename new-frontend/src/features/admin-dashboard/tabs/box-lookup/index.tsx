@@ -401,7 +401,6 @@ const BoxLookup: React.FC = () => {
     );
   }
   const content = getSelectedBoxesContent();
-  console.log(content);
   return (
     <>
       <SearchFilters

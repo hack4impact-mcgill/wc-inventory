@@ -1,9 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabaseClient";
 import { BoxContent } from "@/types/boxContent";
-import { Database } from "@/types/supabase";
-
-//type BoxMovementAction = Database["public"]["Enums"]["box_movement_action"];
 
 interface BoxLocation {
   room: string;
@@ -14,43 +11,50 @@ interface BoxLocation {
 
 interface UseSaveBoxParams {
   items: BoxContent[];
-  boxCount: number | undefined;
   location: BoxLocation;
-  onAddSuccess: (data?: any) => void;
-  boxId?: string | null; // For update mode
-  isUpdateMode?: boolean;
   note: string | undefined;
-  onAddSuccess: () => void;
+  boxId?: string | null; 
+  isUpdateMode?: boolean;
+
+
+  onAddSuccess: (data?: any) => void;   
+  onSuccess?: (data?: any) => void;    
 }
 
 export const useSaveBox = ({
   items,
-  boxCount,
   location,
   note,
   onAddSuccess,
+  onSuccess,
   boxId,
-  isUpdateMode = false
+  isUpdateMode = false,
 }: UseSaveBoxParams) => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      const userId = user?.id ?? null;
+
       if (isUpdateMode && boxId) {
-        // UPDATE MODE: Update existing box
-        
-        // Update box location if changed
         const { error: boxError } = await supabase
           .from("boxes")
           .update({
-            location_id: location.row || location.aisle || location.level || location.room,
+            location_id:
+              location.row ||
+              location.aisle ||
+              location.level ||
+              location.room,
             updated_at: new Date().toISOString(),
           })
           .eq("box_id", boxId);
 
         if (boxError) throw boxError;
 
-        // Delete all existing contents
         const { error: deleteError } = await supabase
           .from("box_contents")
           .delete()
@@ -58,7 +62,6 @@ export const useSaveBox = ({
 
         if (deleteError) throw deleteError;
 
-        // Insert new contents
         if (items.length > 0) {
           const boxContents = items.map((item) => ({
             category_id: item.category_id,
@@ -75,7 +78,6 @@ export const useSaveBox = ({
           if (contentsError) throw contentsError;
         }
 
-        // Fetch and return updated box data
         const { data: updatedBox, error: fetchError } = await supabase
           .from("boxes")
           .select("*")
@@ -85,56 +87,59 @@ export const useSaveBox = ({
         if (fetchError) throw fetchError;
 
         return updatedBox;
-      } else {
-        // CREATE MODE: Create new box
-        const boxName = `Box ${String(boxCount).padStart(3, "0")}`;
-        const { data: boxData, error: boxError } = await supabase
-          .from("boxes")
-          .insert({
-            name: boxName,
-            location_id: location.row || location.aisle || location.level || location.room,
-            description: note || null,
-          })
-          .select()
-          .single();
-
-        if (boxError) throw boxError;
-
-        // Then add contents
-        const boxContents = items.map((item) => ({
-          ...item,
-          box_id: boxData.box_id,
-        }));
-
-        const { error: contentsError } = await supabase
-          .from("box_contents")
-          .insert(boxContents);
-
-        if (contentsError) throw contentsError;
-
-        // Finally, log the box movement
-        const { error: movementError } = await supabase
-          .from("box_movements")
-          .insert({
-            moved_by: userId || null,
-            box_id: boxData.box_id,
-            to_location_id: location.row || location.aisle || location.level || location.room,
-            action: "Created",
-            note: note || "Box created",
-          });
-
-        if (movementError) {
-          throw movementError;
-        }
-
-        return boxData;
       }
+      const { data: boxData, error: boxError } = await supabase
+        .from("boxes")
+        .insert({
+          location_id:
+            location.row ||
+            location.aisle ||
+            location.level ||
+            location.room,
+          description: note || null,
+        })
+        .select()
+        .single();
+
+      if (boxError) throw boxError;
+
+      const boxContents = items.map((item) => ({
+        ...item,
+        box_id: boxData.box_id,
+      }));
+
+      const { error: contentsError } = await supabase
+        .from("box_contents")
+        .insert(boxContents);
+
+      if (contentsError) throw contentsError;
+
+      // Movement entry
+      const { error: movementError } = await supabase
+        .from("box_movements")
+        .insert({
+          moved_by: userId,
+          box_id: boxData.box_id,
+          to_location_id:
+            location.row ||
+            location.aisle ||
+            location.level ||
+            location.room,
+          action: "Created",
+          note: note || "Box created",
+        });
+
+      if (movementError) throw movementError;
+
+      return boxData;
     },
+
     onSuccess: (data) => {
-      // Invalidate the boxes query to trigger a refetch
       queryClient.invalidateQueries({ queryKey: ["boxes"] });
       queryClient.invalidateQueries({ queryKey: ["boxCount"] });
       onAddSuccess?.(data);
+
+      onSuccess?.(data);
     },
   });
 };

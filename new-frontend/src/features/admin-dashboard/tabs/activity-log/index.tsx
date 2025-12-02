@@ -69,6 +69,7 @@ const ActivityLog = () => {
     return (
       <BoxDetails
         boxName={box.name}
+        icon={box.icon}
         location={box.location || ""}
         createdAt={box.createdAt || ""}
         updatedAt={box.updatedAt || ""}
@@ -141,8 +142,6 @@ const ActivityLog = () => {
 
     return isInDate && isCorrectAction && isCorrectName;
   });
-
-  console.log(filteredLogs as BoxMovementView[]);
 
   return (
     <>
