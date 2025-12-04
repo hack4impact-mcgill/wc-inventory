@@ -43,12 +43,12 @@ export const navItems: NavItem[] = [
     icon: FileClock,
     description: "View activity log",
   },
-  {
-    title: "Donations",
-    href: "/admin/donations",
-    icon: HandHeart,
-    description: "View past donations",
-  },
+  // {
+  //   title: "Donations",
+  //   href: "/admin/donations",
+  //   icon: HandHeart,
+  //   description: "View past donations",
+  // },
   {
     title: "Location Management",
     href: "/admin/locations",
@@ -69,7 +69,7 @@ export const navItems: NavItem[] = [
   },
 
   {
-    title: "Manage staff",
+    title: "User Management",
     href: "/admin/users",
     icon: Users,
     description: "Manage users and permissions",

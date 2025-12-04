@@ -133,7 +133,7 @@ const CategoriesTable: FC<CategoriesTableProps> = ({
 
               <div className="flex items-center justify-center h-5 w-5">
                 <img
-                        src={iconSrc}
+                        src={iconSrc || "/src/assets/category_icons/Folder.svg"}
                         alt={category.icon!}
                         className="h-4 w-4 object-contain"
                         onError={(e) =>
@@ -182,7 +182,7 @@ const CategoriesTable: FC<CategoriesTableProps> = ({
   };
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border bg-white">
       <Table>
       <TableHeader>
         <TableRow>

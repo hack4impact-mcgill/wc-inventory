@@ -23,12 +23,17 @@ export function useAddBoxQueries() {
 
   const { data: boxCount } = useQuery({
     queryFn: async () => {
-      const { count } = await supabase
+      const { data, error } = await supabase
         .from("boxes")
-        .select("*", { count: "exact", head: true });
-      return (count || 0) + 1;
+        .select("box_number", { head: false })
+        .order("box_number", { ascending: false })
+        .limit(1);
+  
+      if (error) throw error;
+  
+      return data?.[0]?.box_number || 0;
     },
-    queryKey: ["boxCount"],
+    queryKey: ["maxBoxNumber"],
   });
 
   return {
