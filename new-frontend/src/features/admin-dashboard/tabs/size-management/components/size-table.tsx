@@ -37,7 +37,7 @@ export function SizeTable({ sizes, categoryFilter, onEdit, onDelete }: SizeTable
                 <TableHeader>
                     <TableRow>
                         <TableHead>Name</TableHead>
-                        <TableHead>Category</TableHead>
+                        <TableHead>Size Group</TableHead>
                         <TableHead>Region</TableHead>
                         <TableHead>Gender</TableHead>
                         <TableHead>Numerical</TableHead>
@@ -50,7 +50,7 @@ export function SizeTable({ sizes, categoryFilter, onEdit, onDelete }: SizeTable
                     {filteredSizes.map((size) => (
                         <TableRow key={size.size_id}>
                             <TableCell className="font-medium">{size.name}</TableCell>
-                            <TableCell>{size.category}</TableCell>
+                            <TableCell>{size.size_group}</TableCell>
                             <TableCell>{size.region}</TableCell>
                             <TableCell>{size.gender}</TableCell>
                             <TableCell>{size.is_numerical ? "Yes" : "No"}</TableCell>
