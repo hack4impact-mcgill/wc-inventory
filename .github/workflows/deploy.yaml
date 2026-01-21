@@ -1,0 +1,25 @@
+on: push
+name: Publish on Netlify
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+
+    - name: Install dependencies
+      run: npm install
+      working-directory: ./new-frontend
+
+    - name: Build
+      run: npm run build
+      working-directory: ./new-frontend
+
+    - name: Publish
+      uses: netlify/actions/cli@master
+      with:
+        args: deploy --dir=dist
+      env:
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      working-directory: ./new-frontend
