@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
-import { startOfMonth, endOfMonth, startOfYear, startOfDay, endOfDay, startOfWeek, endOfWeek } from "date-fns";
+import { startOfMonth, endOfMonth, startOfYear, endOfYear, startOfDay, endOfDay, startOfWeek, endOfWeek } from "date-fns";
 import { useAdminOverview } from "../hooks/useAdminOverview";
 import MetricCard from "../components/MetricCard";
 import TopItemsList from "../components/TopItemsList";
@@ -12,10 +12,10 @@ import { Card, CardContent } from "@/components/ui/card";
  * Defines the timeframes that the user can request analytics from
  */
 const PERIODS = [
-  { id: "daily", label: "Daily", getRange: () => ({start: startOfDay(new Date()), end: endOfDay(new Date())})},
-  { id: "weekly", label: "Weekly", getRange: () => ({start: startOfWeek(new Date()), end: endOfWeek(new Date())})},
-  { id: "monthly", label: "Monthly", getRange: () => ({start: startOfMonth(new Date()), end: endOfMonth(new Date())})},
-  { id: "yearly", label: "Yearly", getRange: () => ({start: startOfYear(new Date()), end: endOfMonth(new Date())})},
+  { id: "daily", label: "Today", getRange: () => ({start: startOfDay(new Date()), end: endOfDay(new Date())})},
+  { id: "weekly", label: "This Week", getRange: () => ({start: startOfWeek(new Date()), end: endOfWeek(new Date())})},
+  { id: "monthly", label: "This Month", getRange: () => ({start: startOfMonth(new Date()), end: endOfMonth(new Date())})},
+  { id: "yearly", label: "This Year", getRange: () => ({start: startOfYear(new Date()), end: endOfYear(new Date())})},
 ]
 
 /**
@@ -42,9 +42,8 @@ const { donatedBoxes, donatedItems, stockTotals, topItems, topUsers } = useAdmin
 return (
   <div className="admin-overview">
     {/* Component Header */}
-    <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
 
-    <div className="mx-auto max-w-7xl p-6 bg-gray-50 min-h-screen">
+    <div className="mx-auto max-w-7xl bg-gray-50">
       <Card className="p-6">
         {/* Main Grid: 2 Columns */}
         <div className="grid grid-cols-2 gap-6">
@@ -62,13 +61,13 @@ return (
               <div className="flex gap-3">
                 <Card className="flex-1 p-6 text-center text-2xl">
                     <CardContent className="p-4">
-                      <MetricCard value={donatedBoxes.data ?? "nothing!!"} loading={donatedBoxes.isLoading} />
+                      <MetricCard value={donatedBoxes.data ?? "--"} loading={donatedBoxes.isLoading} />
                       <p className="text-base">boxes</p>
                     </CardContent>
                 </Card>
                 <Card className="flex-1 p-6 text-center text-2xl">
                     <CardContent className="p-4">
-                      <MetricCard value={donatedItems.data ?? "nothing!!"} loading={donatedItems.isLoading} />
+                      <MetricCard value={donatedItems.data ?? "--"} loading={donatedItems.isLoading} />
                       <p className="text-base">items</p>
                     </CardContent>
                 </Card>
@@ -80,13 +79,13 @@ return (
               <div className="flex gap-3">
                 <Card className="flex-1 p-6 text-center text-2xl">
                   <CardContent className="p-4">
-                    <MetricCard value={stockTotals.data?.totalBoxes ?? "nothing!!"} loading={stockTotals.isLoading} />
+                    <MetricCard value={stockTotals.data?.totalBoxes ?? "--"} loading={stockTotals.isLoading} />
                     <p className="text-base">boxes</p>
                   </CardContent>
                 </Card>
                 <Card className="flex-1 p-6 text-center text-2xl">
                   <CardContent className="p-4">
-                    <MetricCard value={stockTotals.data?.totalItems ?? "nothing!!"} loading={stockTotals.isLoading} />
+                    <MetricCard value={stockTotals.data?.totalItems ?? "--"} loading={stockTotals.isLoading} />
                     <p className="text-base">items</p>
                   </CardContent>
                 </Card>
