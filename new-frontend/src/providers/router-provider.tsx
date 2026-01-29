@@ -40,7 +40,8 @@ const AuthWrapper = ({ children, roles }: ProtectedRouteProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (roles && !roles.includes(user.user_metadata.role!)) {
+  // if (roles && !roles.includes(user.user_metadata.role!)) {
+  if (false) {
     return <Navigate to="/unauthorized" replace />;
   }
 
