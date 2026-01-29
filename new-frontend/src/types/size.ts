@@ -31,7 +31,9 @@ export type SizeRegionEnum = "US" | "EU" | "UK" | "INT"
 export type GenderEnum= "Male" | "Female" | "Kids" | "Unisex"
 
 // Interface extending the `Size` type, adding an optional `usageCount` field that tracks how many times the size has been used
+// also includes size_group which is the API response field name (while category is the DB field name)
 export interface SizeWithUsage extends Size{
     usageCount?:number;
+    size_group?: string; // API returns this field instead of category
 }
 

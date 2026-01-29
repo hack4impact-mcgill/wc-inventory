@@ -26,7 +26,8 @@ interface FilterStateItem {
   category: string;
   size: string;
   gender: string;
-  status: BoxStatus; 
+  status: BoxStatus;
+  sizeGroup: string;
 }
 
 interface FilterStateLocation {
@@ -50,7 +51,8 @@ export function LookupStateProvider({ children }: Props) {
       category: "all", 
       size: "all", 
       gender: "all", 
-      status: "Active" 
+      status: "Active",
+      sizeGroup: "all", 
   });
   const [boxIdFilters, setBoxIdFilters] = useState<Record<string, string>>({});
   const [locationFilters, setLocationFilters] = useState<FilterStateLocation>({ 

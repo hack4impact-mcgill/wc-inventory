@@ -19,6 +19,7 @@ interface FilterStateItem {
   size: string;
   gender: string;
   status: BoxStatus; 
+  sizeGroup: string;
 }
 
 interface FilterStateLocation {
@@ -192,10 +193,12 @@ const LookupBox = () => {
               selectedSizeId={itemFilters.size}
               selectedGender={itemFilters.gender}
               selectedStatus={itemFilters.status}
+              selectedSizeGroup={itemFilters.sizeGroup}
               onCategoryChange={(value) => handleItemFilterChange("category", value)}
               onSizeChange={(value) => handleItemFilterChange("size", value)}
               onGenderChange={(value) => handleItemFilterChange("gender", value)}
               onStatusChange={(value) => handleItemFilterChange("status", value)}
+              onSizeGroupChange={(value) => handleItemFilterChange("sizeGroup", value)}
             />
           )}
 
