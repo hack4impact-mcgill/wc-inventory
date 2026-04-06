@@ -1,3 +1,28 @@
+// Patch Node prototype for DOM error handling
+if (typeof Node === 'function' && Node.prototype) {
+  const originalRemoveChild = Node.prototype.removeChild;
+  (Node.prototype as any).removeChild = function(child: any) {
+    if (child.parentNode !== this) {
+      if (console) {
+        console.error('Cannot remove a child from a different parent', child, this);
+      }
+      return child;
+    }
+    return originalRemoveChild.call(this, child);
+  }
+
+  const originalInsertBefore = Node.prototype.insertBefore;
+  (Node.prototype as any).insertBefore = function(newNode: any, referenceNode: any) {
+    if (referenceNode && referenceNode.parentNode !== this) {
+      if (console) {
+        console.error('Cannot insert before a reference node from a different parent', referenceNode, this);
+      }
+      return newNode;
+    }
+    return originalInsertBefore.call(this, newNode, referenceNode);
+  }
+}
+
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
