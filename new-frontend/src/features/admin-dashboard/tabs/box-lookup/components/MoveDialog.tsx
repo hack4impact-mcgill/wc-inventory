@@ -224,56 +224,22 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
               />
             </div>
           </div>
-          <div className="mt-2 p-2 bg-blue-50 rounded-md">
-            <h4 className="text-sm font-medium mb-1">
-              Selected Location Path:
-            </h4>
-            {selectedLocations.some(Boolean) ? (
-              <div className="text-sm">
-                {selectedLocations.filter(Boolean).map((locId, idx) => {
-                  let locationName = "Unknown";
-                  if (idx === 0) {
-                    locationName = getLocationNameById(locId, "");
-                  } else if (idx === 1) {
-                    locationName = getLocationNameById(
-                      locId,
-                      selectedLocations[0],
-                    );
-                  } else if (idx === 2) {
-                    locationName = getLocationNameById(
-                      locId,
-                      selectedLocations[1],
-                    );
-                  }
-                  return (
-                    <div key={`path-${idx}`} className="flex items-center">
-                      {idx > 0 && <span className="mx-1">→</span>}
-                      <span className="truncate">{locationName}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-sm text-gray-500">
-                No location selected yet
-              </div>
-            )}
-          </div>
         </div>
 
-        <DialogFooter className="mt-4">
+        <DialogFooter className="mt-4 flex flex-row space-x-2">
           <Button
-            variant="outline"
+            variant="destructive"
             onClick={() => onOpenChange(false)}
-            className="mr-auto"
+            className="flex-1"
           >
-            ❌ Cancel
+            Cancel
           </Button>
           <Button
             onClick={handleConfirm}
             disabled={!selectedLocations.some(Boolean) || isProcessing}
+            className="flex-1"
           >
-            {isProcessing ? "Processing..." : "✅ Done"}
+            {isProcessing ? "Processing..." : "Done"}
           </Button>
         </DialogFooter>
       </DialogContent>

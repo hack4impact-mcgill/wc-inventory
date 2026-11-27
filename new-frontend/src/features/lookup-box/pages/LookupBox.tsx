@@ -7,7 +7,7 @@ import { useLocations } from "@/features/admin-dashboard/tabs/location-managemen
 import { toast } from "sonner";
 import { useSearchFiltersQueries } from "@/features/admin-dashboard/hooks/useSearchFiltersQueries";
 import { buildLocationTree } from "@/features/add-box/utils";
-import { useLookupState } from "..";
+import { useLookupState } from "../";
 import { BoxStatus } from "@/types/enums";
 import { boxApi } from "@/lib/api/boxes";
 import { useQuery } from "@tanstack/react-query";
@@ -68,7 +68,7 @@ const LookupBox = () => {
       ? "Search Box by ID"
       : view === "location-filter"
         ? "Search Box by Location"
-        : "Inventory Management";
+        : "Search";
     
   const handleGoBack = () => {
     if (view === "main-filter") {
@@ -169,11 +169,11 @@ const LookupBox = () => {
   }
 
   return (
-    <div className="h-screen w-full flex flex-col bg-white">
+    <div className="h-full w-full flex flex-col bg-white gap-4 overflow-hidden">
 
       <Header handleGoBack={handleGoBack} title={title} />
 
-      <div className="h-[70vh] w-full max-w-screen-md mx-auto flex flex-col px-4">
+      <div className="h-[75vh] w-full max-w-screen-md mx-auto flex flex-col px-4">
 
         <div className="h-full w-full flex flex-col">
 

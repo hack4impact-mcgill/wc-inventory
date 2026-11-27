@@ -17,12 +17,6 @@ const MainFilters = ({
 
     <div className="w-full h-full flex flex-col">
 
-      <div className="mb-6 mt-1">
-        <h2 className="text-xl text-gray-900 tracking-wide">
-          Search
-        </h2>
-      </div>
-
       <div className="h-full w-full flex flex-col justify-center gap-6">
 
         <button 

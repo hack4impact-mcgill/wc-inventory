@@ -190,7 +190,7 @@ const ItemFilters = ({
 
         <Select value={selectedCategoryId} onValueChange={onCategoryChange}>
           <SelectTrigger
-            className="w-[92%] h-14 mx-auto flex items-center justify-between border-2 
+            className="w-[92%] h-14 mx-auto flex items-center justify-center border-2 
                       rounded-lg text-xl px-4 [&>svg]:h-6 [&>svg]:w-6"
           >
             <SelectValue placeholder="All Items" />
@@ -224,7 +224,7 @@ const ItemFilters = ({
 
         <Select value={selectedGender} onValueChange={onGenderChange}>
           <SelectTrigger
-            className="w-[92%] h-14 mx-auto flex items-center justify-between border-2 
+            className="w-[92%] h-14 mx-auto flex items-center justify-center border-2 
                       rounded-lg text-xl px-4 [&>svg]:h-6 [&>svg]:w-6"
           >
             <SelectValue placeholder="All Genders" />
@@ -241,7 +241,7 @@ const ItemFilters = ({
 
         <Select value={selectedSizeId} onValueChange={onSizeChange}>
           <SelectTrigger
-            className="w-[92%] h-14 mx-auto flex items-center justify-between border-2 
+            className="w-[92%] h-14 mx-auto flex items-center justify-center border-2 
                       rounded-lg text-xl px-4 [&>svg]:h-6 [&>svg]:w-6"
           >
             <SelectValue placeholder="All Sizes" />

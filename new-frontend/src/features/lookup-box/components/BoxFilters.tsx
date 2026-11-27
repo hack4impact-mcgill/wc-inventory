@@ -38,17 +38,13 @@ const BoxFilters = ({
 
     <>
 
-      <h2 className="flex-1 flex flex-col justify-center text-2xl text-black tracking-wide text-center mb-4">
-        Input Box ID(s)
-      </h2>
-
-      <div className="flex-[3] flex flex-col">
+      <div className="flex-[3] flex flex-col mt-[3.5rem] h-sm:mt-[2.5rem] lg:mt-[5rem]">
 
         <Popover open={open} onOpenChange={setOpen}>
 
           <PopoverTrigger asChild>
             <div
-              className="w-full min-h-[4rem] max-h-[16rem] h-sm:max-h-[10rem] lg:max-h-[25rem] overflow-y-auto flex-1 flex flex-wrap content-start items-start gap-3 rounded-lg border-2 border-black bg-gray-200 hover:bg-gray-300 text-lg mb-10 p-5 font-medium text-gray-800 shadow duration-300 ease-in-out cursor-text"
+              className="w-full min-h-[4rem] max-h-[20rem] h-sm:max-h-[14rem] lg:max-h-[25rem] overflow-y-auto flex-1 flex flex-wrap content-start items-start gap-3 rounded-lg border-2 border-black bg-gray-200 hover:bg-gray-300 text-lg mb-10 p-5 font-medium text-gray-800 shadow duration-300 ease-in-out cursor-text"
               onClick={() => setOpen(true)}
             >
               {Object.entries(boxIdFilters).length > 0 ? (

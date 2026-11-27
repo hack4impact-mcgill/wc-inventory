@@ -73,7 +73,7 @@ const LocationFilters = ({
         {findChildren(null).length > 0 && (
           <Select value={selectedRoom} onValueChange={onRoomChange}>
             <SelectTrigger
-              className="w-[92%] h-14 mx-auto flex items-center justify-between border-2 
+              className="w-[92%] h-14 mx-auto flex items-center justify-center border-2 
                         rounded-lg text-xl px-4 [&>svg]:h-6 [&>svg]:w-6"
             >
               <SelectValue placeholder="All Rooms" />
@@ -94,7 +94,7 @@ const LocationFilters = ({
         {selectedRoom && findChildren(selectedRoom).length > 0 && (
           <Select value={selectedLevel} onValueChange={onLevelChange}>
             <SelectTrigger
-              className="w-[92%] h-14 mx-auto flex items-center justify-between border-2 
+              className="w-[92%] h-14 mx-auto flex items-center justify-center border-2 
                         rounded-lg text-xl px-4 [&>svg]:h-6 [&>svg]:w-6"
             >
               <SelectValue placeholder="All Levels" />
@@ -115,7 +115,7 @@ const LocationFilters = ({
         {selectedLevel && findChildren(selectedLevel).length > 0 && (
           <Select value={selectedAisle} onValueChange={onAisleChange}>
             <SelectTrigger
-              className="w-[92%] h-14 mx-auto flex items-center justify-between border-2 
+              className="w-[92%] h-14 mx-auto flex items-center justify-center border-2 
                         rounded-lg text-xl px-4 [&>svg]:h-6 [&>svg]:w-6"
             >
               <SelectValue placeholder="All Aisles" />
@@ -136,7 +136,7 @@ const LocationFilters = ({
         {selectedAisle && findChildren(selectedAisle).length > 0 && (
           <Select value={selectedRow} onValueChange={onRowChange}>
             <SelectTrigger
-              className="w-[92%] h-14 mx-auto flex items-center justify-between border-2 
+              className="w-[92%] h-14 mx-auto flex items-center justify-center border-2 
                         rounded-lg text-xl px-4 [&>svg]:h-6 [&>svg]:w-6"
             >
               <SelectValue placeholder="All Rows" />
